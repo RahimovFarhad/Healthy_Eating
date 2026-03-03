@@ -1,0 +1,28 @@
+import { createDiaryEntry } from "./diary.service.js";
+import { DiaryEntryError } from "./diary.validator.js";
+
+async function createEntry(req, res, next) {
+    // console.log("Creating diary entry with body:", req.body);
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const entry = await createDiaryEntry({
+            subscriberId,
+            consumedAt: req.body?.consumedAt,
+            mealType: req.body?.mealType,
+            notes: req.body?.notes,
+        });
+        res.status(201).json({ entry });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+        
+    }
+
+}
+
+export { createEntry };
+
+
