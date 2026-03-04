@@ -1,5 +1,5 @@
 import { insertDiaryEntry } from "./diary.repository.js";
-import { DiaryEntryError, validateCreateDiaryEntryInput } from "./diary.validator.js";
+import { validateCreateDiaryEntryInput } from "./diary.validator.js";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     const data = validateCreateDiaryEntryInput({
@@ -13,4 +13,3 @@ async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
 }
 
 export { createDiaryEntry };
-export { DiaryEntryError };

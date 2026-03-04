@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import { prisma } from "./db/prisma.ts";
 import authRouter from "./modules/auth/auth.routes.js";
 import diaryRouter from "./modules/diary/diary.routes.js";
@@ -7,6 +8,7 @@ import { requireAuth } from "./middleware/requireAuth.js";
 const app = express();
 
 app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/diary", requireAuth, diaryRouter);
 

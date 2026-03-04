@@ -1,6 +1,6 @@
-import { checkUser, AuthError, UserNotFoundError, registerUser } from "./auth.service.js";
+import { authenticateUser, AuthError, UserNotFoundError, registerUser, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
 
-async function checkLogin(req, res) {
+async function login(req, res) {
     const { email, username, password } = req.body;
     const loginIdentifier = email ?? username;
 
@@ -9,7 +9,15 @@ async function checkLogin(req, res) {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const token = await checkUser(loginIdentifier, password);
+        const token = await authenticateUser(loginIdentifier, password);
+
+        const refreshToken = await generateRefreshToken(loginIdentifier); 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1000 * 60 * 60 * 24 * 7
+        });
 
         return res.json({ message: "Login successful", token });
     } catch (error) {
@@ -41,4 +49,24 @@ async function register(req, res) {
     }
 }
 
-export { checkLogin, register };
+async function refreshToken(req, res) {
+    try {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(401).json({ message: "Refresh token is required" });
+        }
+    
+        const token = await refreshAccessToken(refreshToken);
+        return res.json({ message: "Login successful", token });
+
+    } catch (error) {
+        if (error instanceof AuthError) {
+            return res.status(401).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+
+}
+
+export { login, register, refreshToken };

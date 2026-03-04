@@ -2,7 +2,7 @@ import { prisma } from "../../db/prisma.ts";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../../utils/hash.js";
 
-const { sign } = jwt;
+const { sign, verify } = jwt;
 
 export class AuthError extends Error {
     constructor(message) {
@@ -18,7 +18,7 @@ export class UserNotFoundError extends AuthError {
     }
 }
 
-async function checkUser(email, password) {
+async function authenticateUser(email, password) {
     const user = await prisma.user.findUnique({
         where: { email }
     });
@@ -34,7 +34,8 @@ async function checkUser(email, password) {
     const payload = {
         userId: user.userId,
         email: user.email,
-        role: user.role
+        role: user.role,
+        tokenType: "access"
     };
 
     const token = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
@@ -64,4 +65,57 @@ async function registerUser(email, username, password) {
     return newUser;
 }
 
-export { checkUser, registerUser };
+async function generateRefreshToken(email) {
+    const user = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!user) {
+        throw new UserNotFoundError();
+    }
+
+    // This implementation is enough for now, but we will store the refreshtoken in the database later, so we can invalidate it if needed. 
+    // That means we will also include a unique identifier for the token in the payload, so we can find it in the database later.
+    const payload = { 
+        userId: user.userId,
+        tokenType: "refresh"
+    };
+
+    const refreshToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
+    // Optionally, you can store the refresh token in the database for later validation.
+    return refreshToken;
+}
+
+async function refreshAccessToken(refreshToken) {
+    try {
+        const decoded = verify(refreshToken, process.env.JWT_SECRET || "default-secret-key");
+
+        if (decoded.tokenType !== "refresh") {
+            throw new AuthError("Invalid refresh token");
+        }
+
+        const userId = decoded.userId;
+
+        const user = await prisma.user.findUnique({
+            where: { userId }
+        });
+
+        if (!user) {
+            throw new UserNotFoundError();
+        }
+
+        const payload = {
+            userId: user.userId,
+            email: user.email,
+            role: user.role,
+            tokenType: "access"
+        };
+
+        const newAccessToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
+        return newAccessToken;
+    } catch (error) {
+        throw new AuthError("Invalid refresh token");
+    }
+}
+
+export { authenticateUser, registerUser, generateRefreshToken, refreshAccessToken };
