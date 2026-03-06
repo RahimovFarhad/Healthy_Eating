@@ -1,4 +1,4 @@
-import { createDiaryEntry } from "./diary.service.js";
+import { createDiaryEntry, getNutritionSummary } from "./diary.service.js";
 import { DiaryEntryError } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
@@ -23,6 +23,24 @@ async function createEntry(req, res, next) {
 
 }
 
-export { createEntry };
+async function getSummary(req, res, next) {
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const summary = await getNutritionSummary({
+            subscriberId,
+            period: req.query?.period,
+            endDate: req.query?.endDate,
+        });
 
+        return res.status(200).json({ summary });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+export { createEntry, getSummary };
 

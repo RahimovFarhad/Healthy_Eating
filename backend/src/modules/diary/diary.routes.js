@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { createEntry } from "./diary.controller.js";
+import { createEntry, getSummary } from "./diary.controller.js";
 
 const diaryRouter = Router();
 
 // Auth middleware will be added here later.
 diaryRouter.post("/entries", createEntry);
+diaryRouter.get("/summary", getSummary);
 // diaryRouter.get("/entries", listEntries);
 // diaryRouter.get("/entries/:id", getEntryDetail);
 // diaryRouter.post("/entries/:id/items", addEntryItem);

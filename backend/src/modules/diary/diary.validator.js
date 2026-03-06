@@ -1,4 +1,5 @@
 const MEAL_TYPES = new Set(["breakfast", "lunch", "dinner", "snack"]);
+const SUMMARY_PERIODS = new Set(["daily", "weekly", "monthly"]);
 
 class DiaryEntryError extends Error {
     constructor(message) {
@@ -30,4 +31,26 @@ function validateCreateDiaryEntryInput({ subscriberId, consumedAt, mealType, not
     };
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput };
+function validateSummaryInput({ subscriberId, period, endDate }) {
+    if (!subscriberId || !Number.isInteger(subscriberId) || subscriberId <= 0) {
+        throw new DiaryEntryError("Subscriber ID is required");
+    }
+
+    if (!period || !SUMMARY_PERIODS.has(period)) {
+        throw new DiaryEntryError("Period is required and must be one of: daily, weekly, monthly");
+    }
+
+    const parsedendDate = new Date(endDate);
+
+    if (!endDate || Number.isNaN(parsedendDate.getTime())) {
+        throw new DiaryEntryError("endDate is required and must be a valid date");
+    }
+
+    return {
+        subscriberId,
+        period,
+        endDate: parsedendDate,
+    };
+}
+
+export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput };
