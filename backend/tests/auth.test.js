@@ -37,5 +37,30 @@ describe("Auth API", () => {
       message: "Email and password are required"
     })
   })
+  test("Register rejects missing email", async () => {
+  const res = await request(app)
+    .post("/auth/register")
+    .send({
+      username: "testuser",
+      password: "123456"
+    })
 
+  expect(res.statusCode).toBe(400)
+})
+
+test("Register rejects empty body", async () => {
+  const res = await request(app)
+    .post("/auth/register")
+    .send({})
+
+  expect(res.statusCode).toBe(400)
+})
+
+test("Login rejects empty body", async () => {
+  const res = await request(app)
+    .post("/auth/login")
+    .send({})
+
+  expect(res.statusCode).toBe(400)
+})
 })
