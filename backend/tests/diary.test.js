@@ -34,4 +34,23 @@ describe("Diary API", () => {
     })
   })
 
+  test("Create entry rejects empty body", async () => {
+    const res = await request(app)
+      .post("/diary/entries")
+      .set("Authorization", "Bearer fake")
+      .send({})
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  test("Create entry rejects missing date", async () => {
+    const res = await request(app)
+      .post("/diary/entries")
+      .set("Authorization", "Bearer fake")
+      .send({
+        calories: 500
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
 })
