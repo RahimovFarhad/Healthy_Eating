@@ -12,5 +12,4 @@ diaryRouter.get("/summary", getSummary);
 // diaryRouter.patch("/entries/:id/items/:itemId", updateEntryItem);
 // diaryRouter.delete("/entries/:id/items/:itemId", deleteEntryItem);
 
-
 export default diaryRouter;

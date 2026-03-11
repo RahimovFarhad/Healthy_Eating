@@ -1,5 +1,5 @@
 import app from "./app.js";
-import { prisma } from "./db/prisma.ts";
+import { prisma } from "./db/prisma.js";
 
 const PORT = Number(process.env.PORT || 3000);
 

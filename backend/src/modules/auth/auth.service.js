@@ -1,4 +1,4 @@
-import { prisma } from "../../db/prisma.ts";
+import { prisma } from "../../db/prisma.js";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../../utils/hash.js";
 

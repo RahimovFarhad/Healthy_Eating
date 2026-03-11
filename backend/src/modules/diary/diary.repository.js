@@ -1,4 +1,4 @@
-import { prisma } from "../../db/prisma.ts";
+import { prisma } from "../../db/prisma.js";
 
 async function insertDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     return prisma.diaryEntry.create({
