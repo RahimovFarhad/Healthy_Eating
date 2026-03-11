@@ -1,5 +1,5 @@
-import { fetchSummaryData, insertDiaryEntry, listDiaryEntry, retrieveEntries, newDiaryEntry, updateDiaryEntry, deleteDiaryEntry } from "./diary.repository.js";
-import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntry, validateDeletedEntry } from "./diary.validator.js";
+import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem } from "./diary.repository.js";
+import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem } from "./diary.validator.js";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     const data = validateCreateDiaryEntryInput({
@@ -101,34 +101,41 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
     };
 }
 
-async function getExistingEntries({ subscriberId }) {
-    const entries = validateListDisplay({ subscriberId });
+// only subscriberId is required, other filters are optional
+async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) { 
+    const entries = validateListDisplay({ subscriberId, consumedAt, mealType, notes });
 
-    return listDiaryEntry(entries); // call function from diary.repository.js file
+    return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
 
-async function getEntryDetails({ diaryEntryId }) {
+async function getDiaryEntryById({ diaryEntryId }) {
     const entries = validateEntryDetails({ diaryEntryId }); // validation on data
 
-    return retrieveEntries(entries); // call function from diary.repository.js file
+    return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
-async function insertNewEntry({ diaryEntryId }) {
-    const entry = validateNewEntryDetails({ diaryEntryId });
+async function createDiaryEntryItem({ userId, diaryEntryId, quantityG, foodItemId }) {
+    const entry = validateNewEntryDetails({ userId, diaryEntryId, quantityG, foodItemId }); // validation on data
 
-    return newDiaryEntry(entry);
+    return createDiaryEntryItemRepository(entry);
 }
 
-async function updateExistingEntry({ diaryEntryId }) {
-    const entry = validateUpdatedEntry({ diaryEntryId });  // validation check
+async function updateDiaryEntryItem({ diaryEntryItemId, userId, foodItemId, quantityG }) {
+    const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, foodItemId, quantityG });  // validation check
 
-    return updateDiaryEntry(entry);
+    return updateDiaryEntryItemRepository(entry);
 }
 
-async function deleteExisitingEntry({ diaryEntryId }) {
-    const entry = validateDeletedEntry({ diaryEntryId }); // validation check
+async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
+    const entry = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
 
     return deleteDiaryEntry(entry);
 }
 
-export { createDiaryEntry, getNutritionSummary, getExistingEntries, getEntryDetails, insertNewEntry, updateExistingEntry, deleteExisitingEntry };
+async function deleteExistingDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId }) {
+    const entry = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
+
+    return deleteDiaryEntryItem({ diaryEntryItemId });
+}
+
+export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem };

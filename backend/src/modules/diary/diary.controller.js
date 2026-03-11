@@ -1,4 +1,4 @@
-import { createDiaryEntry, getNutritionSummary, getExistingEntries, getEntryDetails, insertNewEntry, updateExistingEntry, deleteExisitingEntry } from "./diary.service.js";
+import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem } from "./diary.service.js";
 import { DiaryEntryError } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
@@ -42,15 +42,15 @@ async function getSummary(req, res, next) {
     }
 }
 
-async function listEntries(req, res, next) {
+async function listDiaryEntries(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null; // req. from user
         // from the diary.service.js file, just show all the entries
-        const record = await getExistingEntries({
+        const record = await listDiaryEntriesService({
             subscriberId,
-            consumedAt: req.body?.consumedAt,
-            mealType: req.body?.mealType,
-            notes: req.body?.notes,
+            consumedAt: req.query?.consumedAt,
+            mealType: req.query?.mealType,
+            notes: req.query?.notes,
         });
 
         return res.status(200).json({ record });
@@ -63,14 +63,13 @@ async function listEntries(req, res, next) {
     }
 }
 
-async function getEntryDetail(req, res, next) {
+async function getDiaryEntryById(req, res, next) {
     try {
-        const diaryEntryId = req.user?.userId ?? null;
-        const entry = await getEntryDetails({
-            diaryEntryId,
-            type: req.body?.type,
-            unit: req.body?.unit,
-            quantityG: req.body?.quantityG,
+        const entry = await getDiaryEntryByIdService({
+            diaryEntryId: req.params?.id,
+            type: req.query?.type,
+            unit: req.query?.unit,
+            quantityG: req.query?.quantityG,
         });
 
         return res.status(200).json({ entry });
@@ -84,16 +83,14 @@ async function getEntryDetail(req, res, next) {
     }
 }
 
-async function addEntryItem(req, res, next) {
+async function createDiaryEntryItem(req, res, next) {
     try {
-        const diaryEntryId = req.user?.userId ?? null;
-        const newItem = await insertNewEntry({
-            diaryEntryId,
-            subscriberId: req.body?.subscriberId,
+        const userId = req.user?.userId ?? null;
+        const newItem = await createDiaryEntryItemService({
+            userId,
+            diaryEntryId: req.params?.id,
             quantityG: req.body?.quantityG,
-            consumedAt: req.body?.consumedAt,
-            mealType: req.body?.mealType,
-            notes: req.body?.notes,
+            foodItemId: req.body?.foodItemId,
         });
 
         return res.status(201).json({ newItem });
@@ -107,19 +104,37 @@ async function addEntryItem(req, res, next) {
     }
 }
 
-async function updateEntryItem(req, res, next) {
+async function updateDiaryEntryItem(req, res, next) {
     try {
-        const diaryEntryId = req.user?.userId ?? null;
-        const updatedEntry = await updateExistingEntry({
-            diaryEntryId,
-            subscriberId: req.body?.subscriberId,
+        const userId = req.user?.userId ?? null;
+        // check if user is trying to update their own diary entry item;
+        const updatedEntry = await updateDiaryEntryItemService({
+            userId,
+            diaryEntryItemId: req.params?.itemId,
+            foodItemId: req.body?.foodItemId,
             quantityG: req.body?.quantityG,
-            consumedAt: req.body?.consumedAt,
-            mealType: req.body?.mealType,
-            notes: req.body?.notes,
         });
 
-        return res.status(201).json({ updatedEntry });
+        return res.status(200).json({ updatedEntry });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+
+    }
+}
+
+async function deleteEntry(req, res, next) {
+    try {
+        const userId = req.user?.userId ?? null;
+        const deleteEntry = await deleteExistingDiaryEntry({
+            userId,
+            diaryEntryId: req.params?.id
+        });
+
+        return res.status(200).json({ deleteEntry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
             return res.status(400).json({ error: error.message });
@@ -132,12 +147,13 @@ async function updateEntryItem(req, res, next) {
 
 async function deleteEntryItem(req, res, next) {
     try {
-        const diaryEntryId = req.user?.userId ?? null;
-        const deleteEntry = await deleteExisitingEntry({
-            diaryEntryId
+        const userId = req.user?.userId ?? null;
+        const deleteItem = await deleteExistingDiaryEntryItem({
+            userId,
+            diaryEntryItemId: req.params?.itemId
         });
 
-        return res.status(201).json({ deleteEntry });
+        return res.status(200).json({ deleteItem });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
             return res.status(400).json({ error: error.message });
@@ -148,5 +164,4 @@ async function deleteEntryItem(req, res, next) {
     }
 }
 
-export { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem, updateEntryItem, deleteEntryItem };
-
+export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem };

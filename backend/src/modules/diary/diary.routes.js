@@ -1,15 +1,15 @@
 import { Router } from "express";
-import { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem, updateEntryItem, deleteEntryItem } from "./diary.controller.js";
-
+import { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem } from "./diary.controller.js";
 const diaryRouter = Router();
 
 // Auth middleware will be added here later.
 diaryRouter.post("/entries", createEntry);
 diaryRouter.get("/summary", getSummary);
-diaryRouter.get("/entries", listEntries);
-diaryRouter.get("/entries/:id", getEntryDetail);
-diaryRouter.post("/entries/:id/items", addEntryItem);
-diaryRouter.patch("/entries/:id/items/:itemId", updateEntryItem);
-diaryRouter.delete("/entries/:id/items/:itemId", deleteEntryItem);
+diaryRouter.get("/entries", listDiaryEntries); 
+diaryRouter.get("/entries/:id", getDiaryEntryById); // incomplete, should check if current user is trying to access their own diary entry
+diaryRouter.delete("/entries/:id", deleteEntry); //incomplete, should check if current user is trying to delete their own diary entry
+diaryRouter.post("/entries/:id/items", createDiaryEntryItem); // incomplete: user can only add to their own diary; If entry item is custom, first create it. 
+diaryRouter.patch("/entry-items/:itemId", updateDiaryEntryItem); // incomplete, check if user is trying to update their own diary entry item;
+diaryRouter.delete("/entry-items/:itemId", deleteEntryItem); // incomplete, check if user is trying to delete their own diary entry item;
 
 export default diaryRouter;
