@@ -53,4 +53,54 @@ function validateSummaryInput({ subscriberId, period, endDate }) {
     };
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput };
+function validateListDisplay({ subscriberId }) {
+    if (!subscriberId || !Number.isInteger(subscriberId) || subscriberId <= 0) {
+        throw new DiaryEntryError("Subscriber ID is required");
+    }
+
+    return {
+        subscriberId
+    };
+}
+
+function validateEntryDetails({ diaryEntryId }) {
+    if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
+        throw new DiaryEntryError("Diary Entry ID is required");
+    }
+
+    return {
+        diaryEntryId
+    };
+}
+
+function validateNewEntryDetails({ diaryEntryId }) {
+    if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
+        throw new DiaryEntryError("Diary Entry ID is required");
+    }
+
+    return {
+        diaryEntryId
+    };
+}
+
+function validateUpdatedEntry({ diaryEntryId }) {
+    if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
+        throw new DiaryEntryError("Diary Entry ID is required");
+    }
+
+    return {
+        diaryEntryId
+    };
+}
+
+function validatedeletedEntry({ diaryEntryId }) {
+    if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
+        throw new DiaryEntryError("Diary Entry ID is required");
+    }
+
+    return {
+        diaryEntryId
+    };
+}
+
+export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntry, validatedeletedEntry };
