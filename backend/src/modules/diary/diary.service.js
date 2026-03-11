@@ -1,5 +1,5 @@
 import { fetchSummaryData, insertDiaryEntry, listDiaryEntry, retrieveEntries, newDiaryEntry, updateDiaryEntry, deleteDiaryEntry } from "./diary.repository.js";
-import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntry, validatedeletedEntry } from "./diary.validator.js";
+import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntry, validateDeletedEntry } from "./diary.validator.js";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     const data = validateCreateDiaryEntryInput({
@@ -126,7 +126,7 @@ async function updateExistingEntry({ diaryEntryId }) {
 }
 
 async function deleteExisitingEntry({ diaryEntryId }) {
-    const entry = validatedeletedEntry({ diaryEntryId }); // validation check
+    const entry = validateDeletedEntry({ diaryEntryId }); // validation check
 
     return deleteDiaryEntry(entry);
 }

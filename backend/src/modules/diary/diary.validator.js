@@ -93,7 +93,7 @@ function validateUpdatedEntry({ diaryEntryId }) {
     };
 }
 
-function validatedeletedEntry({ diaryEntryId }) {
+function validateDeletedEntry({ diaryEntryId }) {
     if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
         throw new DiaryEntryError("Diary Entry ID is required");
     }
@@ -103,4 +103,4 @@ function validatedeletedEntry({ diaryEntryId }) {
     };
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntry, validatedeletedEntry };
+export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntry, validateDeletedEntry };

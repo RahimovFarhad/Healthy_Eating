@@ -132,7 +132,12 @@ async function updateEntryItem(req, res, next) {
 
 async function deleteEntryItem(req, res, next) {
     try {
-        const subscriberId = req.user?.userId ?? null;
+        const diaryEntryId = req.user?.userId ?? null;
+        const deleteEntry = await deleteExisitingEntry({
+            diaryEntryId
+        });
+
+        return res.status(201).json({ deleteEntry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
             return res.status(400).json({ error: error.message });
@@ -143,5 +148,5 @@ async function deleteEntryItem(req, res, next) {
     }
 }
 
-export { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem };
+export { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem, updateEntryItem, deleteEntryItem };
 

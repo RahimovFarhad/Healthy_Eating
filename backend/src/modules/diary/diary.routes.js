@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem } from "./diary.controller.js";
+import { createEntry, getSummary, listEntries, getEntryDetail, addEntryItem, updateEntryItem, deleteEntryItem } from "./diary.controller.js";
 
 const diaryRouter = Router();
 
@@ -9,8 +9,8 @@ diaryRouter.get("/summary", getSummary);
 diaryRouter.get("/entries", listEntries);
 diaryRouter.get("/entries/:id", getEntryDetail);
 diaryRouter.post("/entries/:id/items", addEntryItem);
-// diaryRouter.patch("/entries/:id/items/:itemId", updateEntryItem);
-// diaryRouter.delete("/entries/:id/items/:itemId", deleteEntryItem);
+diaryRouter.patch("/entries/:id/items/:itemId", updateEntryItem);
+diaryRouter.delete("/entries/:id/items/:itemId", deleteEntryItem);
 
 
 export default diaryRouter;
