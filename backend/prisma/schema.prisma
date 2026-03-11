@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -47,10 +46,10 @@ enum Demographic {
 }
 
 enum Comparator {
-  lt             @map("<")
-  lte            @map("<=")
-  gt             @map(">")
-  gte            @map(">=")
+  lt      @map("<")
+  lte     @map("<=")
+  gt      @map(">")
+  gte     @map(">=")
   between
   outside
 }
@@ -76,27 +75,28 @@ enum PlanType {
 }
 
 model User {
-  userId       Int       @id @default(autoincrement()) @map("user_id")
-  fullName     String    @map("full_name")
-  email        String    @unique
-  passwordHash String    @map("password_hash")
+  userId       Int      @id @default(autoincrement()) @map("user_id")
+  fullName     String   @map("full_name")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
   role         UserRole
-  createdAt    DateTime  @default(now()) @map("created_at")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   professionalClientsAsProfessional ProfessionalClient[] @relation("ProfessionalClientProfessional")
-  professionalClientsAsSubscriber ProfessionalClient[] @relation("ProfessionalClientSubscriber")
-  diaryEntries DiaryEntry[]
-  adviceMessagesAsProfessional AdviceMessage[] @relation("AdviceMessageProfessional")
-  adviceMessagesAsSubscriber AdviceMessage[] @relation("AdviceMessageSubscriber")
-  nutritionGoalsAsSubscriber NutritionGoal[] @relation("NutritionGoalSubscriber")
-  nutritionGoalsAsSetter NutritionGoal[] @relation("NutritionGoalSetter")
-  clientRiskSnapshots ClientRiskSnapshot[]
-  recipeFavorites RecipeFavorite[]
-  recipeAssignmentsAsProfessional RecipeAssignment[] @relation("RecipeAssignmentProfessional")
-  recipeAssignmentsAsSubscriber RecipeAssignment[] @relation("RecipeAssignmentSubscriber")
-  recipeRatings RecipeRating[]
-  recipeComments RecipeComment[]
-  plans Plan[]
+  professionalClientsAsSubscriber   ProfessionalClient[] @relation("ProfessionalClientSubscriber")
+  diaryEntries                      DiaryEntry[]
+  adviceMessagesAsProfessional      AdviceMessage[]      @relation("AdviceMessageProfessional")
+  adviceMessagesAsSubscriber        AdviceMessage[]      @relation("AdviceMessageSubscriber")
+  nutritionGoalsAsSubscriber        NutritionGoal[]      @relation("NutritionGoalSubscriber")
+  nutritionGoalsAsSetter            NutritionGoal[]      @relation("NutritionGoalSetter")
+  clientRiskSnapshots               ClientRiskSnapshot[]
+  recipeFavorites                   RecipeFavorite[]
+  recipeAssignmentsAsProfessional   RecipeAssignment[]   @relation("RecipeAssignmentProfessional")
+  recipeAssignmentsAsSubscriber     RecipeAssignment[]   @relation("RecipeAssignmentSubscriber")
+  recipeRatings                     RecipeRating[]
+  recipeComments                    RecipeComment[]
+  plans                             Plan[]
+  createdFoodItems                  FoodItem[]           @relation("FoodItemCreatedByUser")
 
   @@map("user")
 }
@@ -108,25 +108,26 @@ model ProfessionalClient {
   assignedAt     DateTime @default(now()) @map("assigned_at")
 
   professional User @relation("ProfessionalClientProfessional", fields: [professionalId], references: [userId])
-  subscriber User @relation("ProfessionalClientSubscriber", fields: [subscriberId], references: [userId])
+  subscriber   User @relation("ProfessionalClientSubscriber", fields: [subscriberId], references: [userId])
 
   @@unique([professionalId, subscriberId])
   @@map("professional_client")
 }
 
-
 // ---- Food diary ----
 model FoodItem {
-  foodItemId  Int   @id @default(autoincrement()) @map("food_item_id")
-  name          String 
-  brand         String?
+  foodItemId      Int      @id @default(autoincrement()) @map("food_item_id")
+  name            String
+  brand           String?
+  createdByUserId Int?     @map("created_by_user_id") //if entry is custom, then keep it null
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  foodNutrients FoodNutrient[]
+  createdByUser   User?            @relation("FoodItemCreatedByUser", fields: [createdByUserId], references: [userId])
+  foodNutrients   FoodNutrient[]
   diaryEntryItems DiaryEntryItem[]
 
   @@map("food_item")
 }
-
 
 model Nutrient {
   nutrientId Int          @id @default(autoincrement()) @map("nutrient_id")
@@ -135,10 +136,10 @@ model Nutrient {
   unit       String
   type       NutrientType
 
-  foodNutrients FoodNutrient[]
+  foodNutrients  FoodNutrient[]
   nutritionGoals NutritionGoal[]
-  guidelines Guideline[]
-  riskRules RiskRule[]
+  guidelines     Guideline[]
+  riskRules      RiskRule[]
 
   @@map("nutrient")
 }
@@ -157,14 +158,14 @@ model FoodNutrient {
 }
 
 model DiaryEntry {
-  diaryEntryId Int       @id @default(autoincrement()) @map("diary_entry_id")
-  subscriberId Int       @map("subscriber_id")
-  consumedAt   DateTime  @map("consumed_at")
-  mealType     MealType  @map("meal_type")
+  diaryEntryId Int      @id @default(autoincrement()) @map("diary_entry_id")
+  subscriberId Int      @map("subscriber_id")
+  consumedAt   DateTime @map("consumed_at")
+  mealType     MealType @map("meal_type")
   notes        String?
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  items DiaryEntryItem[]
+  subscriber User             @relation(fields: [subscriberId], references: [userId])
+  items      DiaryEntryItem[]
 
   @@map("diary_entry")
 }
@@ -176,7 +177,7 @@ model DiaryEntryItem {
   quantityG    Decimal @map("quantity_g") @db.Decimal(10, 2)
 
   diaryEntry DiaryEntry @relation(fields: [diaryEntryId], references: [diaryEntryId])
-  foodItem FoodItem @relation(fields: [foodItemId], references: [foodItemId])
+  foodItem   FoodItem   @relation(fields: [foodItemId], references: [foodItemId])
 
   @@map("diary_entry_item")
 }
@@ -189,26 +190,26 @@ model AdviceMessage {
   createdAt      DateTime @default(now()) @map("created_at")
 
   professional User @relation("AdviceMessageProfessional", fields: [professionalId], references: [userId])
-  subscriber User @relation("AdviceMessageSubscriber", fields: [subscriberId], references: [userId])
+  subscriber   User @relation("AdviceMessageSubscriber", fields: [subscriberId], references: [userId])
 
   @@map("advice_message")
 }
 
 model NutritionGoal {
-  goalId               Int       @id @default(autoincrement()) @map("goal_id")
-  subscriberId         Int       @map("subscriber_id")
-  setByProfessionalId  Int?      @map("set_by_professional_id")
-  nutrientId           Int       @map("nutrient_id")
-  period               Period
-  targetMin            Decimal?  @map("target_min") @db.Decimal(12, 4)
-  targetMax            Decimal?  @map("target_max") @db.Decimal(12, 4)
-  startDate            DateTime  @map("start_date") @db.Date
-  endDate              DateTime? @map("end_date") @db.Date
-  notes                String?
+  goalId              Int       @id @default(autoincrement()) @map("goal_id")
+  subscriberId        Int       @map("subscriber_id")
+  setByProfessionalId Int?      @map("set_by_professional_id")
+  nutrientId          Int       @map("nutrient_id")
+  period              Period
+  targetMin           Decimal?  @map("target_min") @db.Decimal(12, 4)
+  targetMax           Decimal?  @map("target_max") @db.Decimal(12, 4)
+  startDate           DateTime  @map("start_date") @db.Date
+  endDate             DateTime? @map("end_date") @db.Date
+  notes               String?
 
-  subscriber User @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId])
-  setByProfessional User? @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId])
-  nutrient Nutrient @relation(fields: [nutrientId], references: [nutrientId])
+  subscriber        User     @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId])
+  setByProfessional User?    @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId])
+  nutrient          Nutrient @relation(fields: [nutrientId], references: [nutrientId])
 
   @@map("nutrition_goal")
 }
@@ -240,7 +241,7 @@ model RiskRule {
   severity     Severity
   isActive     Boolean    @map("is_active")
 
-  nutrient Nutrient? @relation(fields: [nutrientId], references: [nutrientId])
+  nutrient  Nutrient?            @relation(fields: [nutrientId], references: [nutrientId])
   snapshots ClientRiskSnapshot[]
 
   @@map("risk_rule")
@@ -255,26 +256,25 @@ model ClientRiskSnapshot {
   reason       String?
   computedAt   DateTime @default(now()) @map("computed_at")
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  rule RiskRule @relation(fields: [ruleId], references: [ruleId])
+  subscriber User     @relation(fields: [subscriberId], references: [userId])
+  rule       RiskRule @relation(fields: [ruleId], references: [ruleId])
 
   @@map("client_risk_snapshot")
 }
 
-
 // ==================== RECIPES ====================
 
 model Recipe {
-  recipeId     Int      @id @default(autoincrement()) @map("recipe_id")
+  recipeId     Int    @id @default(autoincrement()) @map("recipe_id")
   title        String
-  instructions String   @db.Text
+  instructions String @db.Text
 
   recipeIngredients RecipeIngredient[]
-  favorites RecipeFavorite[]
-  assignments RecipeAssignment[]
-  ratings RecipeRating[]
-  comments RecipeComment[]
-  planItems PlanItem[]
+  favorites         RecipeFavorite[]
+  assignments       RecipeAssignment[]
+  ratings           RecipeRating[]
+  comments          RecipeComment[]
+  planItems         PlanItem[]
 
   @@map("recipe")
 }
@@ -289,12 +289,12 @@ model Ingredient {
 }
 
 model RecipeIngredient {
-  id           Int    @id @default(autoincrement())
-  recipeId     Int    @map("recipe_id")
-  ingredientId Int    @map("ingredient_id")
+  id           Int     @id @default(autoincrement())
+  recipeId     Int     @map("recipe_id")
+  ingredientId Int     @map("ingredient_id")
   quantity     String?
 
-  recipe Recipe @relation(fields: [recipeId], references: [recipeId])
+  recipe     Recipe     @relation(fields: [recipeId], references: [recipeId])
   ingredient Ingredient @relation(fields: [ingredientId], references: [ingredientId])
 
   @@unique([recipeId, ingredientId])
@@ -307,8 +307,8 @@ model RecipeFavorite {
   recipeId     Int      @map("recipe_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  recipe Recipe @relation(fields: [recipeId], references: [recipeId])
+  subscriber User   @relation(fields: [subscriberId], references: [userId])
+  recipe     Recipe @relation(fields: [recipeId], references: [recipeId])
 
   @@unique([subscriberId, recipeId])
   @@map("recipe_favorite")
@@ -323,9 +323,9 @@ model RecipeAssignment {
   status         RecipeStatus
   assignedAt     DateTime     @default(now()) @map("assigned_at")
 
-  professional User @relation("RecipeAssignmentProfessional", fields: [professionalId], references: [userId])
-  subscriber User @relation("RecipeAssignmentSubscriber", fields: [subscriberId], references: [userId])
-  recipe Recipe @relation(fields: [recipeId], references: [recipeId])
+  professional User   @relation("RecipeAssignmentProfessional", fields: [professionalId], references: [userId])
+  subscriber   User   @relation("RecipeAssignmentSubscriber", fields: [subscriberId], references: [userId])
+  recipe       Recipe @relation(fields: [recipeId], references: [recipeId])
 
   @@map("recipe_assignment")
 }
@@ -337,8 +337,8 @@ model RecipeRating {
   rating       Int
   createdAt    DateTime @default(now()) @map("created_at")
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  recipe Recipe @relation(fields: [recipeId], references: [recipeId])
+  subscriber User   @relation(fields: [subscriberId], references: [userId])
+  recipe     Recipe @relation(fields: [recipeId], references: [recipeId])
 
   @@unique([subscriberId, recipeId])
   @@map("recipe_rating")
@@ -351,8 +351,8 @@ model RecipeComment {
   comment      String   @db.Text
   createdAt    DateTime @default(now()) @map("created_at")
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  recipe Recipe @relation(fields: [recipeId], references: [recipeId])
+  subscriber User   @relation(fields: [subscriberId], references: [userId])
+  recipe     Recipe @relation(fields: [recipeId], references: [recipeId])
 
   @@map("recipe_comment")
 }
@@ -360,28 +360,28 @@ model RecipeComment {
 // ==================== MEAL PLANNING ====================
 
 model Plan {
-  planId       Int      @id @default(autoincrement()) @map("plan_id")
-  subscriberId Int      @map("subscriber_id")
-  planType     PlanType @map("plan_type")
-  startDate    DateTime @map("start_date") @db.Date
+  planId       Int       @id @default(autoincrement()) @map("plan_id")
+  subscriberId Int       @map("subscriber_id")
+  planType     PlanType  @map("plan_type")
+  startDate    DateTime  @map("start_date") @db.Date
   endDate      DateTime? @map("end_date") @db.Date
-  createdAt    DateTime @default(now()) @map("created_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
-  subscriber User @relation(fields: [subscriberId], references: [userId])
-  planItems PlanItem[]
+  subscriber User       @relation(fields: [subscriberId], references: [userId])
+  planItems  PlanItem[]
 
   @@map("plan")
 }
 
 model PlanItem {
-  planItemId   Int      @id @default(autoincrement()) @map("plan_item_id")
-  planId       Int      @map("plan_id")
-  plannedDate  DateTime @map("planned_date") @db.Date
-  mealType     MealType @map("meal_type")
-  recipeId     Int      @map("recipe_id")
-  servings     Int?
+  planItemId  Int      @id @default(autoincrement()) @map("plan_item_id")
+  planId      Int      @map("plan_id")
+  plannedDate DateTime @map("planned_date") @db.Date
+  mealType    MealType @map("meal_type")
+  recipeId    Int      @map("recipe_id")
+  servings    Int?
 
-  plan Plan @relation(fields: [planId], references: [planId])
+  plan   Plan   @relation(fields: [planId], references: [planId])
   recipe Recipe @relation(fields: [recipeId], references: [recipeId])
 
   @@map("plan_item")
