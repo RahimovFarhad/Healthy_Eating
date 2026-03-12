@@ -132,10 +132,54 @@ async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
     return deleteDiaryEntry(entry);
 }
 
-async function deleteExistingDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId }) {
+async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
     const entry = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
 
-    return deleteDiaryEntryItem({ diaryEntryItemId });
+    return deleteDiaryEntryItem({ diaryEntryItemId: entry.diaryEntryItemId });
+}
+
+async function getDashboard({ subscriberId }) {
+    // Needs to implement:
+    // 1. Fetch today's meals 
+    // 2. Fetch today's nutrient summary (can reuse getNutritionSummary with daily period and today's date)
+    // 3. Fetch active goals (from goals module) and what percentage of each goal has been achieved based on today's summary and goal targets - this will be implemented only after goals module is ready, so can be left as a placeholder for now
+    // 4. Fetch recent messages (from messaging module) - this will be implemented only after messaging module is ready, so can be left as a placeholder for now
+    // 5. Fetch recent recipes (from recipe module) - this will also be implemented only after recipe module is ready, so can be left as a placeholder for now
+
+    const entry = validateUserIdForDashboard({ subscriberId }); // validation check
+
+    // as we can use previous functions, let's try reuse them as much as possible
+    const today = new Date();
+    const summary = await getNutritionSummary({ subscriberId, period: "daily", endDate: today.toISOString() });
+    const foodDiaryPreview = await listDiaryEntries({ subscriberId, consumedAt: today.toISOString() });
+
+    const currentDayOfWeek = today.getUTCDay(); // 0 (Sun) - 6 (Sat)
+    const daysSinceMonday = (currentDayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
+    const startOfWeek = new Date(today);
+    startOfWeek.setUTCDate(today.getUTCDate() - daysSinceMonday);
+    const weeklyEntries = await listDiaryEntries({ subscriberId, consumedAt: startOfWeek.toISOString() });
+    // we can calculate weekly calory trend based on daily summaries for each day of the week, but for simplicity let's just return total calories for the week for now
+    
+        
+
+    
+
+    return {
+        quickStats: {
+            calories_today: summary.nutrients.find(n => n.type === "CAL_KCAL")?.totalAmount || 0,
+            meals_logged_today: foodDiaryPreview.length,
+            days_logged: await getDaysLogged({ subscriberId }), // this would require a separate query to count distinct days with entries, can be implemented later
+        },
+        foodDiaryPreview,
+        weeklyCaloryTrend: [], // this would require fetching summary for each day of the week, can be implemented later
+        nutritionPreview: summary.nutrients.filter(n => ["protein", "carbohydrates", "fat"].includes(n.type)),
+        savedOrSuggestedRecipesPreview: [], // implement later
+        professionalSupportPreview: {}, // implement later
+        goalsPreview: {}, // implement later
+        recommendedRecipes: [] // implement later
+    };
+
+
 }
 
 export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem };

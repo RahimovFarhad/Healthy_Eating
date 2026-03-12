@@ -164,4 +164,20 @@ async function deleteEntryItem(req, res, next) {
     }
 }
 
-export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem };
+async function getDashboard(req, res, next) {
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        // call a service function that aggregates all the necessary data for the dashboard
+        const dashboardData = await getDashboardDataForSubscriber(subscriberId);
+
+        return res.status(200).json({ dashboardData });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard };

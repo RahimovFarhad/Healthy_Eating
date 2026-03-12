@@ -149,4 +149,15 @@ async function deleteDiaryEntryItem({ diaryEntryItemId }) {
     return entry;
 }
 
+async function getDaysLogged({ subscriberId }) {
+    const [{ days_logged }] = await prisma.$queryRaw `
+        SELECT COUNT(DISTINCT DATE(consumed_at))::int AS days_logged
+        FROM diary_entry
+        WHERE subscriber_id = ${subscriberId}
+        `;
+
+
+    return days_logged;
+}
+
 export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem };
