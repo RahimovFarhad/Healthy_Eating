@@ -1,5 +1,6 @@
 const MEAL_TYPES = new Set(["breakfast", "lunch", "dinner", "snack"]);
 const SUMMARY_PERIODS = new Set(["daily", "weekly", "monthly"]);
+const FOOD_SOURCES = new Set(["fatsecret", "user", "system"]);
 
 class DiaryEntryError extends Error {
     constructor(message) {
@@ -46,9 +47,7 @@ function validateCreateDiaryEntryInput({ subscriberId, consumedAt, mealType, not
 
     // Now validating items
     const normalizedItems = (items ?? []).map((item, index) => {
-        const quantity = Number(item.quantity);
-
-        quantity = quantity || 1; // default to 1 if quantity is not provided 
+        const quantity = Number(item.quantity) || 1; // default to 1 if quantity is not provided 
         if (quantity <= 0) {
             throw new DiaryEntryError(`Item at index ${index}: quantity must be a positive number`);
         }
@@ -294,4 +293,4 @@ function validateCreateFoodPortionInput({ foodItemId, description, weightG, nutr
     };
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem };
+export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput };

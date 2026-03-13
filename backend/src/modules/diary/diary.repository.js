@@ -225,4 +225,4 @@ async function insertFoodPortion({ foodItemId, description, weightG, nutrients }
     });
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem };
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion };
