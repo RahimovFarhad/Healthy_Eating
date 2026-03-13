@@ -74,6 +74,12 @@ enum PlanType {
   manual
 }
 
+enum FoodSource {
+  fatsecret
+  user
+  system
+}
+
 model User {
   userId       Int      @id @default(autoincrement()) @map("user_id")
   fullName     String   @map("full_name")
@@ -116,16 +122,18 @@ model ProfessionalClient {
 
 // ---- Food diary ----
 model FoodItem {
-  foodItemId      Int      @id @default(autoincrement()) @map("food_item_id")
+  foodItemId      Int        @id @default(autoincrement()) @map("food_item_id")
   name            String
   brand           String?
-  createdByUserId Int?     @map("created_by_user_id") //if entry is custom, then keep it null
-  createdAt       DateTime @default(now()) @map("created_at")
+  source          FoodSource
+  externalId      String?    @map("external_id")
+  createdByUserId Int?       @map("created_by_user_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
 
-  createdByUser   User?            @relation("FoodItemCreatedByUser", fields: [createdByUserId], references: [userId])
-  foodNutrients   FoodNutrient[]
-  diaryEntryItems DiaryEntryItem[]
+  createdByUser User?         @relation("FoodItemCreatedByUser", fields: [createdByUserId], references: [userId])
+  portions      FoodPortion[]
 
+  @@unique([source, externalId])
   @@map("food_item")
 }
 
@@ -136,25 +144,38 @@ model Nutrient {
   unit       String
   type       NutrientType
 
-  foodNutrients  FoodNutrient[]
-  nutritionGoals NutritionGoal[]
-  guidelines     Guideline[]
-  riskRules      RiskRule[]
+  foodPortionNutrients FoodPortionNutrient[]
+  nutritionGoals       NutritionGoal[]
+  guidelines           Guideline[]
+  riskRules            RiskRule[]
 
   @@map("nutrient")
 }
 
-model FoodNutrient {
-  id            Int     @id @default(autoincrement())
-  foodItemId    Int     @map("food_item_id")
-  nutrientId    Int     @map("nutrient_id")
-  amountPer100g Decimal @map("amount_per_100g") @db.Decimal(12, 4)
+model FoodPortion {
+  portionId   Int      @id @default(autoincrement()) @map("portion_id")
+  foodItemId  Int      @map("food_item_id")
+  description String
+  weightG     Decimal? @map("weight_g") @db.Decimal(10, 2)
 
-  foodItem FoodItem @relation(fields: [foodItemId], references: [foodItemId])
-  nutrient Nutrient @relation(fields: [nutrientId], references: [nutrientId])
+  foodItem         FoodItem              @relation(fields: [foodItemId], references: [foodItemId])
+  portionNutrients FoodPortionNutrient[]
+  diaryEntryItems  DiaryEntryItem[]
 
-  @@unique([foodItemId, nutrientId])
-  @@map("food_nutrient")
+  @@map("food_portion")
+}
+
+model FoodPortionNutrient {
+  id         Int     @id @default(autoincrement())
+  portionId  Int     @map("portion_id")
+  nutrientId Int     @map("nutrient_id")
+  amount     Decimal @db.Decimal(12, 4)
+
+  portion  FoodPortion @relation(fields: [portionId], references: [portionId])
+  nutrient Nutrient    @relation(fields: [nutrientId], references: [nutrientId])
+
+  @@unique([portionId, nutrientId])
+  @@map("food_portion_nutrient")
 }
 
 model DiaryEntry {
@@ -173,11 +194,11 @@ model DiaryEntry {
 model DiaryEntryItem {
   id           Int     @id @default(autoincrement())
   diaryEntryId Int     @map("diary_entry_id")
-  foodItemId   Int     @map("food_item_id")
-  quantityG    Decimal @map("quantity_g") @db.Decimal(10, 2)
+  portionId    Int     @map("portion_id")
+  quantity     Decimal @map("quantity") @db.Decimal(10, 3)
 
-  diaryEntry DiaryEntry @relation(fields: [diaryEntryId], references: [diaryEntryId])
-  foodItem   FoodItem   @relation(fields: [foodItemId], references: [foodItemId])
+  diaryEntry DiaryEntry  @relation(fields: [diaryEntryId], references: [diaryEntryId])
+  portion    FoodPortion @relation(fields: [portionId], references: [portionId])
 
   @@map("diary_entry_item")
 }
