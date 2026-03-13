@@ -1,15 +1,29 @@
 import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem } from "./diary.repository.js";
-import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem } from "./diary.validator.js";
+import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError } from "./diary.validator.js";
 
-async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
+async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
         consumedAt,
         mealType,
         notes,
+        items,
     });
 
-    return insertDiaryEntry(data);
+    const entry = await insertDiaryEntry(data);
+
+    if (data.items && data.items.length > 0) {
+        await Promise.all(data.items.map(item => createDiaryEntryItem({
+            userId: subscriberId,
+            diaryEntryId: entry.diaryEntryId,
+            portionId: item.portionId,
+            quantity: item.quantity,
+            customFood: item.customFood
+        })));
+    }
+
+    return findDiaryEntryById({ diaryEntryId: entry.diaryEntryId }); // return the full entry with items after creation
+
 }
 
 function toNumber(value) {
@@ -26,10 +40,6 @@ function toNumber(value) {
     }
 
     return Number(value ?? 0);
-}
-
-function roundTo4(value) {
-    return Number(value.toFixed(4));
 }
 
 // Returns a date range for the given period and end date. The end date is exclusive.
@@ -67,18 +77,18 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
         fromDate,
         toDate,
     });
-    // example json: { items: [ { foodItem: { foodNutrients: [ { nutrient: { name: "Protein" }, amountPer100g: 10 } ] }, quantityG: 150 } ] }
+    // example json: { items: [ { portion: { portionNutrients: [ { nutrient: { name: "Protein" }, amount: 10 } ] }, quantity: 1.5 } ] }
 
     // Now we need to aggregate the nutrients across all foods and calculate total amounts based on quantity consumed.
     const nutrientMap = new Map();
 
     for (const entry of foods) {
         for (const item of entry.items) {
-            const quantityFactor = toNumber(item.quantityG) / 100;
+            const quantityFactor = toNumber(item.quantity);
 
-            for (const foodNutrient of item.foodItem.foodNutrients) {
+            for (const foodNutrient of item.portion.portionNutrients) {
                 const n = foodNutrient.nutrient;
-                const amount = Number(foodNutrient.amountPer100g) * quantityFactor;
+                const amount = Number(foodNutrient.amount) * quantityFactor;
                 const key = n.nutrientId;
 
                 if (!nutrientMap.has(key)) {
@@ -114,14 +124,51 @@ async function getDiaryEntryById({ diaryEntryId }) {
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
-async function createDiaryEntryItem({ userId, diaryEntryId, quantityG, foodItemId }) {
-    const entry = validateNewEntryDetails({ userId, diaryEntryId, quantityG, foodItemId }); // validation on data
+async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood }) {
+    let resolvedPortionId = portionId;
+
+    if (resolvedPortionId == null) {
+        if (!customFood) throw new DiaryEntryError("Must provide either portionId or customFood");
+        // Create the food item + portion first, get back the portionId
+        resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood });
+    }
+
+    const entry = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }); // validation on data
 
     return createDiaryEntryItemRepository(entry);
 }
 
-async function updateDiaryEntryItem({ diaryEntryItemId, userId, foodItemId, quantityG }) {
-    const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, foodItemId, quantityG });  // validation check
+async function createCustomFoodAndGetPortionId({ userId, customFood }) {
+    const foodItem = await prisma.foodItem.create({
+        data: {
+            name: customFood.name,
+            brand: customFood.brand ?? null,
+            source: "user",
+            createdByUserId: userId,
+        },
+    });
+
+    // Take the first portion for now (can be extended later)
+    const portion = customFood.portions[0];
+    const foodPortion = await prisma.foodPortion.create({
+        data: {
+            foodItemId: foodItem.foodItemId,
+            description: portion.description,
+            weightG: portion.weight_g ?? null,
+            portionNutrients: {
+                create: portion.nutrients.map(n => ({
+                    nutrientId: n.nutrientId,
+                    amount: n.amount,
+                })),
+            },
+        },
+    });
+
+    return foodPortion.portionId;
+}
+
+async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
+    const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
     return updateDiaryEntryItemRepository(entry);
 }

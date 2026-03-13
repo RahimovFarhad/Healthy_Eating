@@ -23,23 +23,23 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
         select: {
                 items: {
                     select: {
-                        foodItem: {
+                        portion: {
                             select: {
-                                foodNutrients: {
+                                portionNutrients: {
                                     select: {
                                         nutrient: true,
-                                        amountPer100g: true,
+                                        amount: true,
                                     },
                             },
                         },
-                        quantityG: true,
+                        quantity: true,
                     },
                 },
             },
         }
     });
 
-    // example json: { items: [ { foodItem: { foodNutrients: [ { nutrient: { name: "Protein" }, amountPer100g: 10 } ] }, quantityG: 150 } ] }
+    // example json: { items: [ { portion: { portionNutrients: [ { nutrient: { name: "Protein" }, amount: 10 } ] }, quantity: 1.5 } ] }
 
     return foods; 
     
@@ -58,16 +58,37 @@ async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
         // attributes shown to client when requested
         select: { 
             items: {
-                foodItem: {
-                    select: {
-                        foodNutrients: {
-                            select: {
-                                type: true,
-                                unit: true
+                select: {
+                    id: true,
+                    portionId: true,
+                    quantity: true,
+                    portion: {
+                        select: {
+                            description: true,
+                            weightG: true,
+                            foodItem: {
+                                select: {
+                                    foodItemId: true,
+                                    name: true,
+                                    brand: true,
+                                },
+                            },
+                            portionNutrients: {
+                                select: {
+                                    amount: true,
+                                    nutrient: {
+                                        select: {
+                                            nutrientId: true,
+                                            code: true,
+                                            name: true,
+                                            unit: true,
+                                            type: true,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
-                    quantityG: true,
                 },
             },
         }
@@ -84,16 +105,37 @@ async function findDiaryEntryById({ diaryEntryId }) {
         },
         select: { 
             items: {
-                foodItem: {
-                    select: {
-                        foodNutrients: {
-                            select: {
-                                type: true,
-                                unit: true
+                select: {
+                    id: true,
+                    portionId: true,
+                    quantity: true,
+                    portion: {
+                        select: {
+                            description: true,
+                            weightG: true,
+                            foodItem: {
+                                select: {
+                                    foodItemId: true,
+                                    name: true,
+                                    brand: true,
+                                },
+                            },
+                            portionNutrients: {
+                                select: {
+                                    amount: true,
+                                    nutrient: {
+                                        select: {
+                                            nutrientId: true,
+                                            code: true,
+                                            name: true,
+                                            unit: true,
+                                            type: true,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
-                    quantityG: true,
                 },
             },
         }
@@ -103,25 +145,25 @@ async function findDiaryEntryById({ diaryEntryId }) {
 }
 
 // SQL function for CREATING a new diary entry item
-async function createDiaryEntryItem({ diaryEntryId, quantityG, foodItemId }) {
+async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     return prisma.diaryEntryItem.create({
         data: {
             diaryEntryId,
-            quantityG,
-            foodItemId
+            quantity,
+            portionId
         }
     });
 }
 
 // SQL function for UPDATING a specific diary entry
-async function updateDiaryEntryItem({ diaryEntryItemId, foodItemId, quantityG }) {
+async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
     const entry = await prisma.diaryEntryItem.update({
         where: { // condition for updating
             id: diaryEntryItemId
         },
         data: { // field(s) to change
-            ...(foodItemId !== undefined ? { foodItemId } : {}),
-            ...(quantityG !== undefined ? { quantityG } : {}),
+            ...(portionId !== undefined ? { portionId } : {}),
+            ...(quantity !== undefined ? { quantity } : {}),
         }
     });
 
