@@ -139,32 +139,36 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
 }
 
 async function createCustomFoodAndGetPortionId({ userId, customFood }) {
-    const foodItem = await prisma.foodItem.create({
-        data: {
-            name: customFood.name,
-            brand: customFood.brand ?? null,
-            source: "user",
-            createdByUserId: userId,
-        },
+    const foodItem = await createFoodItem({
+        name: customFood.name,
+        brand: customFood.brand ?? null,
+        source: "user",
+        externalId: null,
+        createdByUserId: userId,
     });
 
-    // Take the first portion for now (can be extended later)
+    // First portion is used as the diary item's portion — multi-portion support can come later
     const portion = customFood.portions[0];
-    const foodPortion = await prisma.foodPortion.create({
-        data: {
-            foodItemId: foodItem.foodItemId,
-            description: portion.description,
-            weightG: portion.weight_g ?? null,
-            portionNutrients: {
-                create: portion.nutrients.map(n => ({
-                    nutrientId: n.nutrientId,
-                    amount: n.amount,
-                })),
-            },
-        },
+    const foodPortion = await createFoodPortion({
+        foodItemId: foodItem.foodItemId,
+        description: portion.description,
+        weightG: portion.weight_g ?? null,
+        nutrients: portion.nutrients ?? [],
     });
 
     return foodPortion.portionId;
+}
+
+async function createFoodItem({ name, brand, source, externalId, createdByUserId }) {
+    const data = validateCreateFoodItemInput({ name, brand, source, externalId, createdByUserId });
+
+    return insertFoodItem(data);
+}
+
+async function createFoodPortion({ foodItemId, description, weightG, nutrients }) {
+    const data = validateCreateFoodPortionInput({ foodItemId, description, weightG, nutrients });
+    
+    return insertFoodPortion(data);
 }
 
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {

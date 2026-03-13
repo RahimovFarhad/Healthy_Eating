@@ -202,4 +202,27 @@ async function getDaysLogged({ subscriberId }) {
     return days_logged;
 }
 
+async function insertFoodItem({ name, brand, source, externalId, createdByUserId }) {
+    return prisma.foodItem.create({
+        data: { name, brand, source, externalId, createdByUserId },
+    });
+}
+
+async function insertFoodPortion({ foodItemId, description, weightG, nutrients }) {
+    return prisma.foodPortion.create({
+        data: {
+            foodItemId,
+            description,
+            weightG,
+            portionNutrients: {
+                create: nutrients.map(n => ({
+                    nutrientId: n.nutrientId,
+                    amount: n.amount,
+                })),
+            },
+        },
+        include: { portionNutrients: true },
+    });
+}
+
 export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem };

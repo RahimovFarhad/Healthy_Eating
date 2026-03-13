@@ -89,6 +89,7 @@ async function createDiaryEntryItem(req, res, next) {
             diaryEntryId: Number(req.params?.id),
             quantity: req.body?.quantity,
             portionId: req.body?.portionId,
+            customFood: req.body?.customFood ?? null,
         });
 
         return res.status(201).json({ newItem });

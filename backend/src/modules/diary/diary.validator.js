@@ -230,4 +230,68 @@ function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId 
     };
 }
 
+function validateCreateFoodItemInput({ name, brand, source, externalId, createdByUserId }) {
+    if (!name || typeof name !== "string" || name.trim() === "") {
+        throw new DiaryEntryError("Food item name is required");
+    }
+
+    if (!FOOD_SOURCES.has(source)) {
+        throw new DiaryEntryError("Source must be one of: fatsecret, user, system");
+    }
+
+    if (source === "fatsecret" && !externalId) {
+        throw new DiaryEntryError("externalId is required for fatsecret items");
+    }
+
+    if (source === "user" && !createdByUserId) {
+        throw new DiaryEntryError("createdByUserId is required for user-created items");
+    }
+
+    const normalizedCreatedByUserId = createdByUserId ? normalizePositiveInteger(createdByUserId) : null;
+    if (createdByUserId && !normalizedCreatedByUserId) {
+        throw new DiaryEntryError("createdByUserId must be a positive integer");
+    }
+
+    return {
+        name: name.trim(),
+        brand: brand?.trim() ?? null,
+        source,
+        externalId: externalId ?? null,
+        createdByUserId: normalizedCreatedByUserId,
+    };
+}
+
+function validateCreateFoodPortionInput({ foodItemId, description, weightG, nutrients }) {
+    const normalizedFoodItemId = normalizePositiveInteger(foodItemId);
+    if (!normalizedFoodItemId) {
+        throw new DiaryEntryError("foodItemId is required and must be a positive integer");
+    }
+
+    if (!description || typeof description !== "string" || description.trim() === "") {
+        throw new DiaryEntryError("Portion description is required");
+    }
+
+    const normalizedWeightG = weightG != null ? Number(weightG) : null;
+    if (weightG != null && (isNaN(normalizedWeightG) || normalizedWeightG <= 0)) {
+        throw new DiaryEntryError("weightG must be a positive number");
+    }
+
+    const normalizedNutrients = (nutrients ?? []).map((n, index) => {
+        const nutrientId = normalizePositiveInteger(n.nutrientId);
+        if (!nutrientId) throw new DiaryEntryError(`Nutrient at index ${index}: nutrientId must be a positive integer`);
+
+        const amount = Number(n.amount);
+        if (isNaN(amount) || amount < 0) throw new DiaryEntryError(`Nutrient at index ${index}: amount must be a non-negative number`);
+
+        return { nutrientId, amount };
+    });
+
+    return {
+        foodItemId: normalizedFoodItemId,
+        description: description.trim(),
+        weightG: normalizedWeightG,
+        nutrients: normalizedNutrients,
+    };
+}
+
 export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem };
