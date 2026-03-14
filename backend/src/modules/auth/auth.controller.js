@@ -58,7 +58,7 @@ async function refreshToken(req, res) {
         }
     
         const token = await refreshAccessToken(refreshToken);
-        return res.json({ message: "Login successful", token });
+        return res.json({ message: "Token refreshed successfully", token });
 
     } catch (error) {
         if (error instanceof AuthError) {
