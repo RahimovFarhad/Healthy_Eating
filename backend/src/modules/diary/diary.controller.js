@@ -1,4 +1,4 @@
-import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem } from "./diary.service.js";
+import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber } from "./diary.service.js";
 import { DiaryEntryError } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
@@ -167,7 +167,7 @@ async function getDashboard(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
         // call a service function that aggregates all the necessary data for the dashboard
-        const dashboardData = await getDashboardDataForSubscriber(subscriberId);
+        const dashboardData = await getDashboardDataForSubscriber({subscriberId});
 
         return res.status(200).json({ dashboardData });
     } catch (error) {

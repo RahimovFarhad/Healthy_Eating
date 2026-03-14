@@ -293,4 +293,15 @@ function validateCreateFoodPortionInput({ foodItemId, description, weightG, nutr
     };
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput };
+function validateUserIdForDashboard({ subscriberId }) {
+    const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
+    if (!normalizedSubscriberId) {
+        throw new DiaryEntryError("Subscriber ID is required");
+    }
+
+    return {
+        subscriberId: normalizedSubscriberId
+     }; 
+}
+
+export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };

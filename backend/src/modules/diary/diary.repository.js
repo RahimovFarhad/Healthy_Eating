@@ -57,6 +57,10 @@ async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
         },  
         // attributes shown to client when requested
         select: { 
+            diaryEntryId: true,
+            consumedAt: true,
+            mealType: true,
+            notes: true,
             items: {
                 select: {
                     id: true,
@@ -225,4 +229,22 @@ async function insertFoodPortion({ foodItemId, description, weightG, nutrients }
     });
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion };
+async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
+    return prisma.$queryRaw`
+        SELECT 
+            DATE(de.consumed_at) as date,
+            COALESCE(SUM(fpn.amount * dei.quantity), 0) as calories
+        FROM diary_entry de
+        JOIN diary_entry_item dei ON dei.diary_entry_id = de.diary_entry_id
+        JOIN food_portion_nutrient fpn ON fpn.portion_id = dei.portion_id
+        JOIN nutrient n ON n.nutrient_id = fpn.nutrient_id
+        WHERE de.subscriber_id = ${subscriberId}
+            AND de.consumed_at >= ${fromDate}
+            AND de.consumed_at < ${toDate}
+            AND n.code = 'CAL_KCAL'
+        GROUP BY DATE(de.consumed_at)
+        ORDER BY DATE(de.consumed_at)
+    `;
+}
+
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
