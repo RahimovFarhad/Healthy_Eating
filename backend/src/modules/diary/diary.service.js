@@ -1,6 +1,6 @@
 import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend } from "./diary.repository.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
-
+import { formatISO } from "date-fns";
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
@@ -42,19 +42,20 @@ function toNumber(value) {
     return Number(value ?? 0);
 }
 
-// Returns a date range for the given period and end date. The end date is exclusive.
+// Returns a date range for the given period and end date. It sets end date to the end of the day, and start date to the beginning of the day (for daily), or the beginning of Monday of the current week (for weekly), or the first day of the month (for monthly).
 function getSummaryRange(period, endDate) {
     const toDate = new Date(endDate);
-    toDate.setUTCHours(0, 0, 0, 0);
+    toDate.setUTCHours(23, 59, 59, 999); // normalize to end of the day in UTC
     let fromDate;
 
     switch (period) {
         case "daily":
             fromDate = new Date(toDate);
-            fromDate.setUTCDate(fromDate.getUTCDate() - 1);
+            fromDate.setUTCHours(0, 0, 0, 0);
             break;
         case "weekly": // current week's Monday until endDate
-            fromDate = new Date(toDate);
+            fromDate = new Date(endDate);
+            fromDate.setUTCHours(0, 0, 0, 0);
             const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
             const daysSinceMonday = (dayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
             fromDate.setUTCDate(fromDate.getUTCDate() - daysSinceMonday);
@@ -111,20 +112,24 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
     };
 }
 
+const toDateStr = (val) => {
+    if (val instanceof Date) {
+        return formatISO(val, { representation: "date" });
+    }
+    if (typeof val === "string") return val.split("T")[0]; // this extracts only date part from an ISO string
+    throw new Error(`Invalid date value: ${val}`);
+}
+
 async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
-    const currentDayOfWeek = endDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
-    const daysSinceMonday = (currentDayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
-    const startOfWeek = new Date(endDate);
-    startOfWeek.setUTCDate(endDate.getUTCDate() - daysSinceMonday);
-    
-    const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate: startOfWeek, toDate: endDate });
+    const { fromDate, toDate } = getSummaryRange("weekly", endDate);
+    const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate });
+    const caloriesByDate = new Map(rows.map(row => [toDateStr(row.date), Number(row.calories)]));
 
     return Array.from({ length: 7 }, (_, i) => {
-        const day = new Date(startOfWeek);
-        day.setUTCDate(startOfWeek.getUTCDate() + i);
-        const dateStr = day.toISOString().split("T")[0];
-        const match = rows.find(r => r.date.toISOString().split("T")[0] === dateStr);
-        return { date: dateStr, calories: match ? Number(match.calories) : 0 };
+        const day = new Date(fromDate);
+        day.setUTCDate(fromDate.getUTCDate() + i);
+        const dateStr = toDateStr(day);
+        return { date: dateStr, calories: caloriesByDate.get(dateStr) ?? 0 };
     });
 
 }
@@ -218,13 +223,11 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
     const entry = validateUserIdForDashboard({ subscriberId }); // validation check
 
     // as we can use previous functions, let's try reuse them as much as possible
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setUTCDate(today.getUTCDate() + 1);
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
 
-    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: tomorrow.toISOString() });
-    const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, consumedAt: today.toISOString() });
+    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: todayStart.toISOString() });
+    const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, consumedAt: todayStart.toISOString() });
 
     
     // we can calculate weekly calory trend based on daily summaries for each day of the week, but for simplicity let's just return total calories for the week for now
@@ -232,12 +235,12 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
         
     return {
         quickStats: {
-            calories_today: summary.nutrients.find(n => n.code === "CAL_KCAL")?.totalAmount || 0,
+            calories_today: summary.nutrients.find(n => n.code === "calories")?.totalAmount || 0,
             meals_logged_today: foodDiaryPreview.length,
             days_logged: await getDaysLogged({ subscriberId: entry.subscriberId }), // this would require a separate query to count distinct days with entries, can be implemented later
         },
         foodDiaryPreview,
-        weeklyCaloryTrend: await getWeeklyCaloryTrend({subscriberId: entry.subscriberId, endDate: tomorrow}), // this would require fetching summary for each day of the week, can be implemented later
+        weeklyCaloryTrend: await getWeeklyCaloryTrend({subscriberId: entry.subscriberId, endDate: todayStart}), // this would require fetching summary for each day of the week, can be implemented later
         nutritionPreview: summary.nutrients.filter(n => ["protein", "carbohydrates", "fat", "fibre"].includes(n.code)),
         savedOrSuggestedRecipesPreview: [], // implement later
         professionalSupportPreview: {}, // implement later

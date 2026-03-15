@@ -188,7 +188,27 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
         data: { // field(s) to change
             ...(portionId !== undefined ? { portionId } : {}),
             ...(quantity !== undefined ? { quantity } : {}),
-        }
+        },
+        select: {
+            id: true,
+            diaryEntryId: true,
+            portionId: true,
+            quantity: true,
+            portion: {
+                select: {
+                    description: true,
+                    weightG: true,
+                    foodItem: {
+                        select: {
+                            foodItemId: true,
+                            name: true,
+                            brand: true,
+                            source: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     return entry;
@@ -266,7 +286,7 @@ async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
         WHERE de.subscriber_id = ${subscriberId}
             AND de.consumed_at >= ${fromDate}
             AND de.consumed_at < ${toDate}
-            AND n.code = 'CAL_KCAL'
+            AND n.code = 'calories'
         GROUP BY DATE(de.consumed_at)
         ORDER BY DATE(de.consumed_at)
     `;
