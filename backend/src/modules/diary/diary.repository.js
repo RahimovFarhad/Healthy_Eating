@@ -23,6 +23,7 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
         select: {
                 items: {
                     select: {
+                        quantity: true,
                         portion: {
                             select: {
                                 portionNutrients: {
@@ -32,7 +33,6 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
                                     },
                             },
                         },
-                        quantity: true,
                     },
                 },
             },
@@ -155,7 +155,27 @@ async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
             diaryEntryId,
             quantity,
             portionId
-        }
+        },
+        select: {
+            id: true,
+            diaryEntryId: true,
+            portionId: true,
+            quantity: true,
+            portion: {
+                select: {
+                    description: true,
+                    weightG: true,
+                    foodItem: {
+                        select: {
+                            foodItemId: true,
+                            name: true,
+                            brand: true,
+                            source: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 }
 
@@ -176,13 +196,18 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
 
 // SQL function for retrieving a specific diary entry to DELETE
 async function deleteDiaryEntry({ diaryEntryId }) {
-    const entry = await prisma.diaryEntry.delete({
-        where: {
-            diaryEntryId // delete a diary entry based on the diaryID
-        }
-    });
+    const [, deletedEntry] = await prisma.$transaction([
+        prisma.diaryEntryItem.deleteMany({
+            where: { diaryEntryId }
+        }),
+        prisma.diaryEntry.delete({
+            where: {
+                diaryEntryId // delete a diary entry based on the diaryID
+            }
+        })
+    ]);
 
-    return entry;
+    return deletedEntry;
 }
 
 async function deleteDiaryEntryItem({ diaryEntryItemId }) {
