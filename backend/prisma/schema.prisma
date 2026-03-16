@@ -30,12 +30,6 @@ enum NutrientType {
   micro
 }
 
-enum Period {
-  daily
-  weekly
-  monthly
-}
-
 enum Demographic {
   adult
   child_1_3
@@ -78,6 +72,17 @@ enum FoodSource {
   fatsecret
   user
   system
+}
+
+enum GoalSource {
+  system_default
+  user_defined
+  professional_defined
+}
+
+enum GoalStatus {
+  active
+  archived
 }
 
 model User {
@@ -217,20 +222,23 @@ model AdviceMessage {
 }
 
 model NutritionGoal {
-  goalId              Int       @id @default(autoincrement()) @map("goal_id")
-  subscriberId        Int       @map("subscriber_id")
-  setByProfessionalId Int?      @map("set_by_professional_id")
-  nutrientId          Int       @map("nutrient_id")
-  period              Period
-  targetMin           Decimal?  @map("target_min") @db.Decimal(12, 4)
-  targetMax           Decimal?  @map("target_max") @db.Decimal(12, 4)
-  startDate           DateTime  @map("start_date") @db.Date
-  endDate             DateTime? @map("end_date") @db.Date
-  notes               String?
+  goalId              Int         @id @default(autoincrement()) @map("goal_id")
+  subscriberId        Int         @map("subscriber_id")
+  nutrientId          Int         @map("nutrient_id")
+  source              GoalSource  @default(system_default)
+  status              GoalStatus  @default(active)
+  targetMin           Decimal?    @map("target_min") @db.Decimal(12, 4)
+  targetMax           Decimal?    @map("target_max") @db.Decimal(12, 4)
 
-  subscriber        User     @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
-  setByProfessional User?    @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
-  nutrient          Nutrient @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
+  setByProfessionalId Int?        @map("set_by_professional_id")
+  startDate           DateTime    @map("start_date") @db.Date
+  endDate             DateTime?   @map("end_date") @db.Date
+  notes               String?
+  created_at          DateTime    @default(now()) @map("created_at") 
+
+  subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
+  setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
+  nutrient          Nutrient      @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
 
   @@map("nutrition_goal")
 }
@@ -239,11 +247,10 @@ model Guideline {
   guidelineId Int         @id @default(autoincrement()) @map("guideline_id")
   nutrientId  Int         @map("nutrient_id")
   demographic Demographic
-  period      Period
+  source      String?
+
   minValue    Decimal?    @map("min_value") @db.Decimal(12, 4)
   maxValue    Decimal?    @map("max_value") @db.Decimal(12, 4)
-  source      String?
-  notes       String?
 
   nutrient Nutrient @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
 
