@@ -234,7 +234,7 @@ model NutritionGoal {
   startDate           DateTime    @map("start_date") @db.Date
   endDate             DateTime?   @map("end_date") @db.Date
   notes               String?
-  created_at          DateTime    @default(now()) @map("created_at") 
+  createdAt          DateTime    @default(now()) @map("created_at") 
 
   subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
   setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
@@ -247,7 +247,7 @@ model Guideline {
   guidelineId Int         @id @default(autoincrement()) @map("guideline_id")
   nutrientId  Int         @map("nutrient_id")
   demographic Demographic
-  source      String?
+  source      String
 
   minValue    Decimal?    @map("min_value") @db.Decimal(12, 4)
   maxValue    Decimal?    @map("max_value") @db.Decimal(12, 4)
