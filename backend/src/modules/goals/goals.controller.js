@@ -1,6 +1,13 @@
 import { GoalError, normalizeBooleanQuery, normalizeGoalId } from "./goals.validator.js";
 import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal } from "./goals.service.js";
 
+function getGoalErrorStatus(errorMessage) {
+  if (errorMessage === "Goal not found") return 404;
+  if (errorMessage === "Unauthorized to archive this goal") return 403;
+  if (errorMessage === "Goal is already archived") return 409;
+  return 400;
+}
+
 async function getGoals(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
@@ -10,7 +17,7 @@ async function getGoals(req, res, next) {
     return res.status(200).json({ goals });
   } catch (error) {
     if (error instanceof GoalError) {
-      return res.status(400).json({ error: error.message });
+      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
     }
     return next(error);
   }
@@ -25,7 +32,7 @@ async function updateGoal(req, res, next) {
     return res.status(200).json({ goals: upsertedGoals });
   } catch (error) {
     if (error instanceof GoalError) {
-      return res.status(400).json({ error: error.message });
+      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
     }
     return next(error);
   }
@@ -40,7 +47,7 @@ async function deleteGoal(req, res, next) {
     return res.status(200).json({ deletedGoal });
   } catch (error) {
     if (error instanceof GoalError) {
-      return res.status(400).json({ error: error.message });
+      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
     }
     return next(error);
   }
@@ -55,7 +62,7 @@ async function createGoal(req, res, next) {
     return res.status(201).json({ createdGoal });
   } catch (error) {
     if (error instanceof GoalError) {
-      return res.status(400).json({ error: error.message });
+      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
     }
     return next(error);
   }

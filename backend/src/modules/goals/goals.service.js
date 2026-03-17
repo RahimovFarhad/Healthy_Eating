@@ -38,7 +38,7 @@ async function archiveUserGoal({ subscriberId, goalId }) {
   if (!existingGoal) {
     throw new GoalError("Goal not found");
   }
-  if (existingGoal.archivedAt) {
+  if (existingGoal.status === "archived") {
     throw new GoalError("Goal is already archived");
   }
   if (existingGoal.subscriber.userId != subscriberId){
