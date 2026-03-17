@@ -1,0 +1,72 @@
+import { authenticateUser, AuthError, UserNotFoundError, registerUser, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
+
+async function login(req, res) {
+    const { email, username, password } = req.body;
+    const loginIdentifier = email ?? username;
+
+    try {
+        if (!loginIdentifier || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        const token = await authenticateUser(loginIdentifier, password);
+
+        const refreshToken = await generateRefreshToken(loginIdentifier); 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1000 * 60 * 60 * 24 * 7
+        });
+
+        return res.json({ message: "Login successful", token });
+    } catch (error) {
+        if (error instanceof UserNotFoundError) {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error instanceof AuthError) {
+            return res.status(401).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function register(req, res) {
+    const { email, username, password } = req.body;
+
+    try {
+        if (!email || !username || !password) {
+            return res.status(400).json({ message: "Email, username, and password are required" });
+        }
+
+        const newUser = await registerUser(email, username, password);
+        return res.status(201).json({ message: "User registered successfully", userId: newUser.userId });
+    } catch (error) {
+        if (error instanceof AuthError) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function refreshToken(req, res) {
+    try {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(401).json({ message: "Refresh token is required" });
+        }
+    
+        const token = await refreshAccessToken(refreshToken);
+        return res.json({ message: "Login successful", token });
+
+    } catch (error) {
+        if (error instanceof AuthError) {
+            return res.status(401).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+
+}
+
+export { login, register, refreshToken };
