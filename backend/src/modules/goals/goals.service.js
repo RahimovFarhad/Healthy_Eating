@@ -1,4 +1,4 @@
-import { fetchGoals, findNutrientById, findNutrientByCode, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal } from "./goals.repository.js";
+import { fetchGoals, findNutrientById, findNutrientByCode, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
 async function getGoalsService({ subscriberId, effective }) {
@@ -74,5 +74,23 @@ async function createUserGoal({ subscriberId, goal }) {
   });
 }
 
+async function ensureDefaultGoalsForUser({ userId, demographic = "adult", tx }) {
+  const guidelines = await findGuidelinesByDemographic(demographic, tx);
+  if (!guidelines.length) return;
 
-export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal };
+  const today = new Date();
+  const rows = guidelines.map((guideline) => ({
+    subscriberId: userId,
+    nutrientId: guideline.nutrientId,
+    source: "system_default",
+    status: "active",
+    targetMin: guideline.minValue,
+    targetMax: guideline.maxValue,
+    startDate: today,
+  }));
+
+  return createManyGoals(rows, tx);
+}
+
+
+export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, ensureDefaultGoalsForUser };

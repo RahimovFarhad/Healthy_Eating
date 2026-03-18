@@ -124,6 +124,23 @@ async function insertGoal({
   });
 }
 
+async function findGuidelinesByDemographic(demographic, tx) {
+  const client = tx ?? prisma;
+  return client.guideline.findMany({
+    where: { demographic },
+    select: {
+      nutrientId: true,
+      minValue: true,
+      maxValue: true,
+    },
+  });
+}
+
+async function createManyGoals(rows, tx) {
+  const client = tx ?? prisma;
+  return client.nutritionGoal.createMany({ data: rows });
+}
+
 export {
   fetchGoals,
   findNutrientById,
@@ -132,4 +149,6 @@ export {
   archiveGoal,
   updateGoal,
   insertGoal,
+  findGuidelinesByDemographic,
+  createManyGoals,
 };

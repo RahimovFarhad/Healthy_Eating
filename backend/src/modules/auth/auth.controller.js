@@ -39,8 +39,8 @@ async function register(req, res) {
             return res.status(400).json({ message: "Email, username, and password are required" });
         }
 
-        const newUser = await registerUser(email, username, password);
-        return res.status(201).json({ message: "User registered successfully", userId: newUser.userId });
+        const user = await registerUser(email, username, password);
+        return res.status(201).json({ message: "User registered successfully", userId: user.userId });
     } catch (error) {
         if (error instanceof AuthError) {
             return res.status(400).json({ message: error.message });
