@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import { prisma } from "./db/prisma.js";
 import authRouter from "./modules/auth/auth.routes.js";
 import diaryRouter from "./modules/diary/diary.routes.js";
+import goalRouter from "./modules/goals/goals.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/diary", requireAuth, diaryRouter);
+app.use("/goals", requireAuth, goalRouter);
 
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;

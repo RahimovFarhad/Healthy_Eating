@@ -1,4 +1,4 @@
-import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem } from "./diary.service.js";
+import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber } from "./diary.service.js";
 import { DiaryEntryError } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
@@ -10,6 +10,7 @@ async function createEntry(req, res, next) {
             consumedAt: req.body?.consumedAt,
             mealType: req.body?.mealType,
             notes: req.body?.notes,
+            items: req.body?.items ?? [], // expecting items to be an array of { portionId, quantity }
         });
         res.status(201).json({ entry });
     } catch (error) {
@@ -66,8 +67,12 @@ async function listDiaryEntries(req, res, next) {
 async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
+<<<<<<< HEAD
             diaryEntryId: req.params?.id,
             userId: req.params?.id, // userId retrieval
+=======
+            diaryEntryId: Number(req.params?.id),
+>>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         });
 
         return res.status(200).json({ entry });
@@ -86,11 +91,18 @@ async function createDiaryEntryItem(req, res, next) {
         const userId = req.user?.userId ?? null;
         const newItem = await createDiaryEntryItemService({
             userId,
+<<<<<<< HEAD
             diaryEntryId: req.params?.id,
             quantityG: req.body?.quantityG,
             foodItemId: req.body?.foodItemId,
             newFoodName: req.body?.newFoodName,
             newQuantityG: req.body?.newQUantityG,
+=======
+            diaryEntryId: Number(req.params?.id),
+            quantity: req.body?.quantity,
+            portionId: req.body?.portionId,
+            customFood: req.body?.customFood ?? null,
+>>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         });
 
         return res.status(201).json({ newItem });
@@ -110,9 +122,9 @@ async function updateDiaryEntryItem(req, res, next) {
         // check if user is trying to update their own diary entry item;
         const updatedEntry = await updateDiaryEntryItemService({
             userId,
-            diaryEntryItemId: req.params?.itemId,
-            foodItemId: req.body?.foodItemId,
-            quantityG: req.body?.quantityG,
+            diaryEntryItemId: Number(req.params?.itemId),
+            portionId: req.body?.portionId,
+            quantity: req.body?.quantity,
         });
 
         return res.status(200).json({ updatedEntry });
@@ -131,7 +143,7 @@ async function deleteEntry(req, res, next) {
         const userId = req.user?.userId ?? null;
         const deleteEntry = await deleteExistingDiaryEntry({
             userId,
-            diaryEntryId: req.params?.id
+            diaryEntryId: Number(req.params?.id)
         });
 
         return res.status(200).json({ deleteEntry });
@@ -150,7 +162,7 @@ async function deleteEntryItem(req, res, next) {
         const userId = req.user?.userId ?? null;
         const deleteItem = await deleteExistingDiaryEntryItem({
             userId,
-            diaryEntryItemId: req.params?.itemId
+            diaryEntryItemId: Number(req.params?.itemId)
         });
 
         return res.status(200).json({ deleteItem });
@@ -164,4 +176,20 @@ async function deleteEntryItem(req, res, next) {
     }
 }
 
-export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem };
+async function getDashboard(req, res, next) {
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        // call a service function that aggregates all the necessary data for the dashboard
+        const dashboardData = await getDashboardDataForSubscriber({subscriberId});
+
+        return res.status(200).json({ dashboardData });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard };
