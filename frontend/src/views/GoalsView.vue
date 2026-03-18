@@ -112,26 +112,6 @@
         </div>
       </div>
 
-      <!-- ---- Fibre goal — spans full width; uses a linear bar instead of a ring ---- -->
-      <div class="col-12">
-        <div class="goal-card">
-          <div class="goal-header d-flex justify-content-between align-items-center">
-            <span>🌿 Reach 30g Fibre Per Day (Custom Goal)</span>
-            <button class="btn btn-outline-secondary btn-sm py-0">Edit →</button>
-          </div>
-          <div class="p-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <small>Current: 14g/day avg · Target: 30g · Progress: 47%</small>
-              <small class="text-muted">47% · 16g to go per day</small>
-            </div>
-            <div class="progress mb-2" style="height:14px;">
-              <div class="progress-bar" style="width:47%;background:#5a9e56;"></div>
-            </div>
-            <button class="btn btn-gf btn-sm">View Details</button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ============================================================
@@ -271,7 +251,7 @@ const activeCategory = ref('All')     // which category filter is active in pres
 // ---- Tab definitions ----
 const tabs = [
   { id: 'active',    label: 'Active Goals (0)' },
-  { id: 'completed', label: 'Completed (7)'    },
+  { id: 'completed', label: 'Completed (0)'    },
   { id: 'presets',   label: 'Preset Library'   },
   { id: 'history',   label: 'History'          },
 ]
