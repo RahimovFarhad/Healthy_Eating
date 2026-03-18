@@ -67,9 +67,7 @@ async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
             diaryEntryId: req.params?.id,
-            type: req.query?.type,
-            unit: req.query?.unit,
-            quantityG: req.query?.quantityG,
+            userId: req.params?.id, // userId retrieval
         });
 
         return res.status(200).json({ entry });
@@ -91,6 +89,8 @@ async function createDiaryEntryItem(req, res, next) {
             diaryEntryId: req.params?.id,
             quantityG: req.body?.quantityG,
             foodItemId: req.body?.foodItemId,
+            newFoodName: req.body?.newFoodName,
+            newQuantityG: req.body?.newQUantityG,
         });
 
         return res.status(201).json({ newItem });
