@@ -1,4 +1,4 @@
-import { GoalError, normalizeBooleanQuery, normalizeGoalId } from "./goals.validator.js";
+import { GoalError, normalizeBooleanQuery, normalizeGoalId, validateUpdateGoalInput } from "./goals.validator.js";
 import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal } from "./goals.service.js";
 
 function getGoalErrorStatus(errorMessage) {
@@ -26,10 +26,16 @@ async function getGoals(req, res, next) {
 async function updateGoal(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
-    const { goals } = req.body;
-    const upsertedGoals = await updateUserGoal({ subscriberId, goals });
+    const goal = req.body?.goal;
 
-    return res.status(200).json({ goals: upsertedGoals });
+    if(!goal) {
+      throw new GoalError("goal is required");
+    }
+
+    validateUpdateGoalInput(goal);
+    const updatedGoal = await updateUserGoal({ subscriberId, goal });
+
+    return res.status(200).json({ updatedGoal});
   } catch (error) {
     if (error instanceof GoalError) {
       return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });

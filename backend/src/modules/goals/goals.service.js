@@ -7,9 +7,9 @@ async function getGoalsService({ subscriberId, effective }) {
   return fetchGoals({ subscriberId: normalizedSubscriberId, effective: normalizedEffective });
 }
 
-async function updateUserGoal({ subscriberId, goals }) {
+async function updateUserGoal({ subscriberId, goal }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
-  const validatedUpdate = validateUpdateGoalInput(goals);
+  const validatedUpdate = validateUpdateGoalInput(goal);
 
   const existingGoal = await findGoalByIdForSubscriber({
     subscriberId: normalizedSubscriberId,

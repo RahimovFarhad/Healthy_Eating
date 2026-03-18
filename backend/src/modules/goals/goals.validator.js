@@ -78,7 +78,7 @@ function normalizeBooleanQuery(value, defaultValue = true) {
 
 function validateUpdateGoalInput(goal) {
   if (!goal || typeof goal !== "object" || Array.isArray(goal)) {
-    throw new GoalError("goals must be a single goal object");
+    throw new GoalError("goal must be a single goal object");
   }
 
   const goalId = normalizePositiveInteger(goal.goalId);
