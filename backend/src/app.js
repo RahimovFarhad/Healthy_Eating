@@ -4,6 +4,7 @@ import { prisma } from "./db/prisma.js";
 import authRouter from "./modules/auth/auth.routes.js";
 import diaryRouter from "./modules/diary/diary.routes.js";
 import goalRouter from "./modules/goals/goals.routes.js";
+import professionalRouter from "./modules/professional/professional.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 
 const app = express();
@@ -13,6 +14,9 @@ app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/diary", requireAuth, diaryRouter);
 app.use("/goals", requireAuth, goalRouter);
+
+app.use("/professional", requireAuth, professionalRouter)
+app.use("/client", requireAuth, clientRouter)
 
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
