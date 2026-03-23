@@ -141,20 +141,10 @@ async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
 
-async function getDiaryEntryById({ userId, diaryEntryId }) {
-    const validatedData = validateEntryDetails({ userId, diaryEntryId }); // validation on data
+async function getDiaryEntryById({ diaryEntryId }) {
+    const entries = validateEntryDetails({ diaryEntryId }); // validation on data
 
-    const entryById = await findDiaryEntryById(validatedData); // get data from user
-
-    // authentication checks
-    if (!entryById) {
-        throw new DiaryEntryError("Entry not found.");
-    }
-    if (entryById.subscriber.userId !== userId) {
-        throw new DiaryEntryError("Unauthorised access.");
-    }
-
-    return entryById;
+    return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
 async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood }) {
@@ -168,31 +158,7 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
 
     const entry = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
 
-    // first check whether user is in their diary 
-    const entryById = await findDiaryEntryById(validatedEntries.diaryEntryId); // retrieve diary entry
-
-    if (!entryById) {
-        throw new DiaryEntryError("Diary entry not found.");
-    }
-    if (entryById.subscriber.userId !== userId) {
-        throw new DiaryEntryError("Unauthorised access.");
-    }
-
-    // then, check if entry item is custom or not
-    let newItemEntryId = validatedEntries.foodItemId;
-
-    if (validatedEntries.isCustom) {
-        const newCustomItem = await createDiaryEntryItemRepository({
-            newFoodName: validatedEntries.newFoodName,
-            newQuantityG: validatedEntries.newQuantityG
-        });
-
-        newItemEntryId = newCustomItem.id; // assign an ID to the new entry
-    }
-
-    const entries = await createDiaryEntryItemRepository(validatedEntries); // create diary entry item
-
-    return entries;
+    return createDiaryEntryItemRepository(entry);
 }
 
 async function createCustomFoodAndGetPortionId({ userId, customFood }) {
@@ -231,45 +197,13 @@ async function createFoodPortion({ foodItemId, description, weightG, nutrients }
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
     const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
-    // check to see if item is retrieved or not
-    const entryItem = await findDiaryEntryItemById(validatedEntries.diaryEntryItemId); // retrieve diary entry item
-
-    if (!entryItem) {
-        throw new DiaryEntryError("Item in diary not found.");
-    }
-    
-    // once item is checked, check whether the user is authorised to access diary entry or not
-    const diaryEntry = await findDiaryEntryById({diaryEntryId: entryItem.diaryEntryId})
-
-    if (!diaryEntry) {
-        throw new DiaryEntryError("Diary entry not found.");
-    }
-    if (diaryEntry.subscriber.userId !== userId) {
-        throw new DiaryEntryError("Unauthorised access.");
-    }
-
-    // after the authentication checks, user can now update their diary entry with new items
-    const entries = await updateDiaryEntryItemRepository(validatedEntries);
-
-    return entries;
+    return updateDiaryEntryItemRepository(entry);
 }
 
 async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
-    const validatedEntries = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check on data
+    const entry = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
 
-    // first check whether user is in their diary first
-    const diaryId = await findDiaryEntryById(validatedEntries.diaryEntryId); // retrieve diary by ID
-
-    if (!diaryId) {
-        throw new DiaryEntryError("Diary entry not found.");
-    }
-    if (diaryId.subscriber.userId !== userId) {
-        throw new DiaryEntryError("Unauthorised access.");
-    }
-
-    // once the check is done, the diary entry can now be deleted
-
-    return deleteDiaryEntry(validatedEntries);
+    return deleteDiaryEntry(entry);
 }
 
 async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {

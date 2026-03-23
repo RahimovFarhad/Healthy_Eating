@@ -148,31 +148,6 @@ async function findDiaryEntryById({ diaryEntryId }) {
     return retrieval;
 }
 
-// function to GET a specific diary entry item
-async function findDiaryEntryItemById({ diaryEntryItemId }) {
-    const retrieval = await prisma.diaryEntryItem.findUnique({
-        where: {
-            id: diaryEntryItemId
-        },
-        select: {
-            items: {
-                foodItem: {
-                    select: {
-                        foodNutrients: {
-                            name: true,
-                            type: true,
-                            unit: true
-                        },
-                    },
-                    quantityG: true,
-                },
-            },
-        }
-    });
-
-    return retrieval;
-}
-
 // SQL function for CREATING a new diary entry item
 async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     return prisma.diaryEntryItem.create({
