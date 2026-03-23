@@ -67,12 +67,8 @@ async function listDiaryEntries(req, res, next) {
 async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
-<<<<<<< HEAD
-            diaryEntryId: req.params?.id,
-            userId: req.params?.id, // userId retrieval
-=======
             diaryEntryId: Number(req.params?.id),
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
+            userId: req.params?.id, // userId retrieval
         });
 
         return res.status(200).json({ entry });
@@ -91,18 +87,10 @@ async function createDiaryEntryItem(req, res, next) {
         const userId = req.user?.userId ?? null;
         const newItem = await createDiaryEntryItemService({
             userId,
-<<<<<<< HEAD
-            diaryEntryId: req.params?.id,
-            quantityG: req.body?.quantityG,
-            foodItemId: req.body?.foodItemId,
-            newFoodName: req.body?.newFoodName,
-            newQuantityG: req.body?.newQUantityG,
-=======
             diaryEntryId: Number(req.params?.id),
             quantity: req.body?.quantity,
             portionId: req.body?.portionId,
             customFood: req.body?.customFood ?? null,
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         });
 
         return res.status(201).json({ newItem });

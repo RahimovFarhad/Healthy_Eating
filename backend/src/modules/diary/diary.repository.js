@@ -265,9 +265,6 @@ async function deleteDiaryEntryItem({ diaryEntryItemId }) {
     return entry;
 }
 
-<<<<<<< HEAD
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, findDiaryEntryItemById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem };
-=======
 async function getDaysLogged({ subscriberId }) {
     const [{ days_logged }] = await prisma.$queryRaw `
         SELECT COUNT(DISTINCT DATE(consumed_at))::int AS days_logged
@@ -321,4 +318,3 @@ async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
 }
 
 export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571

@@ -130,31 +130,13 @@ function validateListDisplay({ subscriberId, consumedAt, mealType, notes }) {
     };
 }
 
-<<<<<<< HEAD
-function validateEntryDetails({ userId, diaryEntryId }) {
-    if (!userId || !Number.isInteger(userId) || userId <= 0) {
-        throw new DiaryEntryError("User ID is required");
-    }
-    
-    if (!diaryEntryId || !Number.isInteger(diaryEntryId) || diaryEntryId <= 0) {
-=======
 function validateEntryDetails({ diaryEntryId }) {
     const normalizedDiaryEntryId = normalizePositiveInteger(diaryEntryId);
     if (!normalizedDiaryEntryId) {
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         throw new DiaryEntryError("Diary Entry ID is required");
     }
 
     return {
-<<<<<<< HEAD
-        userId,
-        diaryEntryId
-    };
-}
-
-function validateNewEntryDetails({ userId, diaryEntryId, quantityG, foodItemId, newFoodName, newQuantityG }) {
-    if (!userId || !Number.isInteger(userId) || userId <= 0) {
-=======
         diaryEntryId: normalizedDiaryEntryId
     };
 }
@@ -162,7 +144,6 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantityG, foodItemId, 
 function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         throw new DiaryEntryError("User ID is required");
     }
 
@@ -176,39 +157,6 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) 
         throw new DiaryEntryError("Quantity is required and must be a positive number");
     }
 
-<<<<<<< HEAD
-    // if (!foodItemId || !Number.isInteger(foodItemId) || foodItemId <= 0) {
-    //     throw new DiaryEntryError("Food Item ID is required");
-    // }
-
-    const hasFoodItemId = foodItemId && Number.isInteger(foodItemId) && foodItemId > 0;
-
-    const isCustom = !hasFoodItemId;
-
-    // check the user entries are valid or not
-    if (isCustom) {
-        if (!newFoodName || typeof newFoodName !== "string") {
-            throw new DiaryEntryError("Custom name is required and must be a string value");
-        }
-        if (!newQuantityG || typeof newQuantityG !== "number" || newQuantityG <= 0) {
-            throw new DiaryEntryError("Quantity in grams is required and must be a positive number");
-        }
-    }
-
-    return {
-        diaryEntryId,
-        quantityG,
-        foodItemId: hasFoodItemId ? foodItemId: null, // allows custom entries,
-        isCustom,
-        newFoodName,
-        newQuantityG
-    };
-}
-
-function validateUpdatedEntryItem({ diaryEntryItemId, userId, foodItemId, quantityG }) {
-    if (!diaryEntryItemId || !Number.isInteger(diaryEntryItemId) || diaryEntryItemId <= 0) {
-        throw new DiaryEntryError("Diary Entry Item ID is required");
-=======
     const normalizedPortionId = normalizePositiveInteger(portionId);
     if (!normalizedPortionId) {
         throw new DiaryEntryError("Portion ID is required");
@@ -225,7 +173,6 @@ function validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantit
     const normalizedDiaryEntryItemId = normalizePositiveInteger(diaryEntryItemId);
     if (!normalizedDiaryEntryItemId) {
         throw new DiaryEntryError("Diary Entry ID is required");
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
     }
 
     const normalizedUserId = normalizePositiveInteger(userId);
@@ -266,14 +213,9 @@ function validateDeletedDiaryEntry({ userId, diaryEntryId }) {
     };
 }
 
-<<<<<<< HEAD
-function validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }) {
-    if (!userId || !Number.isInteger(userId) || userId <= 0) {
-=======
 function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
->>>>>>> 39c7a0679d629f8ac85b51805ff2b1789eea4571
         throw new DiaryEntryError("User ID is required");
     }
 
