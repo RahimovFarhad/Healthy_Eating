@@ -68,6 +68,7 @@ async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
             diaryEntryId: Number(req.params?.id),
+            userId: req.params?.id, // userId retrieval
         });
 
         return res.status(200).json({ entry });
