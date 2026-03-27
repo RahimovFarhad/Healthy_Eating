@@ -49,8 +49,20 @@ async function archiveUserGoal({ subscriberId, goalId }) {
 }
 
 async function createUserGoal({ subscriberId, goal }) {
+  return createGoalForSubscriber({
+    subscriberId,
+    goal,
+    options: {
+      forcedSource: "user_defined",
+      forcedStatus: "active",
+      forcedSetByProfessionalId: null,
+    },
+  });
+}
+
+async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
-  const validatedGoal = validateCreateGoalInput(goal);
+  const validatedGoal = validateCreateGoalInput(goal, options);
 
   const nutrient = validatedGoal.nutrientId
     ? await findNutrientById({ nutrientId: validatedGoal.nutrientId })
@@ -93,4 +105,4 @@ async function ensureDefaultGoalsForUser({ userId, demographic = "adult", tx }) 
 }
 
 
-export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, ensureDefaultGoalsForUser };
+export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser };
