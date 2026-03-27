@@ -11,7 +11,7 @@ async function findProfessionalClientLink({ professionalId, clientId }) {
     return prisma.professionalClient.findUnique({
         where: {
             professionalId_subscriberId: {
-                professionalId,
+                professionalId: professionalId,
                 subscriberId: clientId,
             },
         },
@@ -30,7 +30,10 @@ async function createProfessionalClientLink({ professionalId, subscriberId }) {
 
 async function listProfessionalClients({ professionalId, includeDetails }) {
     return prisma.professionalClient.findMany({
-        where: { professionalId },
+        where: { 
+            professionalId,
+            status: "active",
+        },
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {
             id: true,
