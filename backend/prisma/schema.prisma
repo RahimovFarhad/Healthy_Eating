@@ -85,6 +85,12 @@ enum GoalStatus {
   archived
 }
 
+enum ProfessionalClientStatus {
+  invited
+  active
+  disabled
+}
+
 model User {
   userId       Int      @id @default(autoincrement()) @map("user_id")
   fullName     String   @map("full_name")
@@ -113,10 +119,11 @@ model User {
 }
 
 model ProfessionalClient {
-  id             Int      @id @default(autoincrement())
-  professionalId Int      @map("professional_id")
-  subscriberId   Int      @map("subscriber_id")
-  assignedAt     DateTime @default(now()) @map("assigned_at")
+  id             Int                      @id @default(autoincrement())
+  professionalId Int                      @map("professional_id")
+  subscriberId   Int                      @map("subscriber_id")
+  status         ProfessionalClientStatus @default(invited)
+  assignedAt     DateTime                 @default(now()) @map("assigned_at")
 
   professional User @relation("ProfessionalClientProfessional", fields: [professionalId], references: [userId], onDelete: Cascade)
   subscriber   User @relation("ProfessionalClientSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
