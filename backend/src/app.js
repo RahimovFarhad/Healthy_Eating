@@ -7,6 +7,7 @@ import goalRouter from "./modules/goals/goals.routes.js";
 import professionalRouter from "./modules/professional/professional.routes.js";
 // import clientRouter from "./modules/client/client.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
+import {searchFood} from "./utils/searchFood.js"
 
 const app = express();
 
@@ -22,6 +23,14 @@ app.use("/professional", requireAuth, professionalRouter)
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ ok: true, db: "ok" });
+});
+
+app.get("/test-search", async (req, res) => {
+  await searchFood(req.query?.query).then(data => {
+    res.json(data);
+  }).catch(err => {
+    res.status(500).json({ error: err.message });
+  });
 });
 
 app.use((_req, res) => {
