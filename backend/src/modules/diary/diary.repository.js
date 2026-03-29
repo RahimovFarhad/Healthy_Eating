@@ -1,5 +1,5 @@
 import { prisma } from "../../db/prisma.js";
-
+ 
 async function insertDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     return prisma.diaryEntry.create({
         data: {
@@ -11,6 +11,7 @@ async function insertDiaryEntry({ subscriberId, consumedAt, mealType, notes }) {
     });
 }
 
+// retrieve attributes required for calculating nutrients summary data 
 async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
     const foods = await prisma.diaryEntry.findMany({
         where: {
@@ -45,7 +46,6 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
     
 }
 
-// function to just list ALL AVAILABLE entry
 async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
     // add more filters 
     const entries = await prisma.diaryEntry.findMany({
@@ -101,7 +101,6 @@ async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
     return entries;
 }
 
-// function to GET ALL the entry details
 async function findDiaryEntryById({ diaryEntryId }) {
     const retrieval = await prisma.diaryEntry.findUnique({
         where: {
@@ -148,7 +147,6 @@ async function findDiaryEntryById({ diaryEntryId }) {
     return retrieval;
 }
 
-// SQL function for CREATING a new diary entry item
 async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     return prisma.diaryEntryItem.create({
         data: {
@@ -179,7 +177,6 @@ async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     });
 }
 
-// SQL function for UPDATING a specific diary entry
 async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
     const entry = await prisma.diaryEntryItem.update({
         where: { // condition for updating
@@ -214,7 +211,6 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
     return entry;
 }
 
-// SQL function for retrieving a specific diary entry to DELETE
 async function deleteDiaryEntry({ diaryEntryId }) {
     const [, deletedEntry] = await prisma.$transaction([
         prisma.diaryEntryItem.deleteMany({
@@ -251,6 +247,7 @@ async function getDaysLogged({ subscriberId }) {
     return days_logged;
 }
 
+// retrieves attributes to create a new custom food item by the user
 async function insertFoodItem({ name, brand, source, externalId, createdByUserId }) {
     return prisma.foodItem.create({
         data: { name, brand, source, externalId, createdByUserId },

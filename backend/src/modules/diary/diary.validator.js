@@ -2,6 +2,7 @@ const MEAL_TYPES = new Set(["breakfast", "lunch", "dinner", "snack"]);
 const SUMMARY_PERIODS = new Set(["daily", "weekly", "monthly"]);
 const FOOD_SOURCES = new Set(["fatsecret", "user", "system"]);
 
+// handles any diary errors by raising a notification issue
 class DiaryEntryError extends Error {
     constructor(message) {
         super(message);
