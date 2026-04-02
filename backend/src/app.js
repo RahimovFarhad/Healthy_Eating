@@ -25,7 +25,7 @@ app.get("/health", async (_req, res) => {
   res.json({ ok: true, db: "ok" });
 });
 
-app.get("/test-search", async (req, res) => {
+app.get("/search", async (req, res) => {
   await searchFood(req.query?.query).then(data => {
     res.json(data);
   }).catch(err => {
@@ -33,7 +33,7 @@ app.get("/test-search", async (req, res) => {
   });
 });
 
-app.get("/test-search-by-id", async (req, res) => {
+app.get("/search-by-id", async (req, res) => {
   await searchFoodById(req.query?.food_id).then(data => {
     res.json(data);
   }).catch(err => {

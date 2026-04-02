@@ -1,10 +1,18 @@
 import { getToken } from './apiTokenManager.js';
 import axios from 'axios';
-import { log } from 'console';
+import { XMLParser } from 'fast-xml-parser';
+
+import { createClient } from 'redis';
+const redis = createClient();
+await redis.connect();
 
 async function searchFood(query) {
-    const token = await getToken();
+    const cacheKey = `search:${query}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+    console.log("Cache miss for key:", cacheKey); // Debug log
 
+    const token = await getToken();
     const response = await axios.get('https://platform.fatsecret.com/rest/foods/search/v1', {
         headers: {
             Authorization: `Bearer ${token}`
@@ -16,25 +24,16 @@ async function searchFood(query) {
         }
     });
 
-    const foods = response.data?.foods?.food || [];
-
-    axios.get("https://platform.fatsecret.com/rest/food/v5?food_id=4501", {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }).then(response => {
-        console.log("Detailed food info:", response.data);
-    }).catch(err => {
-        console.error("Error fetching food details:", err.message);
-    });
-
-
+    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(response.data)); // 7 days TTL
     return response.data;
 }
 
 async function searchFoodById(id) {
+    const cacheKey = `food:${id}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     const token = await getToken();
-    
     const response = await axios.get(`https://platform.fatsecret.com/rest/food/v5`, {
         headers: {
             Authorization: `Bearer ${token}`
@@ -45,11 +44,10 @@ async function searchFoodById(id) {
         responseType: 'text' // force raw XML string
     });
 
-    return parseFoodResponse(response.data);
-}   
-
-
-import { XMLParser } from 'fast-xml-parser';
+    const parsed = parseFoodResponse(response.data);
+    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(parsed)); // 7 days TTL
+    return parsed;
+}
 
 const parser = new XMLParser({ ignoreAttributes: false });
 
