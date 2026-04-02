@@ -52,8 +52,12 @@ function validateCreateDiaryEntryInput({ subscriberId, consumedAt, mealType, not
             throw new DiaryEntryError(`Item at index ${index}: quantity must be a positive number`);
         }
 
-        if (item.portionId == null && item.custom_food == null) {
-            throw new DiaryEntryError(`Item at index ${index}: must provide either portionId or custom_food`);
+        if (item.portionId == null && item.custom_food == null && item.fat_secret == null) {
+            throw new DiaryEntryError(`Item at index ${index}: must provide either portionId, be a custom_food, or have fat_secret information`);
+        }
+
+        if (item.fat_secret && item.fat_secret.external_id == null) {
+            throw new DiaryEntryError(`Item at index ${index}: must provide fat_secret external_id`);
         }
 
         if (item.portionId != null) {
@@ -61,9 +65,10 @@ function validateCreateDiaryEntryInput({ subscriberId, consumedAt, mealType, not
             if (!portionId) throw new DiaryEntryError(`Item at index ${index}: invalid portionId`);
             return { portionId, quantity };
         }
+        const fatSecret = item.fat_secret ? { externalId: String(item.fat_secret.external_id)} : null;
 
         // custom_food validation can be expanded later
-        return { portionId: null, quantity, customFood: item.custom_food };
+        return { portionId: null, quantity, customFood: item.custom_food, ...(item.fat_secret != null ? { fatSecret: fatSecret } : {}) };
     });
 
     return {
@@ -98,21 +103,32 @@ function validateSummaryInput({ subscriberId, period, endDate }) {
     };
 }
 
-function validateListDisplay({ subscriberId, consumedAt, mealType, notes }) {
+function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
     const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
     if (!normalizedSubscriberId) {
         throw new DiaryEntryError("Subscriber ID is required");
     }
 
-    if (consumedAt) {
-        const parsedConsumedAt = new Date(consumedAt);
-        if (Number.isNaN(parsedConsumedAt.getTime())) {
-            throw new DiaryEntryError("Consumed at date must be a valid date");
+    if (start) {
+        const parsedStart = new Date(start);
+        if (Number.isNaN(parsedStart.getTime())) {
+            throw new DiaryEntryError("Start date must be a valid date");
         }
-        if (parsedConsumedAt > new Date()) {
-            throw new DiaryEntryError("Consumed at date cannot be in the future");
+        if (parsedStart > new Date()) {
+            throw new DiaryEntryError("Start date cannot be in the future");
         }
     }
+    if (end) {
+        const parsedEnd = new Date(end);
+        if (Number.isNaN(parsedEnd.getTime())) {
+            throw new DiaryEntryError("End date must be a valid date");
+        }
+        if (start && parsedEnd < new Date(start)) {
+            throw new DiaryEntryError("End date cannot be before start date")
+
+        }
+    }
+
 
     if (mealType && !MEAL_TYPES.has(mealType)) {
         throw new DiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack");
@@ -124,7 +140,8 @@ function validateListDisplay({ subscriberId, consumedAt, mealType, notes }) {
 
     return {
         subscriberId: normalizedSubscriberId, 
-        consumedAt: consumedAt ? new Date(consumedAt) : undefined,
+        start: start ? new Date(start) : undefined,
+        end: end ? new Date(end) : undefined,
         mealType,
         notes
     };

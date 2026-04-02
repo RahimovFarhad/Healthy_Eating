@@ -1,5 +1,6 @@
 import { getToken } from './apiTokenManager.js';
 import axios from 'axios';
+import { log } from 'console';
 
 async function searchFood(query) {
     const token = await getToken();
@@ -16,29 +17,65 @@ async function searchFood(query) {
     });
 
     const foods = response.data?.foods?.food || [];
-    foods.forEach(food => {
-        console.log( parseFoodDescription(food.food_description) );
+
+    axios.get("https://platform.fatsecret.com/rest/food/v5?food_id=4501", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }).then(response => {
+        console.log("Detailed food info:", response.data);
+    }).catch(err => {
+        console.error("Error fetching food details:", err.message);
     });
+
 
     return response.data;
 }
 
-function parseFoodDescription(description) {
-    // "Per 100g - Calories: 135kcal | Fat: 1.07g | Carbs: 27.64g | Protein: 2.64g"
+async function searchFoodById(id) {
+    const token = await getToken();
     
-    const servingMatch = description.match(/Per (.+?) -/);
-    const caloriesMatch = description.match(/Calories: ([\d.]+)kcal/);
-    const fatMatch = description.match(/Fat: ([\d.]+)g/);
-    const carbsMatch = description.match(/Carbs: ([\d.]+)g/);
-    const proteinMatch = description.match(/Protein: ([\d.]+)g/);
+    const response = await axios.get(`https://platform.fatsecret.com/rest/food/v5`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        params: {
+            food_id: id
+        },
+        responseType: 'text' // force raw XML string
+    });
+
+    return parseFoodResponse(response.data);
+}   
+
+
+import { XMLParser } from 'fast-xml-parser';
+
+const parser = new XMLParser({ ignoreAttributes: false });
+
+function parseFoodResponse(xml) {
+    const result = parser.parse(xml);
+    const food = result.food;
+    const rawServings = food.servings.serving;
+    const servings = Array.isArray(rawServings) ? rawServings : [rawServings];
 
     return {
-        serving: servingMatch?.[1],        // "100g" or "1/2 cup" or "1 serving"
-        calories: parseFloat(caloriesMatch?.[1]),
-        fat: parseFloat(fatMatch?.[1]),
-        carbs: parseFloat(carbsMatch?.[1]),
-        protein: parseFloat(proteinMatch?.[1])
+        name: food.food_name,
+        brand: food.brand_name || null,
+        portions: servings.map(s => ({
+            description: s.serving_description,
+            weight_g: parseFloat(s.metric_serving_amount),
+            nutrients: [
+                { nutrientId: 1, amount: parseFloat(s.calories)     || 0 },
+                { nutrientId: 2, amount: parseFloat(s.protein)       || 0 },
+                { nutrientId: 3, amount: parseFloat(s.carbohydrate)  || 0 },
+                { nutrientId: 4, amount: parseFloat(s.fat)           || 0 },
+                { nutrientId: 5, amount: parseFloat(s.fiber)         || 0 },
+                { nutrientId: 6, amount: parseFloat(s.sugar)         || 0 },
+                { nutrientId: 7, amount: parseFloat(s.sodium)        || 0 },
+            ]
+        }))
     };
 }
 
-export { searchFood };
+export { searchFood, searchFoodById, parseFoodResponse };
