@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import { prisma } from "./db/prisma.js";
 import authRouter from "./modules/auth/auth.routes.js";
 import diaryRouter from "./modules/diary/diary.routes.js";
@@ -10,8 +11,34 @@ import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
 
 const app = express();
+const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173"];
+
+function getAllowedOrigins() {
+  return DEFAULT_ALLOWED_ORIGINS.split(",").map(origin => origin.trim());
+}
+
+const corsOptions = {
+  origin(origin, callback) {
+    const allowedOrigins = getAllowedOrigins();
+
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    callback(null, allowedOrigins.includes(origin));
+  },
+  credentials: true,
+  allowedHeaders: ["Authorization", "Content-Type"],
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  optionsSuccessStatus: 204,
+};
 
 app.use(express.json({ limit: "1mb" }));
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
+
 app.use(cookieParser());
 app.use("/auth", authRouter);
 app.use("/diary", requireAuth, diaryRouter);

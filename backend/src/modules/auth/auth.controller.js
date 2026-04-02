@@ -14,8 +14,8 @@ async function login(req, res) {
         const refreshToken = await generateRefreshToken(loginIdentifier); 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            secure: true, // as we will deploy backend on https, this should be true. 
+            sameSite: "none", // for now, this will be used until we have the frontend and backend on the same domain in production. In development, this is required for cookies to work across localhost ports
             maxAge: 1000 * 60 * 60 * 24 * 7
         });
 
