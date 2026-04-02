@@ -1,6 +1,6 @@
 import { getDashboardDataForSubscriber, getNutritionSummary } from "../diary/diary.service.js";
 import { createGoalForSubscriber, getGoalsService } from "../goals/goals.service.js";
-import { createProfessionalClientLink, deleteProfessionalClientLink, findProfessionalClientLink, insertAdviceMessage, listAdviceMessages, listProfessionalClients, updateRoleToProfessional } from "./professional.repository.js";
+import { createProfessionalClientLink, deleteProfessionalClientLink, findProfessionalClientLink, insertMessage, listMessages, listProfessionalClients, updateRoleToProfessional } from "./professional.repository.js";
 import { ProfessionalError, validateInviteClientInput, validateListClientsInput, validateMessageInput, validateProfessionalId, validateRelationshipInput, validateSetGoalInput, validateSummaryInput } from "./professional.validator.js";
 
 async function setUserAsProfessional({ professionalId }) {
@@ -88,7 +88,7 @@ async function sendMessageToClient({ professionalId, clientId, message }) {
         clientId: validated.clientId,
     });
 
-    return insertAdviceMessage(validated);
+    return insertMessage(validated);
 }
 
 async function getMessagesWithClient({ professionalId, clientId }) {
@@ -96,7 +96,7 @@ async function getMessagesWithClient({ professionalId, clientId }) {
 
     await ensureProfessionalClientRelation(validated);
 
-    return listAdviceMessages(validated);
+    return listMessages(validated);
 }
 
 async function setGoalForClient({ professionalId, clientId, goal }) {
@@ -137,4 +137,5 @@ export {
     getMessagesWithClient,
     setGoalForClient,
     getClientGoalsForProfessional,
+    ensureProfessionalClientRelation
 };

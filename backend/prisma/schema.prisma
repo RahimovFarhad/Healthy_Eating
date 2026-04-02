@@ -92,8 +92,8 @@ enum ProfessionalClientStatus {
 }
 
 enum MessageSender {
-  Professional
-  Subscriber
+  professional
+  subscriber
 }
 
 model User {
