@@ -1,6 +1,7 @@
 import { prisma } from "../../db/prisma.js";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../../utils/hash.js";
+import { ensureDefaultGoalsForUser } from "../goals/goals.service.js";
 
 const { sign, verify } = jwt;
 
@@ -53,13 +54,19 @@ async function registerUser(email, username, password) {
 
     const passwordHash = await hashPassword(password);
 
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
         data: {
             email,
             fullName: username,
             passwordHash: passwordHash,
-            role: "default"
-        }
+            role: "default",
+        },
+        });
+
+        await ensureDefaultGoalsForUser({ userId: user.userId, demographic: "adult", tx });
+
+        return user;
     });
 
     return newUser;

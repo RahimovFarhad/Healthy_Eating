@@ -5,7 +5,6 @@
     • Three summary cards: calorie ring, macro donut, daily insights
     • Full nutrient breakdown table (macros + sugar/salt)
     • 7-day calorie trend bar chart
-    • Micronutrients & vitamins table
 -->
 <template>
   <div class="container-fluid px-4 py-3">
@@ -154,40 +153,6 @@
       <small class="text-muted mt-2 d-block">* Today's count is still in progress</small>
     </div>
 
-    <!-- ============================================================
-         MICRONUTRIENTS TABLE
-         ============================================================ -->
-    <h6 class="fw-bold mb-2" style="color:#1a4a18;">Micronutrients & Vitamins</h6>
-    <div class="table-responsive">
-      <table class="table table-sm table-striped border">
-        <thead style="background:#c0c0c0;color:#fff;">
-          <tr>
-            <th>Nutrient</th>
-            <th>Eaten</th>
-            <th>Target</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="m in micros" :key="m.name">
-            <td class="small">{{ m.name }}</td>
-            <td class="small">{{ m.eaten }}</td>
-            <td class="small">{{ m.target }}</td>
-            <td style="width:130px;">
-              <div class="progress" style="height:8px;">
-                <div class="progress-bar"
-                     :style="`width:${m.pct}%;background-color:${statusColor(m.status)};`">
-                </div>
-              </div>
-            </td>
-            <td class="small" :class="statusClass(m.status)">{{ m.status }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- Would expand to show all tracked micronutrients in a real app -->
-      <a href="#" class="text-success small">+ Show all 20 micronutrients ▾</a>
-    </div>
 
   </div>
 </template>
@@ -220,14 +185,6 @@ const weekBars = [
   { day: 'Fri', val: '—', height: 0, over: false },
   { day: 'Sat', val: '—', height: 0, over: false },
   { day: 'Today', val: '—', height: 0, over: false },
-]
-
-// ---- Micronutrients — no data yet ----
-const micros = [
-  { name: 'Vitamin C', eaten: '—', target: '80mg',   pct: 0, status: '—' },
-  { name: 'Vitamin D', eaten: '—', target: '10μg',   pct: 0, status: '—' },
-  { name: 'Iron',      eaten: '—', target: '14.8mg', pct: 0, status: '—' },
-  { name: 'Calcium',   eaten: '—', target: '700mg',  pct: 0, status: '—' },
 ]
 
 // ---- Helper: CSS class for status text colour ----

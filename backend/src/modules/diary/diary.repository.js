@@ -23,23 +23,23 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
         select: {
                 items: {
                     select: {
-                        foodItem: {
+                        quantity: true,
+                        portion: {
                             select: {
-                                foodNutrients: {
+                                portionNutrients: {
                                     select: {
                                         nutrient: true,
-                                        amountPer100g: true,
+                                        amount: true,
                                     },
                             },
                         },
-                        quantityG: true,
                     },
                 },
             },
         }
     });
 
-    // example json: { items: [ { foodItem: { foodNutrients: [ { nutrient: { name: "Protein" }, amountPer100g: 10 } ] }, quantityG: 150 } ] }
+    // example json: { items: [ { portion: { portionNutrients: [ { nutrient: { name: "Protein" }, amount: 10 } ] }, quantity: 1.5 } ] }
 
     return foods; 
     
@@ -57,17 +57,42 @@ async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
         },  
         // attributes shown to client when requested
         select: { 
+            diaryEntryId: true,
+            consumedAt: true,
+            mealType: true,
+            notes: true,
             items: {
-                foodItem: {
-                    select: {
-                        foodNutrients: {
-                            select: {
-                                type: true,
-                                unit: true
+                select: {
+                    id: true,
+                    portionId: true,
+                    quantity: true,
+                    portion: {
+                        select: {
+                            description: true,
+                            weightG: true,
+                            foodItem: {
+                                select: {
+                                    foodItemId: true,
+                                    name: true,
+                                    brand: true,
+                                },
+                            },
+                            portionNutrients: {
+                                select: {
+                                    amount: true,
+                                    nutrient: {
+                                        select: {
+                                            nutrientId: true,
+                                            code: true,
+                                            name: true,
+                                            unit: true,
+                                            type: true,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
-                    quantityG: true,
                 },
             },
         }
@@ -84,16 +109,37 @@ async function findDiaryEntryById({ diaryEntryId }) {
         },
         select: { 
             items: {
-                foodItem: {
-                    select: {
-                        foodNutrients: {
-                            select: {
-                                type: true,
-                                unit: true
+                select: {
+                    id: true,
+                    portionId: true,
+                    quantity: true,
+                    portion: {
+                        select: {
+                            description: true,
+                            weightG: true,
+                            foodItem: {
+                                select: {
+                                    foodItemId: true,
+                                    name: true,
+                                    brand: true,
+                                },
+                            },
+                            portionNutrients: {
+                                select: {
+                                    amount: true,
+                                    nutrient: {
+                                        select: {
+                                            nutrientId: true,
+                                            code: true,
+                                            name: true,
+                                            unit: true,
+                                            type: true,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
-                    quantityG: true,
                 },
             },
         }
@@ -103,26 +149,66 @@ async function findDiaryEntryById({ diaryEntryId }) {
 }
 
 // SQL function for CREATING a new diary entry item
-async function createDiaryEntryItem({ diaryEntryId, quantityG, foodItemId }) {
+async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     return prisma.diaryEntryItem.create({
         data: {
             diaryEntryId,
-            quantityG,
-            foodItemId
-        }
+            quantity,
+            portionId
+        },
+        select: {
+            id: true,
+            diaryEntryId: true,
+            portionId: true,
+            quantity: true,
+            portion: {
+                select: {
+                    description: true,
+                    weightG: true,
+                    foodItem: {
+                        select: {
+                            foodItemId: true,
+                            name: true,
+                            brand: true,
+                            source: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 }
 
 // SQL function for UPDATING a specific diary entry
-async function updateDiaryEntryItem({ diaryEntryItemId, foodItemId, quantityG }) {
+async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
     const entry = await prisma.diaryEntryItem.update({
         where: { // condition for updating
             id: diaryEntryItemId
         },
         data: { // field(s) to change
-            ...(foodItemId !== undefined ? { foodItemId } : {}),
-            ...(quantityG !== undefined ? { quantityG } : {}),
-        }
+            ...(portionId !== undefined ? { portionId } : {}),
+            ...(quantity !== undefined ? { quantity } : {}),
+        },
+        select: {
+            id: true,
+            diaryEntryId: true,
+            portionId: true,
+            quantity: true,
+            portion: {
+                select: {
+                    description: true,
+                    weightG: true,
+                    foodItem: {
+                        select: {
+                            foodItemId: true,
+                            name: true,
+                            brand: true,
+                            source: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     return entry;
@@ -130,13 +216,18 @@ async function updateDiaryEntryItem({ diaryEntryItemId, foodItemId, quantityG })
 
 // SQL function for retrieving a specific diary entry to DELETE
 async function deleteDiaryEntry({ diaryEntryId }) {
-    const entry = await prisma.diaryEntry.delete({
-        where: {
-            diaryEntryId // delete a diary entry based on the diaryID
-        }
-    });
+    const [, deletedEntry] = await prisma.$transaction([
+        prisma.diaryEntryItem.deleteMany({
+            where: { diaryEntryId }
+        }),
+        prisma.diaryEntry.delete({
+            where: {
+                diaryEntryId // delete a diary entry based on the diaryID
+            }
+        })
+    ]);
 
-    return entry;
+    return deletedEntry;
 }
 
 async function deleteDiaryEntryItem({ diaryEntryItemId }) {
@@ -149,4 +240,56 @@ async function deleteDiaryEntryItem({ diaryEntryItemId }) {
     return entry;
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem };
+async function getDaysLogged({ subscriberId }) {
+    const [{ days_logged }] = await prisma.$queryRaw `
+        SELECT COUNT(DISTINCT DATE(consumed_at))::int AS days_logged
+        FROM diary_entry
+        WHERE subscriber_id = ${subscriberId}
+        `;
+
+
+    return days_logged;
+}
+
+async function insertFoodItem({ name, brand, source, externalId, createdByUserId }) {
+    return prisma.foodItem.create({
+        data: { name, brand, source, externalId, createdByUserId },
+    });
+}
+
+async function insertFoodPortion({ foodItemId, description, weightG, nutrients }) {
+    return prisma.foodPortion.create({
+        data: {
+            foodItemId,
+            description,
+            weightG,
+            portionNutrients: {
+                create: nutrients.map(n => ({
+                    nutrientId: n.nutrientId,
+                    amount: n.amount,
+                })),
+            },
+        },
+        include: { portionNutrients: true },
+    });
+}
+
+async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
+    return prisma.$queryRaw`
+        SELECT 
+            DATE(de.consumed_at) as date,
+            COALESCE(SUM(fpn.amount * dei.quantity), 0) as calories
+        FROM diary_entry de
+        JOIN diary_entry_item dei ON dei.diary_entry_id = de.diary_entry_id
+        JOIN food_portion_nutrient fpn ON fpn.portion_id = dei.portion_id
+        JOIN nutrient n ON n.nutrient_id = fpn.nutrient_id
+        WHERE de.subscriber_id = ${subscriberId}
+            AND de.consumed_at >= ${fromDate}
+            AND de.consumed_at < ${toDate}
+            AND n.code = 'calories'
+        GROUP BY DATE(de.consumed_at)
+        ORDER BY DATE(de.consumed_at)
+    `;
+}
+
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
