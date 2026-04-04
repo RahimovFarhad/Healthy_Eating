@@ -11,10 +11,10 @@ import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
 
 const app = express();
-const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173"];
+const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173"]; // in production, this should be set to the actual frontend URL, and in .env file
 
 function getAllowedOrigins() {
-  return DEFAULT_ALLOWED_ORIGINS.split(",").map(origin => origin.trim());
+  return ALLOWED_ORIGINS;
 }
 
 const corsOptions = {
@@ -67,6 +67,13 @@ app.get("/search-by-id", async (req, res) => {
     res.status(500).json({ error: err.message });
   });
 });
+
+// hit myself in every 10 minutes to prevent free-tier render.com from sleeping the server
+setInterval(() => {
+  fetch(`${process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`}/health`).catch(err => {
+    console.error("Health check failed:", err);
+  });
+}, 10 * 60 * 1000);
 
 
 

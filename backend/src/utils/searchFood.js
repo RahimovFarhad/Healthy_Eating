@@ -1,10 +1,9 @@
 import { getToken } from './apiTokenManager.js';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
+import { Redis } from '@upstash/redis';
 
-import { createClient } from 'redis';
-const redis = createClient();
-await redis.connect();
+const redis = Redis.fromEnv();
 
 async function searchFood(query) {
     const cacheKey = `search:${query}`;
@@ -24,7 +23,7 @@ async function searchFood(query) {
         }
     });
 
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(response.data)); // 7 days TTL
+    await redis.set(cacheKey, JSON.stringify(response.data), { ex: 60 * 60 * 24 * 7 }); // 7 days TTL
     return response.data;
 }
 
@@ -45,7 +44,7 @@ async function searchFoodById(id) {
     });
 
     const parsed = parseFoodResponse(response.data);
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(parsed)); // 7 days TTL
+    await redis.set(cacheKey, JSON.stringify(parsed), { ex: 60 * 60 * 24 * 7 }); // 7 days TTL
     return parsed;
 }
 

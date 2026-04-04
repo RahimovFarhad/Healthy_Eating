@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "@upstash/redis": "^1.37.0",
     "axios": "^1.14.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
@@ -21,8 +22,7 @@
     "express": "^5.2.1",
     "fast-xml-parser": "^5.5.9",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.19.0",
-    "redis": "^5.11.0"
+    "pg": "^8.19.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
