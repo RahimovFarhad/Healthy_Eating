@@ -1,17 +1,16 @@
 import { authenticateUser, AuthError, UserNotFoundError, registerUser, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
 
 async function login(req, res) {
-    const { email, username, password } = req.body;
-    const loginIdentifier = email ?? username;
+    const { email, password } = req.body;
 
     try {
-        if (!loginIdentifier || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const token = await authenticateUser(loginIdentifier, password);
+        const token = await authenticateUser(email, password);
 
-        const refreshToken = await generateRefreshToken(loginIdentifier); 
+        const refreshToken = await generateRefreshToken(email); 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
