@@ -50,6 +50,11 @@ async function registerUser(email, username, password) {
                 { email: email },
                 { fullName: username }
             ]
+        },
+        select: {
+            userId: true,
+            email: true,
+            fullName: true
         }
     });
 
@@ -82,6 +87,8 @@ async function registerUser(email, username, password) {
 }
 
 async function generateRefreshToken(email) {
+    //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
+
     const user = await prisma.user.findUnique({
         where: { email }
     });
