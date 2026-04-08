@@ -1,0 +1,23 @@
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Generated Prisma client
+/src/generated/prisma/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
+coverage/
+
+# Build artifacts
+dist/
+build/
+
+# OS files
+.DS_Store
