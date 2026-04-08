@@ -173,7 +173,105 @@ describe("Authentication Service", () => {
 
   });
 
+  describe("generateRefreshToken (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.JWT_SECRET = "unit-test-secret";
+    });
 
+    test("throws UserNotFoundError when user does not exist", async () => {
+      mockFindUnique.mockResolvedValue(null);
 
-  
+      await expect(
+        generateRefreshToken("missing@example.com")
+      ).rejects.toBeInstanceOf(UserNotFoundError);
+    });
+
+    test("returns signed refresh token for existing user", async () => {
+      mockFindUnique.mockResolvedValue({
+        userId: 10,
+        email: "refresh@example.com",
+        role: "default",
+      });
+      mockSign.mockReturnValue("mock.refresh.token");
+
+      const token = await generateRefreshToken("refresh@example.com");
+
+      expect(token).toBe("mock.refresh.token");
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { email: "refresh@example.com" },
+      });
+      expect(mockSign).toHaveBeenCalledWith(
+        {
+          userId: 10,
+          tokenType: "refresh",
+        },
+        "unit-test-secret",
+        { expiresIn: "7d" }
+      );
+      expect(token).toBe("mock.refresh.token");
+    });
+  });
+
+  describe("refreshAccessToken (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.JWT_SECRET = "unit-test-secret";
+    });
+
+    test("throws AuthError when token is invalid", async () => {
+      mockVerify.mockImplementation(() => {
+        throw new Error("jwt invalid");
+      });
+
+      await expect(refreshAccessToken("invalid.token")).rejects.toEqual(
+        expect.objectContaining({
+          message: "Invalid refresh token",
+        })
+      );
+    });
+
+    test("throws AuthError when token type is not refresh", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "access",
+      });
+
+      await expect(refreshAccessToken("access.token")).rejects.toEqual(
+        expect.objectContaining({
+          message: "Invalid refresh token",
+        })
+      );
+    });
+
+    test("returns signed access token for valid refresh token", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+      });
+      mockFindUnique.mockResolvedValue({
+        userId: 7,
+        email: "valid@example.com",
+        role: "default",
+      });
+      mockSign.mockReturnValue("mock.new.access.token");
+
+      const token = await refreshAccessToken("valid.refresh.token");
+
+      expect(token).toBe("mock.new.access.token");
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { userId: 7 },
+      });
+      expect(mockSign).toHaveBeenCalledWith(
+        {
+          userId: 7,
+          email: "valid@example.com",
+          role: "default",
+          tokenType: "access",
+        },
+        "unit-test-secret",
+        { expiresIn: "1h" }
+      );
+    });
+  });
 });
