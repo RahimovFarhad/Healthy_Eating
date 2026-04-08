@@ -106,5 +106,74 @@ describe("Authentication Service", () => {
     });
   });
 
+  describe("registerUser (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.JWT_SECRET = "unit-test-secret";
+    });
+    const TEST_USER = {
+      email: `auth-int-${TEST_ID}@example.com`,
+      username: `auth_integration_user_${TEST_ID}`,
+      password: "Password123!",
+    };
+
+    test("throws AuthError when email already exists", async () => {
+      expect.assertions(2);
+      mockFindFirst.mockResolvedValue({
+        userId: 1,
+        email: TEST_USER.email,
+        fullName: "Different_Name",
+      });
+
+      try {
+        await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuthError);
+        expect(error.message).toBe("Email already in use");
+      }
+    });
+
+    test("throws AuthError when username already exists", async () => {
+      expect.assertions(2);
+      mockFindFirst.mockResolvedValue({
+        userId: 1,
+        email: "Differemt_Email",
+        fullName: TEST_USER.username,
+      });
+
+      try {
+        await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuthError);
+        expect(error.message).toBe("Username already in use");
+      }
+    });
+
+    test("returns newUser for valid credentials", async () => {
+      mockFindFirst.mockResolvedValue(null);
+      mockTx.mockImplementation(async (callback) => {
+        return callback({
+          user: {
+            create: jest.fn().mockResolvedValue({
+              userId: 42,
+              email: TEST_USER.email,
+              fullName: TEST_USER.username,
+            }),
+          },
+        });
+      });
+      
+      const newUser = await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password); 
+      expect(newUser).toEqual({
+        userId: 42,
+        email: TEST_USER.email,
+        fullName: TEST_USER.username,
+      });
+    });
+
+  });
+
+
+
   
 });
