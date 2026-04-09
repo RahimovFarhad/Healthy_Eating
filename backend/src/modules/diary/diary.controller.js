@@ -1,5 +1,5 @@
 import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber } from "./diary.service.js";
-import { DiaryEntryError } from "./diary.validator.js";
+import { DiaryEntryError, getDiaryErrorStatus } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
     // console.log("Creating diary entry with body:", req.body);
@@ -15,7 +15,7 @@ async function createEntry(req, res, next) {
         res.status(201).json({ entry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -36,7 +36,7 @@ async function getSummary(req, res, next) {
         return res.status(200).json({ summary });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -57,7 +57,7 @@ async function listDiaryEntries(req, res, next) {
         return res.status(200).json({ record });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -74,7 +74,7 @@ async function getDiaryEntryById(req, res, next) {
         return res.status(200).json({ entry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -96,7 +96,7 @@ async function createDiaryEntryItem(req, res, next) {
         return res.status(201).json({ newItem });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -107,7 +107,6 @@ async function createDiaryEntryItem(req, res, next) {
 async function updateDiaryEntryItem(req, res, next) {
     try {
         const userId = req.user?.userId ?? null;
-        // check if user is trying to update their own diary entry item;
         const updatedEntry = await updateDiaryEntryItemService({
             userId,
             diaryEntryItemId: Number(req.params?.itemId),
@@ -118,7 +117,7 @@ async function updateDiaryEntryItem(req, res, next) {
         return res.status(200).json({ updatedEntry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -137,7 +136,7 @@ async function deleteEntry(req, res, next) {
         return res.status(200).json({ deleteEntry });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -156,7 +155,7 @@ async function deleteEntryItem(req, res, next) {
         return res.status(200).json({ deleteItem });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -173,7 +172,7 @@ async function getDashboard(req, res, next) {
         return res.status(200).json({ dashboardData });
     } catch (error) {
         if (error instanceof DiaryEntryError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);

@@ -1,4 +1,4 @@
-import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend } from "./diary.repository.js";
+import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend } from "./diary.repository.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 
@@ -57,7 +57,7 @@ function getSummaryRange(period, endDate) {
         case "weekly": // current week's Monday until endDate
             fromDate = new Date(endDate);
             fromDate.setUTCHours(0, 0, 0, 0);
-            const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
+            // const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
             const daysSinceMonday = (dayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
             fromDate.setUTCDate(fromDate.getUTCDate() - daysSinceMonday);
             break;
@@ -151,15 +151,23 @@ async function getDiaryEntryById({ diaryEntryId }) {
 async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood }) {
     let resolvedPortionId = portionId;
 
+    const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
+
+    const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
+
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
     if (resolvedPortionId == null) {
         if (!customFood) throw new DiaryEntryError("Must provide either portionId or customFood");
         // Create the food item + portion first, get back the portionId
         resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood });
     }
 
-    const entry = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
+    const entryCheck = await createDiaryEntryItemRepository(validatedEntries);
 
-    return createDiaryEntryItemRepository(entry);
+    return entryCheck;
 }
 
 async function createCustomFoodAndGetPortionId({ userId, customFood }) {
@@ -196,21 +204,57 @@ async function createFoodPortion({ foodItemId, description, weightG, nutrients }
 }
 
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
-    const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
+    const validatedEntries = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
-    return updateDiaryEntryItemRepository(entry);
+    const ownershipCheck = await checkDiaryEntryItemOwnership({ userId: validatedEntries.userId, diaryEntryItemId: validatedEntries.diaryEntryItemId });
+
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await updateDiaryEntryItemRepository(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry item is not found");
+    }
+
+    return entryCheck;
 }
 
 async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
-    const entry = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
+    const validatedEntries = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
+    
+    const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
 
-    return deleteDiaryEntry(entry);
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await deleteDiaryEntry(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry is not found");
+    }
+
+    return entryCheck;
 }
 
 async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
-    const entry = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
+    const validatedEntries = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
+    
+    const ownershipCheck = await checkDiaryEntryItemOwnership({ userId: validatedEntries.userId, diaryEntryItemId: validatedEntries.diaryEntryItemId });
 
-    return deleteDiaryEntryItem({ diaryEntryItemId: entry.diaryEntryItemId });
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await deleteDiaryEntryItem(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry item is not found");
+    }
+
+    return entryCheck;
 }
 
 async function getDashboardDataForSubscriber({ subscriberId }) {

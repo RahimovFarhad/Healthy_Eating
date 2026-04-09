@@ -10,6 +10,17 @@ class DiaryEntryError extends Error {
     }
 }
 
+// handle diary error status codes 
+function getDiaryErrorStatus(message) {
+    if (message.toLowerCase().includes("unauthorised")) {
+        return 403; // forbidden access
+    }
+    if (message.toLowerCase().includes("not found")) {
+        return 404; // not found
+    }
+    return 400; // bad request - for otherwise
+}
+
 function normalizePositiveInteger(value) {
     const parsedValue = typeof value === "string" ? Number(value) : value;
 
@@ -164,6 +175,7 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) 
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryId: normalizedDiaryEntryId,
         quantity: normalizedQuantity,
         portionId: normalizedPortionId
@@ -193,6 +205,7 @@ function validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantit
 
     return {
         diaryEntryItemId: normalizedDiaryEntryItemId,
+        userId: normalizedUserId,
         portionId: normalizedPortionId,
         quantity: normalizedQuantity
     };
@@ -210,11 +223,12 @@ function validateDeletedDiaryEntry({ userId, diaryEntryId }) {
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryId: normalizedDiaryEntryId
     };
 }
 
-function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId }) {
+function validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
         throw new DiaryEntryError("User ID is required");
@@ -226,6 +240,7 @@ function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId 
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryItemId: normalizedDiaryEntryItemId
     };
 }
@@ -305,4 +320,4 @@ function validateUserIdForDashboard({ subscriberId }) {
      }; 
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };
+export { DiaryEntryError, getDiaryErrorStatus, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };

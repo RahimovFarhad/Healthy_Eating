@@ -147,6 +147,44 @@ async function findDiaryEntryById({ diaryEntryId }) {
     return retrieval;
 }
 
+async function checkDiaryEntryOwnership({ userId, diaryEntryId }) {
+    const entry = await prisma.diaryEntry.findFirst({
+        where: {
+            diaryEntryId: diaryEntryId,
+            subscriberId: userId
+        },
+        select: { 
+            diaryEntryId: true
+        }
+    });
+    
+    if (entry == null) {
+        return false;
+    }
+
+    return true;
+}
+
+async function checkDiaryEntryItemOwnership({ userId, diaryEntryItemId }) {
+    const item = await prisma.diaryEntryItem.findFirst({
+        where: {
+            id: diaryEntryItemId,
+            diaryEntry: {
+                subscriberId: userId
+            }
+        },
+        select: { 
+            id: true
+        }
+    });
+
+    if (item == null) {
+        return false;
+    }
+
+    return true;
+}
+
 async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
     return prisma.diaryEntryItem.create({
         data: {
@@ -178,62 +216,83 @@ async function createDiaryEntryItem({ diaryEntryId, quantity, portionId }) {
 }
 
 async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
-    const entry = await prisma.diaryEntryItem.update({
-        where: { // condition for updating
-            id: diaryEntryItemId
-        },
-        data: { // field(s) to change
-            ...(portionId !== undefined ? { portionId } : {}),
-            ...(quantity !== undefined ? { quantity } : {}),
-        },
-        select: {
-            id: true,
-            diaryEntryId: true,
-            portionId: true,
-            quantity: true,
-            portion: {
-                select: {
-                    description: true,
-                    weightG: true,
-                    foodItem: {
-                        select: {
-                            foodItemId: true,
-                            name: true,
-                            brand: true,
-                            source: true,
+    try {
+        const entry = await prisma.diaryEntryItem.update({
+            where: {
+                id: diaryEntryItemId,
+            },
+            data: { // field(s) to change
+                ...(portionId !== undefined ? { portionId } : {}),
+                ...(quantity !== undefined ? { quantity } : {}),
+            },
+            select: {
+                id: true,
+                diaryEntryId: true,
+                portionId: true,
+                quantity: true,
+                portion: {
+                    select: {
+                        description: true,
+                        weightG: true,
+                        foodItem: {
+                            select: {
+                                foodItemId: true,
+                                name: true,
+                                brand: true,
+                                source: true,
+                            },
                         },
                     },
                 },
             },
-        },
-    });
+        });
 
-    return entry;
+        return entry;
+    } catch(error) {
+        if (error.code === "P2025") {
+            return null;
+        }
+    }
+
 }
 
 async function deleteDiaryEntry({ diaryEntryId }) {
-    const [, deletedEntry] = await prisma.$transaction([
-        prisma.diaryEntryItem.deleteMany({
-            where: { diaryEntryId }
-        }),
-        prisma.diaryEntry.delete({
-            where: {
-                diaryEntryId // delete a diary entry based on the diaryID
-            }
-        })
-    ]);
+    try {
+        const [, deletedEntry] = await prisma.$transaction([
+            prisma.diaryEntryItem.deleteMany({
+                where: { diaryEntryId }
+            }),
+            prisma.diaryEntry.delete({
+                where: {
+                    diaryEntryId // delete a diary entry based on the diaryID
+                }
+            })
+        ]);
 
-    return deletedEntry;
+        return deletedEntry;
+    } catch(error) {
+        if (error.code === "P2025") {
+            return null;
+        }
+    }
+
 }
 
 async function deleteDiaryEntryItem({ diaryEntryItemId }) {
-    const entry = await prisma.diaryEntryItem.delete({
-        where: {
-            id: diaryEntryItemId // delete a diary entry item based on the item ID
-        }
-    });
+    try {
+        const entry = await prisma.diaryEntryItem.delete({
+            where: {
+                id: diaryEntryItemId // delete a diary entry item based on the item ID
+            }
+        });
 
-    return entry;
+        return entry;
+    } catch (error) {
+        if (error.code === "P2025") {
+            return null;
+        }
+    }
+    
 }
 
 async function getDaysLogged({ subscriberId }) {
@@ -289,4 +348,4 @@ async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
     `;
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
