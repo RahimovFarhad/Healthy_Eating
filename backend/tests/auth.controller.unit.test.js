@@ -25,6 +25,7 @@ const TEST_USER = {
 const mockAuthenticateUser = jest.fn();
 const mockGenerateRefreshToken = jest.fn();
 const mockRegisterUser = jest.fn();
+const mockRefreshToken = jest.fn();
 
 jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
   authenticateUser: mockAuthenticateUser,
@@ -32,7 +33,7 @@ jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
   AuthError: mockAuthError,
   UserNotFoundError: mockUserNotFoundError,
   registerUser: mockRegisterUser,
-  refreshAccessToken: jest.fn(),
+  refreshAccessToken: mockRefreshToken,
 }));
 
 const { login, register, refreshToken } = await import("../src/modules/auth/auth.controller.js");
@@ -277,6 +278,62 @@ describe("Authentication Controller", () => {
   });
 
   describe("Refresh Token", () => {
+    test("Returns error code 401 when req.cookies missing", async() => {
+      const req = {};
+      const res = createRes();
+
+      await refreshToken(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Refresh token is required",
+      });
+    });
+    test("Returns error code 401 when refresh token is missing", async() => {
+      const req = {
+        cookies: {}
+      };
+      const res = createRes();
+
+      await refreshToken(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Refresh token is required",
+      });
+    });
+    test("Returns error code 401 when refresh token is invalid", async() => {
+      const req = {
+        cookies: {
+          refreshToken: "invalid.refresh.token"
+        }
+      };
+      const res = createRes();
+      mockRefreshToken.mockRejectedValue(new mockAuthError("Invalid refresh token"));
+
+      await refreshToken(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Invalid refresh token",
+      });
+    });
+    test("Returns access token on success", async() => {
+      const req = {
+        cookies: {
+          refreshToken: "mock.refresh.token"
+        }
+      };
+      const res = createRes();
+      mockRefreshToken.mockResolvedValue("new.mock.jwt.token");
+
+      await refreshToken(req, res);
+      
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: "Token refreshed successfully",
+        token: "new.mock.jwt.token"
+      }));
+    });
     
   });
 
