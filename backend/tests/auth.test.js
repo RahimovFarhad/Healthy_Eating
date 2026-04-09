@@ -53,7 +53,7 @@ describe("Auth API", () => {
     test("Register rejects duplicate email", async () => {
       const res = await request(app).post("/auth/register").send(TEST_USER);
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
       expect(res.body).toHaveProperty("message");
     });
 
@@ -64,7 +64,7 @@ describe("Auth API", () => {
         password: TEST_USER.password,
       });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
       expect(res.body).toHaveProperty("message");
     });
 
