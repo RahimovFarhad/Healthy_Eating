@@ -24,13 +24,14 @@ const TEST_USER = {
 
 const mockAuthenticateUser = jest.fn();
 const mockGenerateRefreshToken = jest.fn();
+const mockRegisterUser = jest.fn();
 
 jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
   authenticateUser: mockAuthenticateUser,
   generateRefreshToken: mockGenerateRefreshToken,
   AuthError: mockAuthError,
   UserNotFoundError: mockUserNotFoundError,
-  registerUser: jest.fn(),
+  registerUser: mockRegisterUser,
   refreshAccessToken: jest.fn(),
 }));
 
@@ -126,7 +127,135 @@ describe("Authentication Controller", () => {
   });
 
   describe("Register", () => {
-    
+    test("Returns error code 400 when email is missing", async () => {
+      const req = {
+        body: {
+          password: TEST_USER.password,
+          username: TEST_USER.username
+        }
+      };
+      const res = createRes();
+      
+      await register(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
+    });
+    test("Returns error code 400 when password is missing", async () => {
+      const req = {
+        body: {
+          email: TEST_USER.email,
+          username: TEST_USER.username
+        }
+      };
+      const res = createRes();
+      
+      await register(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
+    });
+    test("Returns error code 400 when username is missing", async () => {
+      const req = {
+        body: {
+          email: TEST_USER.email,
+          password: TEST_USER.password
+        }
+      };
+      const res = createRes();
+      
+      await register(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
+    });
+    test("Returns error code 400 when body is empty", async () => {
+      const req = {
+        body: {}
+      };
+      const res = createRes();
+      
+      await register(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
+    });
+    test("Returns userId on success", async () => {
+      const req = {
+        body: {
+          email: TEST_USER.email,
+          username: TEST_USER.username,
+          password: TEST_USER.password
+        }
+      };
+      const res = createRes();
+
+      mockRegisterUser.mockResolvedValue({ userId: 123 });
+      
+      await register(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: "User registered successfully",
+        userId: 123
+      }));
+    });
+
+    test("Resturns error code 409 when email already in use", async () => {
+      mockRegisterUser.mockRejectedValue(new mockAuthError("Email already in use"));
+      const req = {
+        body: {
+          email: TEST_USER.email,
+          username: TEST_USER.username,
+          password: TEST_USER.password
+        }
+      };
+      const res = createRes();
+
+      await register(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email already in use" });
+    });
+
+    test("Resturns error code 409 when username already in use", async () => {
+      mockRegisterUser.mockRejectedValue(new mockAuthError("Username already in use"));
+      const req = {
+        body: {
+          email: TEST_USER.email,
+          username: TEST_USER.username,
+          password: TEST_USER.password
+        }
+      };
+      const res = createRes();
+
+      await register(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({ message: "Username already in use" });
+    });
+
+    test("register returns 500 on unexpected error", async () => {
+      const req = {
+        body: {
+          email: "user@example.com",
+          username: "user1",
+          password: "Password123!",
+        },
+      };
+      const res = createRes(); 
+
+      mockRegisterUser.mockRejectedValue(new Error("db exploded")); // We create a generic error that is not an instance of AuthError to simulate an unexpected error in the service layer
+
+      await register(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Internal server error",
+      });
+    });
+
+
   });
 
   describe("Refresh Token", () => {
