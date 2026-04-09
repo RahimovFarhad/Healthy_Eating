@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { getClientDashboard, getClientSummary, inviteClient, listClients, listGoals, listMessages, removeClient, sendMessage, setAsProfessional, setGoal } from "./professional.controller.js";
 const professionalRouter = Router();
 
 professionalRouter.patch("/setAsProfessional", setAsProfessional);
@@ -14,8 +15,8 @@ professionalRouter.get("/clients/:clientId/dashboard", getClientDashboard); //sa
 professionalRouter.post("/clients/:clientId/messages", sendMessage);
 professionalRouter.get("/clients/:clientId/messages", listMessages);
 
-professionalRouter.post("/clients/:clientId/shared-recipes", shareRecipe);
-professionalRouter.get("/clients/:clientId/shared-recipes", listSharedRecipes);
+// professionalRouter.post("/clients/:clientId/shared-recipes", shareRecipe);
+// professionalRouter.get("/clients/:clientId/shared-recipes", listSharedRecipes);
 
 professionalRouter.post("/clients/:clientId/goals", setGoal);
 professionalRouter.get("/clients/:clientId/goals", listGoals);

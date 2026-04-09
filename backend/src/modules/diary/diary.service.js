@@ -1,7 +1,7 @@
-import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend } from "./diary.repository.js";
+import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId } from "./diary.repository.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
-
+import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
@@ -19,7 +19,8 @@ async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, ite
             diaryEntryId: entry.diaryEntryId,
             portionId: item.portionId,
             quantity: item.quantity,
-            customFood: item.customFood
+            customFood: item.customFood,
+            fatSecret: item.fatSecret
         })));
     }
 
@@ -60,6 +61,7 @@ function getSummaryRange(period, endDate) {
             // const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
             const daysSinceMonday = (dayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
             fromDate.setUTCDate(fromDate.getUTCDate() - daysSinceMonday);
+            toDate.setUTCDate(fromDate.getUTCDate() + 6); // set to Sunday of the same week
             break;
         case "monthly":
             fromDate = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
@@ -124,6 +126,8 @@ const toDateStr = (val) => {
 async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
     const { fromDate, toDate } = getSummaryRange("weekly", endDate);
     const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate });
+    console.log(fromDate, toDate);
+    console.log(rows);
     const caloriesByDate = new Map(rows.map(row => [toDateStr(row.date), Number(row.calories)]));
 
     return Array.from({ length: 7 }, (_, i) => {
@@ -136,8 +140,8 @@ async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
 }
 
 // only subscriberId is required, other filters are optional
-async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) { 
-    const entries = validateListDisplay({ subscriberId, consumedAt, mealType, notes });
+async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) { 
+    const entries = validateListDisplay({ subscriberId, start, end, mealType, notes });
 
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
@@ -148,7 +152,7 @@ async function getDiaryEntryById({ diaryEntryId }) {
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
-async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood }) {
+async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood, fatSecret }) {
     let resolvedPortionId = portionId;
 
     const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
@@ -160,9 +164,9 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
     }
 
     if (resolvedPortionId == null) {
-        if (!customFood) throw new DiaryEntryError("Must provide either portionId or customFood");
+        if (!customFood && !fatSecret) throw new DiaryEntryError("Must provide either portionId, customFood, or fatSecret");
         // Create the food item + portion first, get back the portionId
-        resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood });
+        resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood, fatSecret });
     }
 
     const entryCheck = await createDiaryEntryItemRepository(validatedEntries);
@@ -170,16 +174,36 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
     return entryCheck;
 }
 
-async function createCustomFoodAndGetPortionId({ userId, customFood }) {
+async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }) {
+    var parsed = null;
+    
+    if (fatSecret != null) {
+        const foodDetails = await searchFoodById(fatSecret.externalId);
+        parsed = parseFoodResponse(foodDetails);
+    }
+
+    
     const foodItem = await createFoodItem({
-        name: customFood.name,
-        brand: customFood.brand ?? null,
-        source: "user",
-        externalId: null,
-        createdByUserId: userId,
+        name: fatSecret == null ? customFood.name : parsed.name,
+        brand: fatSecret == null ? customFood.brand : parsed.brand,
+        source: fatSecret == null  ? "user" : "fatsecret",
+        externalId: fatSecret == null  ? null : fatSecret.externalId,
+        createdByUserId: fatSecret == null ? userId : null,
     });
 
-    // First portion is used as the diary item's portion — multi-portion support can come later
+    if (fatSecret != null) {
+        const portion = parsed.portions[0]; // for simplicity, we just take the first portion returned by the API. In a real implementation, we might want to allow user to select from multiple portions or enter custom portion details.
+        const foodPortion = await createFoodPortion({
+            foodItemId: foodItem.foodItemId,
+            description: portion.description,
+            weightG: portion.weight_g ?? null,
+            nutrients: portion.nutrients ?? [],
+        });
+
+        return foodPortion.portionId;
+
+    }
+
     const portion = customFood.portions[0];
     const foodPortion = await createFoodPortion({
         foodItemId: foodItem.foodItemId,
@@ -193,6 +217,13 @@ async function createCustomFoodAndGetPortionId({ userId, customFood }) {
 
 async function createFoodItem({ name, brand, source, externalId, createdByUserId }) {
     const data = validateCreateFoodItemInput({ name, brand, source, externalId, createdByUserId });
+
+    if (externalId){
+        const existing = await checkExistingFoodItemByExternalId(externalId);
+        if (existing) {
+            return existing;
+        }
+    }
 
     return insertFoodItem(data);
 }
@@ -271,8 +302,11 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 
-    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: todayStart.toISOString() });
-    const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, consumedAt: todayStart.toISOString() });
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
+    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: todayEnd.toISOString() });
+    const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
 
     
     // we can calculate weekly calory trend based on daily summaries for each day of the week, but for simplicity let's just return total calories for the week for now
