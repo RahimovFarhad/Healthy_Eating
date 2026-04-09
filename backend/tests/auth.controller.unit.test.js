@@ -123,6 +123,24 @@ describe("Authentication Controller", () => {
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: "Invalid credentials" });
     });
+    test("Returns 500 on unexpected error", async () => {
+      const req = {
+        body: {
+          email: "user@example.com",
+          password: "Password123!",
+        },
+      };
+      const res = createRes(); 
+
+      mockAuthenticateUser.mockRejectedValue(new Error("db exploded")); // We create a generic error that is not an instance of AuthError to simulate an unexpected error in the service layer
+
+      await login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Internal server error",
+      });
+    });
 
   });
 
@@ -235,7 +253,7 @@ describe("Authentication Controller", () => {
       expect(res.json).toHaveBeenCalledWith({ message: "Username already in use" });
     });
 
-    test("register returns 500 on unexpected error", async () => {
+    test("Returns 500 on unexpected error", async () => {
       const req = {
         body: {
           email: "user@example.com",
