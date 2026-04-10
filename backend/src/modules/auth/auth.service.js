@@ -44,12 +44,26 @@ async function authenticateUser(email, password) {
 }
 
 async function registerUser(email, username, password) {
-    const existingUser = await prisma.user.findUnique({
-        where: { email }
+    const existingUser = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { email: email },
+                { fullName: username }
+            ]
+        },
+        select: {
+            userId: true,
+            email: true,
+            fullName: true
+        }
     });
 
     if (existingUser) {
-        throw new AuthError("Email already in use");
+        if (existingUser.email === email) {
+            throw new AuthError("Email already in use");
+        } else if (existingUser.fullName === username) {
+            throw new AuthError("Username already in use");
+        }
     }
 
     const passwordHash = await hashPassword(password);
@@ -73,6 +87,8 @@ async function registerUser(email, username, password) {
 }
 
 async function generateRefreshToken(email) {
+    //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
+
     const user = await prisma.user.findUnique({
         where: { email }
     });

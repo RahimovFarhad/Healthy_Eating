@@ -124,18 +124,19 @@ async function deleteProfessionalClientLink({ professionalId, clientId }) {
     });
 }
 
-async function insertAdviceMessage({ professionalId, clientId, message }) {
-    return prisma.adviceMessage.create({
+async function insertMessage({ professionalId, clientId, message }) {
+    return prisma.message.create({
         data: {
             professionalId,
             subscriberId: clientId,
             message,
+            sentBy: "professional",
         },
     });
 }
 
-async function listAdviceMessages({ professionalId, clientId }) {
-    return prisma.adviceMessage.findMany({
+async function listMessages({ professionalId, clientId }) {
+    return prisma.message.findMany({
         where: {
             professionalId,
             subscriberId: clientId,
@@ -150,6 +151,6 @@ export {
     createProfessionalClientLink,
     listProfessionalClients,
     deleteProfessionalClientLink,
-    insertAdviceMessage,
-    listAdviceMessages,
+    insertMessage,
+    listMessages,
 };

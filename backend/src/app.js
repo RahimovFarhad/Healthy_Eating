@@ -5,9 +5,9 @@ import authRouter from "./modules/auth/auth.routes.js";
 import diaryRouter from "./modules/diary/diary.routes.js";
 import goalRouter from "./modules/goals/goals.routes.js";
 import professionalRouter from "./modules/professional/professional.routes.js";
-// import clientRouter from "./modules/client/client.routes.js";
+import clientRouter from "./modules/client/client.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
-import {searchFood} from "./utils/searchFood.js"
+import {searchFood, searchFoodById} from "./utils/searchFood.js"
 
 const app = express();
 
@@ -18,20 +18,30 @@ app.use("/diary", requireAuth, diaryRouter);
 app.use("/goals", requireAuth, goalRouter);
 
 app.use("/professional", requireAuth, professionalRouter)
-// app.use("/client", requireAuth, clientRouter)
+app.use("/client", requireAuth, clientRouter)
 
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ ok: true, db: "ok" });
 });
 
-app.get("/test-search", async (req, res) => {
+app.get("/search", async (req, res) => {
   await searchFood(req.query?.query).then(data => {
     res.json(data);
   }).catch(err => {
     res.status(500).json({ error: err.message });
   });
 });
+
+app.get("/search-by-id", async (req, res) => {
+  await searchFoodById(req.query?.food_id).then(data => {
+    res.json(data);
+  }).catch(err => {
+    res.status(500).json({ error: err.message });
+  });
+});
+
+
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Not Found" });

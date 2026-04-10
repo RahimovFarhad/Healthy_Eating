@@ -46,14 +46,18 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
 }
 
 // function to just list ALL AVAILABLE entry
-async function listDiaryEntries({ subscriberId, consumedAt, mealType, notes }) {
+async function listDiaryEntries({ subscriberId, start, end, mealType, notes }) {
     // add more filters 
     const entries = await prisma.diaryEntry.findMany({
         where: { 
             subscriberId,
             mealType: mealType ? { equals: mealType } : undefined,
             notes: notes ? { equals: notes } : undefined,
-            consumedAt: consumedAt ? { gte: new Date(consumedAt) } : undefined,
+            consumedAt: (start || end) ? {
+                ...(start && {gte: new Date(start)}),
+                ...(end && {lte: new Date(end)})
+            } : undefined,
+
         },  
         // attributes shown to client when requested
         select: { 
@@ -292,4 +296,15 @@ async function fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate }) {
     `;
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend };
+async function checkExistingFoodItemByExternalId(externalId) {
+    return prisma.foodItem.findUnique({
+        where: {
+            source_externalId: {
+                source: "fatsecret",
+                externalId: externalId
+            }
+        }
+    });
+}
+
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId };

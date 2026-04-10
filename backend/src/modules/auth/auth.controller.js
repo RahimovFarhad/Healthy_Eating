@@ -1,17 +1,16 @@
 import { authenticateUser, AuthError, UserNotFoundError, registerUser, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
 
 async function login(req, res) {
-    const { email, username, password } = req.body;
-    const loginIdentifier = email ?? username;
+    const { email, password } = req.body;
 
     try {
-        if (!loginIdentifier || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const token = await authenticateUser(loginIdentifier, password);
+        const token = await authenticateUser(email, password);
 
-        const refreshToken = await generateRefreshToken(loginIdentifier); 
+        const refreshToken = await generateRefreshToken(email); 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -43,6 +42,9 @@ async function register(req, res) {
         return res.status(201).json({ message: "User registered successfully", userId: user.userId });
     } catch (error) {
         if (error instanceof AuthError) {
+            if (error.message.includes("already in use")) { // even though currently only possible errors are email or username already in use, this is a safeguard for future error messages
+                return res.status(409).json({ message: error.message });
+            }
             return res.status(400).json({ message: error.message });
         }
         return res.status(500).json({ message: "Internal server error" });

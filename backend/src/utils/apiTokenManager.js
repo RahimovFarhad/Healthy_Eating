@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const CLIENT_ID = '076a443326144c08b59af2bb20c7aee8'
+// Needs to be kept in .env file, so I will reset those values after the test.
+
+const CLIENT_ID = '076a443326144c08b59af2bb20c7aee8' 
 const CLIENT_SECRET = 'b59e9d423497469584f0dd4648014c18'
 
 let cachedToken = null;
