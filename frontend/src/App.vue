@@ -19,6 +19,7 @@
     <!-- Footer is shared across all pages -->
     <AppFooter />
   </div>
+
 </template>
 
 <script setup>

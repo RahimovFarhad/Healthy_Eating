@@ -13,7 +13,7 @@
     <!-- ============================================================
          HERO SEARCH BANNER
          ============================================================ -->
-    <div class="p-4 mb-3 rounded text-center" style="background:#b8d4b8;">
+    <div class="p-4 mb-3 rounded text-center" style="background:#5a9e56;">
       <h3 class="fw-bold text-white mb-3">🍳 Recipe Library</h3>
       <div class="d-flex justify-content-center gap-2">
         <input type="text" class="form-control"
@@ -47,12 +47,13 @@
       <div class="col-md-4" v-for="recipe in pagedRecipes" :key="recipe.id">
         <div class="card recipe-card h-100">
 
-          <!-- Image placeholder + overlaid badge + heart toggle -->
-          <div class="recipe-img-placeholder" style="position:relative;">
-            [ Food photo ]
+          <!-- Image + overlaid badge + heart toggle -->
+          <div style="position:relative;overflow:hidden;height:220px;">
+            <img :src="recipe.image" :alt="recipe.title"
+                 style="width:100%;height:100%;object-fit:cover;" />
             <span class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
-                  style="background:#aaa;">
-              —
+                  style="background:#5a9e56;">
+              {{ recipe.category }}
             </span>
             <span class="position-absolute top-0 end-0 m-2"
                   style="cursor:pointer;font-size:1.1rem;"
@@ -62,16 +63,16 @@
 
           <!-- Card body -->
           <div class="card-body pb-1">
-            <h6 class="fw-bold mb-1 text-muted">—</h6>
-            <div class="text-muted" style="font-size:0.75rem;">— · —</div>
-            <div class="small mt-1 text-muted">— kcal · P:—g · C:—g · F:—g</div>
-            <div class="text-muted" style="font-size:0.75rem;">⏱ —</div>
+            <h6 class="fw-bold mb-1">{{ recipe.title }}</h6>
+            <div class="text-muted" style="font-size:0.75rem;">{{ recipe.category }} · {{ recipe.cuisine }}</div>
+            <div class="small mt-1 text-muted">{{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g</div>
+            <div class="text-muted" style="font-size:0.75rem;">⏱ {{ recipe.time }}</div>
           </div>
 
           <!-- Card footer -->
           <div class="card-footer bg-transparent border-top d-flex gap-2">
             <button class="btn btn-gf btn-sm flex-fill" @click="viewRecipe(recipe)">View Recipe</button>
-            <button class="btn btn-gf-outline btn-sm flex-fill">+ Add to Diary</button>
+            <button class="btn btn-gf-outline btn-sm flex-fill" @click="pickMeal(recipe)">+ Add to Diary</button>
           </div>
         </div>
       </div>
@@ -106,34 +107,50 @@
          ============================================================ -->
     <div v-if="selectedRecipe"
          class="p-4 rounded mb-4"
-         style="background:#f0f7ef;border:1.5px solid #b0d4ac;">
-      <h5 class="fw-bold mb-3" style="color:#2a5a28;">Recipe Detail</h5>
+         style="background:#f0f7ef;border:1.5px solid #5a9e56;">
+      <h5 class="fw-bold mb-3" style="color:#5a9e56;">{{ selectedRecipe.title }}</h5>
       <div class="row g-4">
 
         <div class="col-md-3">
-          <div class="recipe-img-placeholder rounded mb-2" style="height:130px;">[ Full photo ]</div>
-          <div class="small text-muted mb-1">— · —</div>
-          <div class="small text-muted mb-2">— prep</div>
+          <img :src="selectedRecipe.image" :alt="selectedRecipe.title"
+               class="rounded mb-2" style="width:100%;height:180px;object-fit:cover;" />
+          <div class="small text-muted mb-1">{{ selectedRecipe.category }} · {{ selectedRecipe.cuisine }}</div>
+          <div class="small text-muted mb-2">⏱ {{ selectedRecipe.time }}</div>
           <div class="d-flex flex-wrap gap-1">
-            <button class="btn btn-gf btn-sm">♥ Save</button>
-            <button class="btn btn-gf-outline btn-sm">+ Add to Diary</button>
-            <button class="btn btn-outline-secondary btn-sm">Tried it ✓</button>
+            <button class="btn btn-gf btn-sm"
+                    @click="selectedRecipe.saved = !selectedRecipe.saved">
+              {{ selectedRecipe.saved ? '♥ Saved' : '♥ Save' }}
+            </button>
+            <button class="btn btn-gf-outline btn-sm" @click="pickMeal(selectedRecipe)">+ Add to Diary</button>
           </div>
         </div>
 
         <div class="col-md-3">
           <h6 class="fw-bold">Ingredients</h6>
-          <div class="small text-muted">No ingredients yet.</div>
+          <ul class="small text-muted ps-3 mb-0">
+            <li v-for="ing in selectedRecipe.ingredients" :key="ing">{{ ing }}</li>
+          </ul>
         </div>
 
         <div class="col-md-3">
           <h6 class="fw-bold">Method</h6>
-          <div class="small text-muted">No steps yet.</div>
+          <ol class="small text-muted ps-3 mb-0">
+            <li v-for="step in selectedRecipe.steps" :key="step" class="mb-1">{{ step }}</li>
+          </ol>
         </div>
 
         <div class="col-md-3">
           <h6 class="fw-bold">Per Serving</h6>
-          <div class="small text-muted">No data yet.</div>
+          <ul class="small text-muted list-unstyled mb-0">
+            <li>Calories: {{ selectedRecipe.kcal }} kcal</li>
+            <li>Protein: {{ selectedRecipe.protein }}g</li>
+            <li>Carbs: {{ selectedRecipe.carbs }}g</li>
+            <li v-if="selectedRecipe.sugars != null">of which sugars: {{ selectedRecipe.sugars }}g</li>
+            <li>Fat: {{ selectedRecipe.fat }}g</li>
+            <li v-if="selectedRecipe.saturatedFat != null">of which saturated: {{ selectedRecipe.saturatedFat }}g</li>
+            <li v-if="selectedRecipe.salt != null">Salt: {{ selectedRecipe.salt }}g</li>
+            <li>Servings: {{ selectedRecipe.servings }}</li>
+          </ul>
         </div>
 
       </div>
@@ -141,11 +158,35 @@
               @click="selectedRecipe = null">✕ Close</button>
     </div>
 
+    <!-- ============================================================
+         MEAL PICKER MODAL — shown when "+ Add to Diary" is clicked
+         ============================================================ -->
+    <Teleport to="body">
+      <div v-if="pendingRecipe"
+           style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1050;display:flex;align-items:center;justify-content:center;"
+           @click.self="pendingRecipe = null">
+        <div class="p-4 rounded bg-white shadow" style="min-width:300px;max-width:380px;">
+          <h6 class="fw-bold mb-1" style="color:#5a9e56;">Add to Diary</h6>
+          <p class="small text-muted mb-3">{{ pendingRecipe.title }} — choose a meal:</p>
+          <div class="d-grid gap-2">
+            <button v-for="meal in meals" :key="meal.id"
+                    class="btn btn-gf"
+                    @click="confirmAdd(meal.id)">
+              {{ meal.icon }} {{ meal.label }}
+            </button>
+          </div>
+          <button class="btn btn-outline-secondary btn-sm w-100 mt-3"
+                  @click="pendingRecipe = null">Cancel</button>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { recipes, meals, addRecipeToDiary } from '../diaryStore.js'
 
 const PAGE_SIZE = 6
 
@@ -154,30 +195,13 @@ const activeTab      = ref('all')
 const selectedRecipe = ref(null)
 const currentPage    = ref(1)
 
+// Meal picker state — shown when user clicks "+ Add to Diary"
+const pendingRecipe  = ref(null)
+
 const tabs = [
   { id: 'all', label: 'All Recipes'     },
   { id: 'fav', label: 'My Favourites ♥' },
 ]
-
-// 48 blank placeholder entries
-const recipes = ref(
-  Array.from({ length: 48 }, (_, i) => ({
-    id: i + 1,
-    title: '',
-    category: '',
-    cuisine: '',
-    kcal: null,
-    protein: null,
-    carbs: null,
-    fat: null,
-    time: '',
-    badge: '',
-    badgeColor: '#aaa',
-    saved: false,
-    ingredients: [],
-    steps: [],
-  }))
-)
 
 const filteredRecipes = computed(() => {
   let result = recipes.value
@@ -215,5 +239,14 @@ const pageItems = computed(() => {
 function viewRecipe(recipe) {
   selectedRecipe.value = recipe
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+}
+
+function pickMeal(recipe) {
+  pendingRecipe.value = recipe
+}
+
+function confirmAdd(mealId) {
+  addRecipeToDiary(pendingRecipe.value, mealId)
+  pendingRecipe.value = null
 }
 </script>

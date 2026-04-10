@@ -17,8 +17,8 @@
     <!-- ============================================================
          PAGE HEADER
          ============================================================ -->
-    <div class="p-3 mb-3 rounded" style="background:#e8f4e6;border:1px solid #b0d4ac;">
-      <h4 style="color:#1a4a18;" class="mb-0">💬 Messages</h4>
+    <div class="p-3 mb-3 rounded" style="background:#e8f4e6;border:1px solid #5a9e56;">
+      <h4 style="color:#5a9e56;" class="mb-0">💬 Messages</h4>
       <small class="text-secondary">Communicate with your nutrition professional</small>
     </div>
 
@@ -48,7 +48,7 @@
 
         <!-- ---- Shared goals ---- -->
         <div class="card border p-3">
-          <h6 class="fw-bold mb-2" style="color:#1a4a18;">Shared Goals</h6>
+          <h6 class="fw-bold mb-2" style="color:#5a9e56;">Shared Goals</h6>
           <div class="small text-muted">
             <div>No shared goals yet.</div>
           </div>
@@ -61,7 +61,7 @@
            ============================================================ -->
       <div class="col-md-8">
         <div class="card border" style="height:420px;display:flex;flex-direction:column;">
-          <div class="card-header fw-bold small" style="background:#d6e8d4;">
+          <div class="card-header fw-bold small" style="background:#e8f4e6;">
             💬 Conversation
           </div>
 
@@ -75,7 +75,7 @@
 
               <!-- Professional / nutritionist message — left-aligned, grey bubble -->
               <div v-if="msg.from === 'pro'" class="chat-pro" style="max-width:80%;">
-                <div class="fw-semibold small mb-1" style="color:#555;">Your Nutritionist</div>
+                <div class="fw-semibold small mb-1" style="color:#5a9e56;">Your Nutritionist</div>
                 <div class="small">{{ msg.text }}</div>
                 <div class="text-muted mt-1" style="font-size:0.7rem;">{{ msg.time }}</div>
               </div>

@@ -14,9 +14,9 @@
          WELCOME BANNER
          ============================================================ -->
     <div class="d-flex justify-content-between align-items-center p-3 mb-3 rounded"
-         style="background:#e8f4e6;border:1px solid #a0c89c;">
+         style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
-        <h4 style="color:#1a4a18;" class="mb-0">Welcome 🌿</h4>
+        <h4 style="color:#5a9e56;" class="mb-0">Welcome 🌿</h4>
         <small class="text-secondary">Here's your health summary for today — {{ today }}</small>
       </div>
       <!-- Quick shortcut to the Food Diary -->
@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <h5 class="fw-bold mb-3" style="color:#1a4a18;">Your Overview</h5>
+    <h5 class="fw-bold mb-3" style="color:#5a9e56;">Your Overview</h5>
 
     <!-- ============================================================
          ROW 1: Food Diary card + Nutritional Overview card

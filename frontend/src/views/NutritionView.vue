@@ -13,9 +13,9 @@
          PAGE HEADER + PERIOD SWITCHER
          ============================================================ -->
     <div class="p-3 mb-3 rounded d-flex justify-content-between align-items-center"
-         style="background:#e8f4e6;border:1px solid #b0d4ac;">
+         style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
-        <h4 style="color:#1a4a18;" class="mb-0">📊 Nutritional Overview</h4>
+        <h4 style="color:#5a9e56;" class="mb-0">📊 Nutritional Overview</h4>
         <small class="text-secondary">Detailed breakdown of your nutritional intake</small>
       </div>
       <!-- Period buttons — clicking sets activePeriod, which could filter data in a real app -->
@@ -37,7 +37,7 @@
       <!-- ---- CALORIE RING (SVG donut) ---- -->
       <div class="col-md-4">
         <div class="card border p-3 text-center h-100">
-          <h6 class="fw-bold mb-3" style="color:#1a4a18;">Calories</h6>
+          <h6 class="fw-bold mb-3" style="color:#5a9e56;">Calories</h6>
           <!--
             SVG donut ring:
             r=62, circumference = 2π×62 ≈ 389
@@ -45,9 +45,9 @@
             stroke-dashoffset shifts the start to the top of the circle
           -->
           <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
-            <circle cx="80" cy="80" r="62" fill="none" stroke="#eee" stroke-width="18"/>
-            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#aaa">No data</text>
-            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#bbb">Log meals to begin</text>
+            <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"/>
+            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#5a9e56">No data</text>
+            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
           </svg>
           <div class="mt-2 text-start small text-muted">
             <div>■ Eaten: —</div>
@@ -60,16 +60,16 @@
       <!-- ---- MACRO DONUT (three arcs stacked) ---- -->
       <div class="col-md-4">
         <div class="card border p-3 text-center h-100">
-          <h6 class="fw-bold mb-3" style="color:#1a4a18;">Macronutrients</h6>
+          <h6 class="fw-bold mb-3" style="color:#5a9e56;">Macronutrients</h6>
           <!--
             Three stacked arcs — each uses stroke-dashoffset to continue where the previous ended.
             Carbs: 52% → 202px  |  Protein: 31% → 120px  |  Fat: 17% → 66px
             stroke-dashoffset positions each arc immediately after the previous one.
           -->
           <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
-            <circle cx="80" cy="80" r="62" fill="none" stroke="#eee" stroke-width="18"/>
-            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#aaa">No data</text>
-            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#bbb">Log meals to begin</text>
+            <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"/>
+            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#5a9e56">No data</text>
+            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
           </svg>
           <div class="mt-2 text-start small text-muted">
             <div>■ Carbs: —</div>
@@ -82,7 +82,7 @@
       <!-- ---- DAILY INSIGHTS ---- -->
       <div class="col-md-4">
         <div class="card border p-3 h-100">
-          <h6 class="fw-bold mb-3" style="color:#1a4a18;">💡 Today's Insights</h6>
+          <h6 class="fw-bold mb-3" style="color:#5a9e56;">💡 Today's Insights</h6>
           <div class="text-muted small p-2">
             Insights will appear here once you have logged meals for the day.
           </div>
@@ -94,10 +94,10 @@
     <!-- ============================================================
          FULL NUTRIENT BREAKDOWN TABLE
          ============================================================ -->
-    <h6 class="fw-bold mb-2" style="color:#1a4a18;">Full Nutrient Breakdown</h6>
+    <h6 class="fw-bold mb-2" style="color:#5a9e56;">Full Nutrient Breakdown</h6>
     <div class="table-responsive mb-4">
       <table class="table table-sm table-striped border">
-        <thead style="background:#c0c0c0;color:#fff;">
+        <thead style="background:#5a9e56;color:#fff;">
           <tr>
             <th>Nutrient</th>
             <th>Eaten</th>
@@ -130,7 +130,7 @@
     <!-- ============================================================
          7-DAY CALORIE TREND BAR CHART
          ============================================================ -->
-    <h6 class="fw-bold mb-3" style="color:#1a4a18;">7-Day Calorie Trend</h6>
+    <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
     <div class="card border p-3 mb-4">
       <div class="d-flex align-items-end gap-2 justify-content-center"
            style="height:120px;position:relative;">
@@ -200,6 +200,6 @@ function statusColor(s) {
   if (s === 'OK' || s === 'Good')      return '#5a9e56'
   if (s === 'Low' || s === 'Very Low') return '#e8a820'
   if (s === 'High')                    return '#d94f4f'
-  return '#ccc'
+  return '#5a9e56'
 }
 </script>

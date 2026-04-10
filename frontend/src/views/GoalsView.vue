@@ -16,9 +16,9 @@
          PAGE HEADER
          ============================================================ -->
     <div class="p-3 mb-3 rounded d-flex justify-content-between align-items-center"
-         style="background:#e8f4e6;border:1px solid #b0d4ac;">
+         style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
-        <h4 style="color:#1a4a18;" class="mb-0">🎯 Goals & Progress</h4>
+        <h4 style="color:#5a9e56;" class="mb-0">🎯 Goals & Progress</h4>
         <small class="text-secondary">Set personal goals, track your progress and celebrate achievements</small>
       </div>
       <!-- Toggle the add-goal section below -->
@@ -40,7 +40,7 @@
     <!-- ============================================================
          ACTIVE GOALS GRID
          ============================================================ -->
-    <h6 class="fw-bold mb-3" style="color:#1a4a18;">Active Goals</h6>
+    <h6 class="fw-bold mb-3" style="color:#5a9e56;">Active Goals</h6>
 
     <!-- Empty state -->
     <div v-if="activeGoals.length === 0"
@@ -70,15 +70,15 @@
               -->
               <svg viewBox="0 0 100 100" width="90" height="90" style="flex-shrink:0;">
                 <!-- Grey background ring -->
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#eee" stroke-width="10"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#5a9e56" stroke-width="10"/>
                 <!-- Green progress arc -->
                 <circle cx="50" cy="50" r="40" fill="none" stroke="#5a9e56" stroke-width="10"
                         :stroke-dasharray="`${goal.pct * 2.51} ${(100 - goal.pct) * 2.51}`"
                         stroke-dashoffset="31"
                         transform="rotate(-90 50 50)"/>
                 <!-- Centre percentage label -->
-                <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="#2a5a28">{{ goal.pct }}%</text>
-                <text x="50" y="60" text-anchor="middle" font-size="9"  fill="#555">done</text>
+                <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="#5a9e56">{{ goal.pct }}%</text>
+                <text x="50" y="60" text-anchor="middle" font-size="9"  fill="#5a9e56">done</text>
               </svg>
 
               <!-- Goal details text -->
@@ -124,7 +124,7 @@
         <!-- ---- CUSTOM GOAL FORM ---- -->
         <div class="col-md-6">
           <div class="add-meal-panel">
-            <h6 class="fw-bold mb-3" style="color:#2a5a28;">📝 Create Custom Goal</h6>
+            <h6 class="fw-bold mb-3" style="color:#5a9e56;">📝 Create Custom Goal</h6>
 
             <div class="mb-2">
               <label class="form-label form-label-sm">Goal Title</label>
@@ -205,7 +205,7 @@
         <!-- ---- PRESET GOALS PICKER ---- -->
         <div class="col-md-6">
           <div class="add-meal-panel">
-            <h6 class="fw-bold mb-2" style="color:#2a5a28;">⭐ Choose a Preset Goal</h6>
+            <h6 class="fw-bold mb-2" style="color:#5a9e56;">⭐ Choose a Preset Goal</h6>
             <p class="text-muted small mb-3">Curated goals recommended by our nutrition team</p>
 
             <!-- Category filter pills -->

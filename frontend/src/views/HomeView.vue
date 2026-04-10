@@ -18,7 +18,7 @@
 
           <!-- Left: headline + CTA -->
           <div class="col-md-6">
-            <h1 style="color:#1a4a18;font-weight:800;font-size:2.8rem;line-height:1.2;">
+            <h1 style="color:#5a9e56;font-weight:800;font-size:2.8rem;line-height:1.2;">
               Eat Better.<br>Feel Better.<br>Live Better.
             </h1>
             <p class="mt-3 text-secondary">
@@ -83,7 +83,7 @@
                       style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;color:#999;cursor:pointer;">✕</button>
               <!-- Header -->
               <div style="font-size:2rem;margin-bottom:0.4rem;">{{ activeFeature.icon }}</div>
-              <h5 class="fw-bold mb-1" style="color:#1a4a18;">{{ activeFeature.title }}</h5>
+              <h5 class="fw-bold mb-1" style="color:#5a9e56;">{{ activeFeature.title }}</h5>
               <p class="text-muted small mb-3">{{ activeFeature.detail }}</p>
               <!-- Feature bullet list -->
               <ul class="list-unstyled mb-4">
@@ -127,7 +127,7 @@
          ============================================================ -->
     <section id="auth-section" class="py-5">
       <div class="container">
-        <div class="section-header text-center mb-4" style="background:#c0c0c0;">
+        <div class="section-header text-center mb-4" style="background:#5a9e56;">
           <h5 class="text-white">Get Started — Log In or Create an Account</h5>
         </div>
 
