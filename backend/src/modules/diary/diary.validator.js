@@ -170,7 +170,7 @@ function validateEntryDetails({ diaryEntryId }) {
     };
 }
 
-function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) {
+function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId, isCustomOrFatSecret }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
         throw new DiaryEntryError("User ID is required");
@@ -186,9 +186,12 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) 
         throw new DiaryEntryError("Quantity is required and must be a positive number");
     }
 
-    const normalizedPortionId = normalizePositiveInteger(portionId);
-    if (!normalizedPortionId) {
-        throw new DiaryEntryError("Portion ID is required");
+    var normalizedPortionId = -1; // default portion id for custom or fatsecret items without portion, can be adjusted later if needed
+    if (!isCustomOrFatSecret) {
+        normalizedPortionId = normalizePositiveInteger(portionId);
+        if (!normalizedPortionId) {
+            throw new DiaryEntryError("Portion ID is required");
+        }
     }
 
     return {

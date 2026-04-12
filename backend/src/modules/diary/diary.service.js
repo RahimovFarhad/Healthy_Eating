@@ -58,7 +58,7 @@ function getSummaryRange(period, endDate) {
         case "weekly": // current week's Monday until endDate
             fromDate = new Date(endDate);
             fromDate.setUTCHours(0, 0, 0, 0);
-            // const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
+            const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
             const daysSinceMonday = (dayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
             fromDate.setUTCDate(fromDate.getUTCDate() - daysSinceMonday);
             toDate.setUTCDate(fromDate.getUTCDate() + 6); // set to Sunday of the same week
@@ -126,8 +126,6 @@ const toDateStr = (val) => {
 async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
     const { fromDate, toDate } = getSummaryRange("weekly", endDate);
     const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate });
-    console.log(fromDate, toDate);
-    console.log(rows);
     const caloriesByDate = new Map(rows.map(row => [toDateStr(row.date), Number(row.calories)]));
 
     return Array.from({ length: 7 }, (_, i) => {
@@ -154,8 +152,7 @@ async function getDiaryEntryById({ diaryEntryId }) {
 
 async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood, fatSecret }) {
     let resolvedPortionId = portionId;
-
-    const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
+    const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId, isCustomOrFatSecret: !!customFood || !!fatSecret }); // validation on data
 
     const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
 
@@ -167,6 +164,7 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
         if (!customFood && !fatSecret) throw new DiaryEntryError("Must provide either portionId, customFood, or fatSecret");
         // Create the food item + portion first, get back the portionId
         resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood, fatSecret });
+        validatedEntries.portionId = resolvedPortionId; // update the validated entries with the new portionId for the next steps
     }
 
     const entryCheck = await createDiaryEntryItemRepository(validatedEntries);
