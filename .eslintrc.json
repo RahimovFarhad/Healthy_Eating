@@ -12,8 +12,23 @@
   "rules": {
     "no-unused-vars": "warn", // warning for unused variables in the code
     "no-console": "warn", // warning if any console methods used for debugging
-    "no-undef": "off", // turned off as function names purpose are clear
+    "no-undef": "warn", // turned off as function names purpose are clear
     "quotes": ["warn","double",{"avoidEscape": true}], // warning for inconsistent use of double quotations
     "no-case-declarations": "off" // turned off, as it doesn't affect code logic
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js", "tests/**/*.js"],
+      "env": {
+        "jest": true
+      }
+    },
+    {
+    "files": ["backend/src/server.js", "backend/src/app.js"],
+    "rules": {
+      "no-console": "off"
+    }
   }
+  ]
+  
 }
