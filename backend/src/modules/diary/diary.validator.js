@@ -2,11 +2,23 @@ const MEAL_TYPES = new Set(["breakfast", "lunch", "dinner", "snack"]);
 const SUMMARY_PERIODS = new Set(["daily", "weekly", "monthly"]);
 const FOOD_SOURCES = new Set(["fatsecret", "user", "system"]);
 
+// handles any diary errors by raising a notification issue
 class DiaryEntryError extends Error {
     constructor(message) {
         super(message);
         this.name = "DiaryEntryError";
     }
+}
+
+// handle diary error status codes 
+function getDiaryErrorStatus(message) {
+    if (message.toLowerCase().includes("unauthorised")) {
+        return 403; // forbidden access
+    }
+    if (message.toLowerCase().includes("not found")) {
+        return 404; // not found
+    }
+    return 400; // bad request - for otherwise
 }
 
 function normalizePositiveInteger(value) {
@@ -158,7 +170,7 @@ function validateEntryDetails({ diaryEntryId }) {
     };
 }
 
-function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) {
+function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId, isCustomOrFatSecret }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
         throw new DiaryEntryError("User ID is required");
@@ -174,12 +186,16 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId }) 
         throw new DiaryEntryError("Quantity is required and must be a positive number");
     }
 
-    const normalizedPortionId = normalizePositiveInteger(portionId);
-    if (!normalizedPortionId) {
-        throw new DiaryEntryError("Portion ID is required");
+    var normalizedPortionId = -1; // default portion id for custom or fatsecret items without portion, can be adjusted later if needed
+    if (!isCustomOrFatSecret) {
+        normalizedPortionId = normalizePositiveInteger(portionId);
+        if (!normalizedPortionId) {
+            throw new DiaryEntryError("Portion ID is required");
+        }
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryId: normalizedDiaryEntryId,
         quantity: normalizedQuantity,
         portionId: normalizedPortionId
@@ -209,6 +225,7 @@ function validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantit
 
     return {
         diaryEntryItemId: normalizedDiaryEntryItemId,
+        userId: normalizedUserId,
         portionId: normalizedPortionId,
         quantity: normalizedQuantity
     };
@@ -226,11 +243,12 @@ function validateDeletedDiaryEntry({ userId, diaryEntryId }) {
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryId: normalizedDiaryEntryId
     };
 }
 
-function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId }) {
+function validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }) {
     const normalizedUserId = normalizePositiveInteger(userId);
     if (!normalizedUserId) {
         throw new DiaryEntryError("User ID is required");
@@ -242,6 +260,7 @@ function validateDeletedDiaryEntryItem({ userId, diaryEntryId, diaryEntryItemId 
     }
 
     return {
+        userId: normalizedUserId,
         diaryEntryItemId: normalizedDiaryEntryItemId
     };
 }
@@ -321,4 +340,4 @@ function validateUserIdForDashboard({ subscriberId }) {
      }; 
 }
 
-export { DiaryEntryError, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };
+export { DiaryEntryError, getDiaryErrorStatus, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };

@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Needs to be kept in .env file, so I will reset those values after the test.
 
-const CLIENT_ID = '076a443326144c08b59af2bb20c7aee8' 
-const CLIENT_SECRET = 'b59e9d423497469584f0dd4648014c18'
+const CLIENT_ID = "076a443326144c08b59af2bb20c7aee8" 
+const CLIENT_SECRET = "b59e9d423497469584f0dd4648014c18"
 
 let cachedToken = null;
 let tokenExpiry = null;
@@ -23,10 +23,10 @@ async function getToken() {
 
 async function refreshToken() {
     const response = await axios.post(
-        'https://oauth.fatsecret.com/connect/token',
+        "https://oauth.fatsecret.com/connect/token",
         new URLSearchParams({
-            grant_type: 'client_credentials',
-            scope: 'basic'
+            grant_type: "client_credentials",
+            scope: "basic"
         }),
         {
             auth: {
@@ -34,7 +34,7 @@ async function refreshToken() {
                 password: CLIENT_SECRET
             },
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                "Content-Type": "application/x-www-form-urlencoded"
             }
         }
     );

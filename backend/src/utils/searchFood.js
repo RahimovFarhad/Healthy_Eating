@@ -1,26 +1,37 @@
-import { getToken } from './apiTokenManager.js';
-import axios from 'axios';
-import { XMLParser } from 'fast-xml-parser';
+import { getToken } from "./apiTokenManager.js";
+import axios from "axios";
+import { XMLParser } from "fast-xml-parser";
 
-import { createClient } from 'redis';
+import { createClient } from "redis";
 const redis = createClient();
-await redis.connect();
+let redisConnectPromise;
+
+async function ensureRedisConnected() {
+    if (redis.isOpen) return;
+    if (!redisConnectPromise) {
+        redisConnectPromise = redis.connect().catch((error) => {
+            redisConnectPromise = undefined;
+            throw error;
+        });
+    }
+    await redisConnectPromise;
+}
 
 async function searchFood(query) {
+    await ensureRedisConnected();
+
     const cacheKey = `search:${query}`;
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
-    console.log("Cache miss for key:", cacheKey); // Debug log
-
     const token = await getToken();
-    const response = await axios.get('https://platform.fatsecret.com/rest/foods/search/v1', {
+    const response = await axios.get("https://platform.fatsecret.com/rest/foods/search/v1", {
         headers: {
             Authorization: `Bearer ${token}`
         },
         params: {
-            method: 'foods.search',
+            method: "foods.search",
             search_expression: query,
-            format: 'json'
+            format: "json"
         }
     });
 
@@ -29,19 +40,21 @@ async function searchFood(query) {
 }
 
 async function searchFoodById(id) {
+    await ensureRedisConnected();
+
     const cacheKey = `food:${id}`;
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
 
     const token = await getToken();
-    const response = await axios.get(`https://platform.fatsecret.com/rest/food/v5`, {
+    const response = await axios.get("https://platform.fatsecret.com/rest/food/v5", {
         headers: {
             Authorization: `Bearer ${token}`
         },
         params: {
             food_id: id
         },
-        responseType: 'text' // force raw XML string
+        responseType: "text" // force raw XML string
     });
 
     const parsed = parseFoodResponse(response.data);

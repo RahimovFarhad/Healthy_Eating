@@ -78,7 +78,7 @@ async function ensureProfessionalClientRelation({ professionalId, clientId }) {
 
     const existing = await findProfessionalClientLink(validated);
     if (!existing || existing.status !== "active") {
-        throw new ProfessionalError("Client is not assigned to this professional");
+        throw new ClientError("Client is not assigned to this professional");
     }
 
     return validated;

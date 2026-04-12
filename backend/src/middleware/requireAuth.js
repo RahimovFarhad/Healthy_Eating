@@ -7,13 +7,13 @@ function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return res.status(401).json({ message: 'Authorization header missing' });
+        return res.status(401).json({ message: "Authorization header missing" });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Token missing' });
+        return res.status(401).json({ message: "Token missing" });
     }
 
     try {
@@ -26,7 +26,7 @@ function requireAuth(req, res, next) {
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ message: 'Invalid token' });
+        return res.status(401).json({ message: "Invalid token" });
     }
 }
 
