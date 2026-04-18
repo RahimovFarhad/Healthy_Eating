@@ -30,4 +30,13 @@ function requireAuth(req, res, next) {
     }
 }
 
-export { requireAuth };
+function requireProfessional(req, res, next) {
+    if (req.user?.role !== "professional") {
+        return res.status(403).json({ message: "Forbidden: Requires professional role" });
+    }
+
+    next();
+}
+
+export { requireAuth, requireProfessional };
+
