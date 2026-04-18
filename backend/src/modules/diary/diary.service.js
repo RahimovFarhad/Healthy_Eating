@@ -2,6 +2,7 @@ import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntrie
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
+
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
