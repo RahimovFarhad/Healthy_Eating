@@ -2,6 +2,7 @@ import request from "supertest";
 import app from "../src/app.js";
 import { prisma } from "../src/db/prisma.js";
 import jwt from "jsonwebtoken";
+import { start } from "repl";
 
 const { sign } = jwt;
 
@@ -55,7 +56,48 @@ describe("Professional API", () => {
 
   });
 
+  afterAll(async () => {
+    if (userPayload.userId > 0 && subscriber?.userId > 0) {
+      await prisma.message.deleteMany({
+        where: {
+          professionalId: userPayload.userId,
+          subscriberId: subscriber.userId,
+        },
+      });
 
+      await prisma.nutritionGoal.deleteMany({
+        where: {
+          subscriberId: subscriber.userId,
+          setByProfessionalId: userPayload.userId,
+        },
+      });
+
+      await prisma.professionalClient.deleteMany({
+        where: {
+          professionalId: userPayload.userId,
+          subscriberId: subscriber.userId,
+        },
+      });
+    }
+
+    if (subscriber?.userId > 0) {
+      await prisma.user.deleteMany({
+        where: {
+          userId: subscriber.userId,
+        },
+      });
+    }
+
+    if (userPayload.userId > 0) {
+      await prisma.user.deleteMany({
+        where: {
+          userId: userPayload.userId,
+        },
+      });
+    }
+
+    await prisma.$disconnect();
+  });
   
 
   describe("PATCH /professional/setAsProfessional", () => {
@@ -155,5 +197,109 @@ describe("Professional API", () => {
     });
 
   });
+
+  describe("GET /professional/clients", () => {
+    beforeAll(async () => {
+      // professional should have sent the invitation by now, but it is not accepted yet, so we will accept the invitation by directly updating the database
+      await prisma.professionalClient.updateMany({
+        where: {
+          professionalId: userPayload.userId,
+          subscriberId: subscriber.userId,
+        },
+        data: {
+          status: "active",
+        },
+      });
+    });
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app).get("/professional/clients");
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get("/professional/clients")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("clients");
+      expect(Array.isArray(res.body.clients)).toBe(true);
+    });
+
+    test("rejects invalid include query", async () => {
+      const res = await request(app)
+        .get("/professional/clients")
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .query({
+          include: "invalid",
+        });
+
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe("POST /professional/clients/:clientId/messages", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .send({
+          message: "Hello",
+        });
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects empty message", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          message: "Hello from professional",
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty("message");
+      expect(res.body.message).toHaveProperty("professionalId", userPayload.userId);
+      expect(res.body.message).toHaveProperty("subscriberId", subscriber.userId);
+    });
+  });
+
+  describe("GET /professional/clients/:clientId/messages", () => { 
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/messages`);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects invalid clientId", async () => {
+      const res = await request(app)
+        .get("/professional/clients/invalid/messages")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/messages`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("messages");
+      expect(Array.isArray(res.body.messages)).toBe(true);
+    });
+  });
+
 
 });
