@@ -106,10 +106,11 @@ async function listDiaryEntries({ subscriberId, start, end, mealType, notes }) {
     return entries;
 }
 
-async function findDiaryEntryById({ diaryEntryId }) {
+async function findDiaryEntryById({ diaryEntryId, subscriberId }) {
     const retrieval = await prisma.diaryEntry.findUnique({
         where: {
-            diaryEntryId
+            diaryEntryId,
+            subscriberId,
         },
         select: { 
             items: {
