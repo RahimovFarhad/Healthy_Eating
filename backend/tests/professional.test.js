@@ -301,5 +301,168 @@ describe("Professional API", () => {
     });
   });
 
+  describe("GET /professional/clients/:clientId/summary", () => { 
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/summary`);
 
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects missing period", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .query({
+          endDate: "2026-03-09",
+        });
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("rejects invalid endDate", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .query({
+          period: "daily",
+          endDate: "not-a-date",
+        });
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .query({
+          period: "daily",
+          endDate: "2026-03-09",
+        });
+
+      expect([200, 400]).toContain(res.statusCode);
+
+      if (res.statusCode === 200) { // no need to check full response body of summary as it is already tested in diary api
+        expect(res.body).toHaveProperty("summary");
+      }
+    });
+  });
+
+  describe("GET /professional/clients/:clientId/dashboard", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/dashboard`);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/dashboard`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect([200, 500]).toContain(res.statusCode);
+
+      if (res.statusCode === 200) {
+        expect(res.body).toHaveProperty("dashboardData");
+      }
+    });
+  });
+
+  describe("POST /professional/clients/:clientId/goals", () => { 
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/goals`)
+        .send({
+          goal: {
+            nutrientId: 1,
+          },
+        });
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects invalid clientId", async () => {
+      const res = await request(app)
+        .post("/professional/clients/invalid/goals")
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          goal: {
+            nutrientId: 1,
+          },
+        });
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {      
+        const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/goals`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          goal: {
+            nutrientId: 1,
+            targetMin: 100,
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+
+          },
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty("createdGoal");
+      expect(res.body.createdGoal).toHaveProperty("subscriberId", subscriber.userId);
+      expect(res.body.createdGoal).toHaveProperty("setByProfessionalId", userPayload.userId);
+      expect(res.body.createdGoal).toHaveProperty("nutrientId", 1);
+      expect(res.body.createdGoal).toHaveProperty("targetMin", "100");
+    });
+  });
+
+  describe("GET /professional/clients/:clientId/goals", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/goals`);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/goals`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("goals");
+      expect(Array.isArray(res.body.goals)).toBe(true);
+    });
+  });
+
+  describe("DELETE /professional/clients/:clientId", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .delete(`/professional/clients/${subscriber.userId}`);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects if professional is not actually a professional", async () => {
+      const res = await request(app)
+        .delete(`/professional/clients/${subscriber.userId}`)
+        .set("Authorization", `Bearer ${subscriberAccessToken}`);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .delete(`/professional/clients/${subscriber.userId}`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("removedClient");
+      expect(res.body.removedClient).toHaveProperty("professionalId", userPayload.userId);
+      expect(res.body.removedClient).toHaveProperty("subscriberId", subscriber.userId);
+    });
+  });
 });

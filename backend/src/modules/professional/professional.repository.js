@@ -155,7 +155,7 @@ async function listMessages({ professionalId, clientId }) {
             professionalId,
             subscriberId: clientId,
         },
-        orderBy: [{ createdAt: "desc" }, { adviceId: "desc" }],
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 }
 
