@@ -1,12 +1,6 @@
 // tests/diary.controller.unit.test.js
 import { expect, jest } from "@jest/globals";
-
-class mockDiaryEntryError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "DiaryEntryError";
-  }
-}
+import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
 
 // Mocks
 const TEST_ID = 1;
@@ -21,6 +15,9 @@ const mockGetNutritionSummary = jest.fn();
 const mockListDiaryEntries = jest.fn();
 const mockGetDiaryEntryById = jest.fn();
 const mockCreateDiaryEntryItem = jest.fn();
+const mockUpdateDiaryEntryItem = jest.fn();
+const mockDeleteExistingDiaryEntry = jest.fn();
+const mockDeleteExistingDiaryEntryItem = jest.fn();
 const mockCreateFoodItem = jest.fn();
 const mockCreateFoodPortion = jest.fn();
 const mockGetDashboardDataForSubscriber = jest.fn();
@@ -31,6 +28,9 @@ jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
   listDiaryEntries: mockListDiaryEntries,
   getDiaryEntryById: mockGetDiaryEntryById,
   createDiaryEntryItem: mockCreateDiaryEntryItem,
+  updateDiaryEntryItem: mockUpdateDiaryEntryItem,
+  deleteExistingDiaryEntry: mockDeleteExistingDiaryEntry,
+  deleteExistingDiaryEntryItem: mockDeleteExistingDiaryEntryItem,
   createFoodItem: mockCreateFoodItem,
   createFoodPortion: mockCreateFoodPortion,
   getDashboardDataForSubscriber: mockGetDashboardDataForSubscriber,
@@ -63,8 +63,7 @@ describe("Diary Controller", () => {
   describe("createEntry", () => {
     test("Returns status code 201 and creates new diary entry when successful", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           consumedAt: "2026-4-18",
@@ -96,8 +95,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status 201 and creates new diary entry and items contains a valid portionId", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         body: {
           consumedAt: "2026-4-18",
@@ -141,7 +139,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntry.mockRejectedValue(new mockDiaryEntryError("Subscriber ID is required"));
+      mockCreateDiaryEntry.mockRejectedValue(new DiaryEntryError("Subscriber ID is required"));
 
       await createEntry(req,res,next);
 
@@ -151,8 +149,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when consumedAt is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           mealType: "breakfast",
@@ -163,7 +160,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntry.mockRejectedValue(new mockDiaryEntryError("Consumed at date is required"));
+      mockCreateDiaryEntry.mockRejectedValue(new DiaryEntryError("Consumed at date is required"));
 
       await createEntry(req,res,next);
 
@@ -173,8 +170,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when consumedAt is invalid", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           consumedAt: "not-a-date",
@@ -186,7 +182,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntry.mockRejectedValue(new mockDiaryEntryError("Consumed at date is required"));
+      mockCreateDiaryEntry.mockRejectedValue(new DiaryEntryError("Consumed at date is required"));
 
       await createEntry(req,res,next);
 
@@ -196,8 +192,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when mealType is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           consumedAt: "2026-4-18",
@@ -209,7 +204,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Meal type is required and must be one of: breakfast, lunch, dinner, snack")
+        new DiaryEntryError("Meal type is required and must be one of: breakfast, lunch, dinner, snack")
       );
 
       await createEntry(req,res,next);
@@ -222,8 +217,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when mealType is invalid", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           consumedAt: "2026-4-18",
@@ -236,7 +230,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Meal type is required and must be one of: breakfast, lunch, dinner, snack")
+        new DiaryEntryError("Meal type is required and must be one of: breakfast, lunch, dinner, snack")
       );
 
       await createEntry(req,res,next);
@@ -249,8 +243,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when item contains a non-positive number", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           consumedAt: "2026-4-18",
@@ -263,7 +256,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Item at index 0: quantity must be a positive number")
+        new DiaryEntryError("Item at index 0: quantity must be a positive number")
       );
 
       await createEntry(req,res,next);
@@ -276,8 +269,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when item has no portionId, custom_food, or fat_secret", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         body: {
           consumedAt: "2026-4-18",
@@ -290,7 +282,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Item at index 0: must provide either portionId, be a custom_food, or have fat_secret information")
+        new DiaryEntryError("Item at index 0: must provide either portionId, be a custom_food, or have fat_secret information")
       );
 
       await createEntry(req, res, next);
@@ -303,8 +295,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when fat_secret item is missing external_id", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         body: {
           consumedAt: "2026-4-18",
@@ -317,7 +308,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Item at index 0: must provide fat_secret external_id")
+        new DiaryEntryError("Item at index 0: must provide fat_secret external_id")
       );
 
       await createEntry(req,res,next);
@@ -330,7 +321,7 @@ describe("Diary Controller", () => {
     });
     test("Returns error code 400 when item has invalid portionId", async () => {
       const req = {
-        user: { subscriberId: TEST_USERID },
+        user: { userId: TEST_USERID },
         body: {
           consumedAt: "2026-4-18",
           mealType: "breakfast",
@@ -342,7 +333,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntry.mockRejectedValue(
-        new mockDiaryEntryError("Item at index 0: invalid portionId")
+        new DiaryEntryError("Item at index 0: invalid portionId")
       );
 
       await createEntry(req,res,next);
@@ -358,8 +349,7 @@ describe("Diary Controller", () => {
   describe("getSummary", () => {
     test("Returns status code 200 and gets the nutritional summary when successful", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         query: {
           period: "daily",
@@ -376,13 +366,13 @@ describe("Diary Controller", () => {
 
       await getSummary(req,res,next);
 
-      expect(mockCreateDiaryEntry).toHaveBeenCalledWith({
+      expect(mockGetNutritionSummary).toHaveBeenCalledWith({
         subscriberId: TEST_USERID,
         period: req.query.period,
         endDate: req.query.endDate,
       });
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({ entry });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ summary: entry });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns status code 400 when subscriberId is missing", async () => {
@@ -397,7 +387,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetNutritionSummary.mockRejectedValue(new mockDiaryEntryError("Subscriber ID is required"));
+      mockGetNutritionSummary.mockRejectedValue(new DiaryEntryError("Subscriber ID is required"));
 
       await getSummary(req,res,next);
 
@@ -407,8 +397,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when period is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           endDate: "2026-4-18",
@@ -417,7 +406,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetNutritionSummary.mockRejectedValue(new mockDiaryEntryError("Period is required"));
+      mockGetNutritionSummary.mockRejectedValue(new DiaryEntryError("Period is required and must be one of: daily, weekly, monthly"));
 
       await getSummary(req,res,next);
 
@@ -427,8 +416,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when period is not a valid duration", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           period: "every week",
@@ -438,7 +426,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetNutritionSummary.mockRejectedValue(new mockDiaryEntryError("Period is required"));
+      mockGetNutritionSummary.mockRejectedValue(new DiaryEntryError("Period is required and must be one of: daily, weekly, monthly"));
 
       await getSummary(req,res,next);
 
@@ -448,8 +436,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when endDate is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           period: "daily",
@@ -458,7 +445,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetNutritionSummary.mockRejectedValue(new mockDiaryEntryError("End date is required"));
+      mockGetNutritionSummary.mockRejectedValue(new DiaryEntryError("endDate is required and must be a valid date"));
 
       await getSummary(req,res,next);
 
@@ -468,8 +455,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when endDate is not a valid date", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         body: {
           period: "daily",
@@ -479,7 +465,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetNutritionSummary.mockRejectedValue(new mockDiaryEntryError("End date is required"));
+      mockGetNutritionSummary.mockRejectedValue(new DiaryEntryError("endDate is required and must be a valid date"));
 
       await getSummary(req,res,next);
 
@@ -492,8 +478,7 @@ describe("Diary Controller", () => {
   describe("listDiaryEntries", () => {
     test("Returns status code 200 and lists all existing diary entries", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         query: {
           start: "2026-04-18",
@@ -535,7 +520,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Subscriber ID is required"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Subscriber ID is required"));
 
       await listDiaryEntries(req, res, next);
 
@@ -545,8 +530,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when start is not a valid date", async () => {
       const req = { 
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         query: {
           start: "invalid-date",
@@ -558,7 +542,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Start date must be a valid date"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Start date must be a valid date"));
 
       await listDiaryEntries(req, res, next);
 
@@ -568,8 +552,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when start is a future date", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         query: {
           start: "2100-04-19",
@@ -581,7 +564,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Start date cannot be in the future"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Start date cannot be in the future"));
 
       await listDiaryEntries(req, res, next);
 
@@ -591,8 +574,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when end is not a valid date", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         query: {
           start: "2026-04-18",
@@ -604,7 +586,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("End date must be a valid date"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("End date must be a valid date"));
 
       await listDiaryEntries(req, res, next);
 
@@ -614,8 +596,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when end is before start date", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         }, 
         query: {
           start: "2026-04-19",
@@ -627,7 +608,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("End date cannot be before start date"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("End date cannot be before start date"));
 
       await listDiaryEntries(req, res, next);
 
@@ -637,8 +618,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when mealType is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         }, 
         query: {
           start: "2026-04-18",
@@ -649,7 +629,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack"));
 
       await listDiaryEntries(req, res, next);
 
@@ -659,8 +639,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when mealType is invalid", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         }, 
         query: {
           start: "2026-04-18",
@@ -672,7 +651,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack"));
 
       await listDiaryEntries(req, res, next);
 
@@ -682,8 +661,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when notes is invalid", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         }, 
         query: {
           start: "2026-04-18",
@@ -694,7 +672,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockListDiaryEntries.mockRejectedValue(new mockDiaryEntryError("Notes must be a string"));
+      mockListDiaryEntries.mockRejectedValue(new DiaryEntryError("Notes must be a string"));
 
       await listDiaryEntries(req, res, next);
 
@@ -707,8 +685,7 @@ describe("Diary Controller", () => {
   describe("getDiaryEntryById", () => {
     test("Returns status code 200 and gets diary entry by ID when successful", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
           id: TEST_ENTRYID,
@@ -725,7 +702,7 @@ describe("Diary Controller", () => {
       await getDiaryEntryById(req,res,next);
 
       expect(mockGetDiaryEntryById).toHaveBeenCalledWith({
-        subscriberId: TEST_USERID,
+        userId: TEST_USERID,
         diaryEntryId: TEST_ENTRYID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
@@ -734,8 +711,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when diaryEntryId is missing", async () => {
       const req = {
-          user: {
-            subscriberId: TEST_USERID,
+          user: { userId: TEST_USERID,
           },
           params: {
           },
@@ -743,7 +719,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetDiaryEntryById.mockRejectedValue(new mockDiaryEntryError("Diary Entry ID is required"));
+      mockGetDiaryEntryById.mockRejectedValue(new DiaryEntryError("Diary Entry ID is required"));
 
       await getDiaryEntryById(req,res,next);
 
@@ -762,7 +738,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockGetDiaryEntryById.mockRejectedValue(new mockDiaryEntryError("Subscriber ID is required"));
+      mockGetDiaryEntryById.mockRejectedValue(new DiaryEntryError("Subscriber ID is required"));
 
       await getDiaryEntryById(req,res,next);
 
@@ -775,8 +751,7 @@ describe("Diary Controller", () => {
   describe("createDiaryEntryItem", () => {
     test("Returns status code 201 and create new diary entry item", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
           id: TEST_ENTRYITEMID,
@@ -794,12 +769,12 @@ describe("Diary Controller", () => {
         diaryEntryId: TEST_ENTRYITEMID
       };
 
-      mockCreateDiaryEntry.mockResolvedValue(entry);
+      mockCreateDiaryEntryItem.mockResolvedValue(entry);
 
       await createDiaryEntryItem(req,res,next);
 
-      expect(mockCreateDiaryEntry).toHaveBeenCalledWith({
-        subscriberId: TEST_USERID,
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith({
+        userId: TEST_USERID,
         diaryEntryId: Number(req.params.id),
         quantity: req.body.quantity,
         portionId: req.body.portionId,
@@ -807,7 +782,7 @@ describe("Diary Controller", () => {
         fatSecret: req.body.fatSecret,
       });
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({ entry });
+      expect(res.json).toHaveBeenCalledWith({ newItem: entry });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns status code 400 when userId is missing", async () => {
@@ -827,7 +802,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("User ID is required"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("User ID is required"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -837,8 +812,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when diaryEntryId is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
         },
@@ -852,7 +826,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Diary Entry ID is required"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Diary Entry ID is required"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -862,8 +836,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 403 when input fails diary ownership check", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
           id: TEST_FAIL_ENTRYITEMID,
@@ -878,7 +851,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Unauthorised access"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Unauthorised access"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -903,7 +876,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Quantity is required and must be a positive number"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Quantity is required and must be a positive number"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -913,8 +886,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when quantity is not a positive number", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
           id: TEST_ENTRYITEMID,
@@ -929,7 +901,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Quantity is required and must be a positive number"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Quantity is required and must be a positive number"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -939,8 +911,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when portionId is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         },
         params: {
           id: TEST_ENTRYITEMID,
@@ -954,7 +925,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Portion ID is required and must be a positive number"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Portion ID is required and must be a positive number"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -980,7 +951,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
 
-      mockCreateDiaryEntryItem.mockRejectedValue(new mockDiaryEntryError("Portion ID is required and must be a positive number"));
+      mockCreateDiaryEntryItem.mockRejectedValue(new DiaryEntryError("Portion ID is required and must be a positive number"));
 
       await createDiaryEntryItem(req,res,next);
 
@@ -990,8 +961,7 @@ describe("Diary Controller", () => {
     });
     test("Returns status code 400 when no portionId, customFood, or fatSecret is provided", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID
+        user: { userId: TEST_USERID
         },
         params: {
           id: TEST_ENTRYITEMID
@@ -1007,7 +977,7 @@ describe("Diary Controller", () => {
       const next = jest.fn();
 
       mockCreateDiaryEntryItem.mockRejectedValue(
-        new mockDiaryEntryError("Must provide either portionId, customFood, or fatSecret")
+        new DiaryEntryError("Must provide either portionId, customFood, or fatSecret")
       );
 
       await createDiaryEntryItem(req,res,next);
@@ -1030,8 +1000,7 @@ describe("Diary Controller", () => {
   describe("getDashboard", () => {
     test("Returns status code 200 and gets user dashboard", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         }
       };
       const res = createRes();
@@ -1044,28 +1013,27 @@ describe("Diary Controller", () => {
 
       await getDashboard(req,res,next);
 
-      expect(mockGetDiaryEntryById).toHaveBeenCalledWith({
+      expect(mockGetDashboardDataForSubscriber).toHaveBeenCalledWith({
         subscriberId: TEST_USERID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ entry });
+      expect(res.json).toHaveBeenCalledWith({ dashboardData: entry });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns status code 400 when subscriberId is missing", async () => {
       const req = {
-        user: {
-          subscriberId: TEST_USERID,
+        user: { userId: TEST_USERID,
         }
       };
       const res = createRes();
       const next = jest.fn();
 
-      mockGetDashboardDataForSubscriber.mockRejectedValue(new mockDiaryEntryError("Subscriber ID is required"));
+      mockGetDashboardDataForSubscriber.mockRejectedValue(new DiaryEntryError("Subscriber ID is required"));
 
       await getDashboard(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Subscriber ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Subscriber ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
