@@ -159,14 +159,20 @@ function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
     };
 }
 
-function validateEntryDetails({ diaryEntryId }) {
+function validateEntryDetails({ diaryEntryId, subscriberId }) {
     const normalizedDiaryEntryId = normalizePositiveInteger(diaryEntryId);
     if (!normalizedDiaryEntryId) {
         throw new DiaryEntryError("Diary Entry ID is required");
     }
 
+    const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
+    if (!normalizedSubscriberId) {
+        throw new DiaryEntryError("Subscriber ID is required");
+    }
+
     return {
-        diaryEntryId: normalizedDiaryEntryId
+        diaryEntryId: normalizedDiaryEntryId,
+        subscriberId: normalizedSubscriberId
     };
 }
 
@@ -186,11 +192,11 @@ function validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId, is
         throw new DiaryEntryError("Quantity is required and must be a positive number");
     }
 
-    var normalizedPortionId = -1; // default portion id for custom or fatsecret items without portion, can be adjusted later if needed
+    var normalizedPortionId = null; // default portion id for custom or fatsecret items without portion, can be adjusted later if needed
     if (!isCustomOrFatSecret) {
         normalizedPortionId = normalizePositiveInteger(portionId);
         if (!normalizedPortionId) {
-            throw new DiaryEntryError("Portion ID is required");
+            throw new DiaryEntryError("Portion ID is required and must be a positive number");
         }
     }
 

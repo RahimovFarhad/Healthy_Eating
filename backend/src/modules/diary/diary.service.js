@@ -145,8 +145,8 @@ async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) {
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
 
-async function getDiaryEntryById({ diaryEntryId }) {
-    const entries = validateEntryDetails({ diaryEntryId }); // validation on data
+async function getDiaryEntryById({ diaryEntryId, subscriberId }) {
+    const entries = validateEntryDetails({ diaryEntryId, subscriberId }); // validation on data
 
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }

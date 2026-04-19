@@ -4,7 +4,7 @@ import { DiaryEntryError, getDiaryErrorStatus } from "./diary.validator.js";
 async function createEntry(req, res, next) {
     // console.log("Creating diary entry with body:", req.body);
     try {
-        const subscriberId = req.user?.userId ?? null;
+        const subscriberId = req.user?.subscriberId ?? null;
         const entry = await createDiaryEntry({
             subscriberId,
             consumedAt: req.body?.consumedAt,
@@ -26,7 +26,7 @@ async function createEntry(req, res, next) {
 
 async function getSummary(req, res, next) {
     try {
-        const subscriberId = req.user?.userId ?? null;
+        const subscriberId = req.user?.subscriberId ?? null;
         const summary = await getNutritionSummary({
             subscriberId,
             period: req.query?.period,
@@ -45,11 +45,12 @@ async function getSummary(req, res, next) {
 
 async function listDiaryEntries(req, res, next) {
     try {
-        const subscriberId = req.user?.userId ?? null; // req. from user
+        const subscriberId = req.user?.subscriberId ?? null;
         // from the diary.service.js file, just show all the entries
         const record = await listDiaryEntriesService({
             subscriberId,
-            consumedAt: req.query?.consumedAt,
+            start: req.query?.start,
+            end: req.query?.end,
             mealType: req.query?.mealType,
             notes: req.query?.notes,
         });
@@ -68,7 +69,7 @@ async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
             diaryEntryId: Number(req.params?.id),
-            userId: req.params?.id, // userId retrieval
+            subscriberId: req.user?.subscriberId,
         });
 
         return res.status(200).json({ entry });
@@ -84,13 +85,14 @@ async function getDiaryEntryById(req, res, next) {
 
 async function createDiaryEntryItem(req, res, next) {
     try {
-        const userId = req.user?.userId ?? null;
+        const userId = req.user?.subscriberId ?? null;
         const newItem = await createDiaryEntryItemService({
             userId,
             diaryEntryId: Number(req.params?.id),
             quantity: req.body?.quantity,
             portionId: req.body?.portionId,
             customFood: req.body?.customFood ?? null,
+            fatSecret: req.body?.fatSecret ?? null,
         });
 
         return res.status(201).json({ newItem });
@@ -106,7 +108,7 @@ async function createDiaryEntryItem(req, res, next) {
 
 async function updateDiaryEntryItem(req, res, next) {
     try {
-        const userId = req.user?.userId ?? null;
+        const userId = req.user?.subscriberId ?? null;
         const updatedEntry = await updateDiaryEntryItemService({
             userId,
             diaryEntryItemId: Number(req.params?.itemId),
@@ -127,7 +129,7 @@ async function updateDiaryEntryItem(req, res, next) {
 
 async function deleteEntry(req, res, next) {
     try {
-        const userId = req.user?.userId ?? null;
+        const userId = req.user?.subscriberId ?? null;
         const deleteEntry = await deleteExistingDiaryEntry({
             userId,
             diaryEntryId: Number(req.params?.id)
@@ -146,7 +148,7 @@ async function deleteEntry(req, res, next) {
 
 async function deleteEntryItem(req, res, next) {
     try {
-        const userId = req.user?.userId ?? null;
+        const userId = req.user?.subscriberId ?? null;
         const deleteItem = await deleteExistingDiaryEntryItem({
             userId,
             diaryEntryItemId: Number(req.params?.itemId)
@@ -165,7 +167,7 @@ async function deleteEntryItem(req, res, next) {
 
 async function getDashboard(req, res, next) {
     try {
-        const subscriberId = req.user?.userId ?? null;
+        const subscriberId = req.user?.subscriberId ?? null;
         // call a service function that aggregates all the necessary data for the dashboard
         const dashboardData = await getDashboardDataForSubscriber({subscriberId});
 
