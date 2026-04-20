@@ -1,29 +1,34 @@
 import { expect, jest } from "@jest/globals";
 import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
-import { before, describe } from "node:test";
 
-mockgetDashboardDataForSubscriber = jest.fn();
-mockGetNutritionSummary = jest.fn();
-mockCreateGoalForSubscriber = jest.fn();
-mockGetGoalsService = jest.fn();
-mockCreateProfessionalClientLink = jest.fn();
-mockDeleteProfessionalClientLink = jest.fn();
-mockFindProfessionalClientLink = jest.fn();
-mockInsertMessage = jest.fn();
-mockListMessages = jest.fn();
-mockListProfessionalClients = jest.fn();
-mockUpdateRoleToProfessional = jest.fn();
-mockValidateInviteClientInput = jest.fn();
-mockValidateListClientsInput = jest.fn();
-mockValidateMessageInput = jest.fn();
-mockValidateProfessionalId = jest.fn();
-mockValidateRelationshipInput = jest.fn();
-mockValidateSetGoalInput = jest.fn();
-mockValidateSummaryInput = jest.fn();
+const PROFESSIONAL_ID = 1;
+const SUBSCRIBER_ID = 2;
+
+const mockgetDashboardDataForSubscriber = jest.fn();
+const mockGetNutritionSummary = jest.fn();
+
+const mockCreateGoalForSubscriber = jest.fn();
+const mockGetGoalsService = jest.fn();
+
+const mockCreateProfessionalClientLink = jest.fn();
+const mockDeleteProfessionalClientLink = jest.fn();
+const mockFindProfessionalClientLink = jest.fn();
+const mockInsertMessage = jest.fn();
+const mockListMessages = jest.fn();
+const mockListProfessionalClients = jest.fn();
+const mockUpdateRoleToProfessional = jest.fn();
+
+const mockValidateInviteClientInput = jest.fn();
+const mockValidateListClientsInput = jest.fn();
+const mockValidateMessageInput = jest.fn();
+const mockValidateProfessionalId = jest.fn();
+const mockValidateRelationshipInput = jest.fn();
+const mockValidateSetGoalInput = jest.fn();
+const mockValidateSummaryInput = jest.fn();
 
 jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
-  getClientDashboardForProfessional: mockgetDashboardDataForSubscriber,
-  getClientSummaryForProfessional: mockGetNutritionSummary,
+  getDashboardDataForSubscriber: mockgetDashboardDataForSubscriber,
+  getNutritionSummary: mockGetNutritionSummary,
 }));
 
 jest.unstable_mockModule("../src/modules/goals/goals.service.js", () => ({
@@ -73,14 +78,82 @@ describe("Professional Service", () => {
     });
 
     describe("setUserAsProfessional", () => {
-        test.todo("should set a user as a professional when given a valid professionalId");
-        test.todo("should throw ProfessionalError when given an invalid professionalId");
+        test("should set a user as a professional when given a valid professionalId", async () => {
+            const validRes = {professionalId: PROFESSIONAL_ID};
+            mockValidateProfessionalId.mockReturnValue(validRes);
+            mockUpdateRoleToProfessional.mockReturnValue({
+                userId: PROFESSIONAL_ID,
+                role: "Professional"
+            });
+
+            const result = await setUserAsProfessional({professionalId: PROFESSIONAL_ID});
+
+            expect(mockValidateProfessionalId).toHaveBeenCalledWith({professionalId: PROFESSIONAL_ID});
+            expect(mockUpdateRoleToProfessional).toHaveBeenCalledWith(validRes);
+            expect(result).toEqual({
+                userId: PROFESSIONAL_ID,
+                role: "Professional"
+            });
+        });
+        test("should throw ProfessionalError when given an invalid professionalId", async () => {
+            
+            try {
+                mockValidateProfessionalId.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID is required");
+                });
+                result = await setUserAsProfessional({professionalId: PROFESSIONAL_ID});
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID is required");
+            }
+        });
     });
 
     describe("inviteClientToProfessional", () => {
-        test.todo("should send invitation to the client when given valid professionalId and subscriberId");
-        test.todo("should throw ProfessionalError when the client is already assigned to the professional");
-        test.todo("should throw ProfessionalError when the client invitation fails");
+        test("should send invitation to the client when given valid professionalId and subscriberId", async () => {
+            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validRes);
+            mockFindProfessionalClientLink.mockReturnValue(null);
+            const link = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID, status: "active"};
+            mockCreateProfessionalClientLink.mockReturnValue(link);
+
+            const result = await inviteClientToProfessional({ professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID });
+
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith({
+                professionalId: PROFESSIONAL_ID,
+                clientId: SUBSCRIBER_ID,
+            });
+            expect(mockCreateProfessionalClientLink).toHaveBeenCalledWith(validRes);
+            expect(result).toEqual(
+                link
+            )
+        });
+        test("should throw ProfessionalError when the client is already assigned to the professional", async () => {
+            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validRes);
+            const existingLink = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID, status: "active"};
+            mockFindProfessionalClientLink.mockReturnValue(existingLink);
+
+            try {
+                await inviteClientToProfessional({ professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client is already assigned to this professional");
+            }
+        });
+        test("should throw ProfessionalError when the client invitation fails", async () => {
+            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validRes);
+            mockFindProfessionalClientLink.mockReturnValue(null);
+            mockCreateProfessionalClientLink.mockReturnValue(null);
+
+            try {
+                await inviteClientToProfessional({ professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client invitation failed");
+            }
+        });
     });
 
     describe("getProfessionalClients", () => {
