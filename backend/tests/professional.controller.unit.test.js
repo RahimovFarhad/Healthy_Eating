@@ -1,4 +1,3 @@
-// tests/professional.controller.unit.test.js
 import { expect, jest } from "@jest/globals";
 import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
 
