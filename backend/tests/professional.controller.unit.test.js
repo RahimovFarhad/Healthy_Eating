@@ -176,44 +176,288 @@ describe("Professional Controller", () => {
   });
 
   describe("removeClient", () => {
-    test.todo("Returns status code 200 and removes the client on sucess");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 200 and removes the client on sucess", async () => {;
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const removedClient = { id: 1, professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID, status: "disabled" };
+      mockRemoveProfessionalClient.mockResolvedValue(removedClient);
+      await removeClient(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockRemoveProfessionalClient).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ removedClient });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockRemoveProfessionalClient.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await removeClient(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockRemoveProfessionalClient.mockRejectedValue(new Error("Unexpected error"));
+      await removeClient(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("getClientSummary", () => { // in this test file, actual summary function will not be tested, as it is already tested on diary unit tests 
-    test.todo("Returns status code 200 and returns client summary on sucess");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 200 and returns client summary on sucess", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const summary = { calories: 2000, protein: 150, carbs: 250, fats: 70 };
+      mockGetClientSummaryForProfessional.mockResolvedValue(summary);
+      await getClientSummary(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetClientSummaryForProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ summary });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientSummaryForProfessional.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await getClientSummary(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientSummaryForProfessional.mockRejectedValue(new Error("Unexpected error"));
+      await getClientSummary(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("getClientDashboard", () => { // in this test file, actual dashboard function will not be tested, as it is already tested on diary unit tests
-    test.todo("Returns status code 200 and returns client dashboard on sucess");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 200 and returns client dashboard on sucess", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const dashboardData = { weightTrend: "stable", calorieIntakeTrend: "increasing" };
+      mockGetClientDashboardForProfessional.mockResolvedValue(dashboardData);
+      await getClientDashboard(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetClientDashboardForProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ dashboardData });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientDashboardForProfessional.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await getClientDashboard(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientDashboardForProfessional.mockRejectedValue(new Error("Unexpected error"));
+      await getClientDashboard(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("sendMessage", () => {
-    test.todo("Returns status code 201 and sends message on success"); 
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 201 and sends message on success", async () => {
+      const messageText = "Hello, client!";
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: { message: messageText } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const message = { id: 1, text: messageText, sender: "professional", timestamp: new Date() };
+      mockSendMessageToClient.mockResolvedValue(message);
+      await sendMessage(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(mockSendMessageToClient).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID, message: messageText });
+      expect(res.json).toHaveBeenCalledWith({ message });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const messageText = "Hello, client!";
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: { message: messageText } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockSendMessageToClient.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await sendMessage(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const messageText = "Hello, client!";
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: { message: messageText } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockSendMessageToClient.mockRejectedValue(new Error("Unexpected error"));
+      await sendMessage(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("listMessages", () => {
-    test.todo("Returns status code 200 and lists messages between professional and the selected client on success");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 200 and lists messages between professional and the selected client on success", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const messages = [{ id: 1, text: "Hello, client!" }];
+      mockGetMessagesWithClient.mockResolvedValue(messages);
+      await listMessages(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetMessagesWithClient).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ messages });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetMessagesWithClient.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await listMessages(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetMessagesWithClient.mockRejectedValue(new Error("Unexpected error"));
+      await listMessages(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("setGoal", () => {
-    test.todo("Returns status code 201 and creates the goal on sucess");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 201 and creates the goal on success", async () => {
+      const goalObject = { nutritionId: 1, targetValue: 2000 };
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: {goal: goalObject} };
+      const res = createRes();
+      const next = jest.fn();
+
+      const goal = { id: 1, nutritionId: 1, targetValue: 2000 };
+      mockSetGoalForClient.mockResolvedValue(goal);
+      await setGoal(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(mockSetGoalForClient).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID, goal: goalObject });
+      expect(res.json).toHaveBeenCalledWith({ createdGoal: goal });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const goalObject = { nutritionId: 1, targetValue: 2000 };
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: {goal: goalObject} };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockSetGoalForClient.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await setGoal(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const goalObject = { nutritionId: 1, targetValue: 2000 };
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID }, body: {goal: goalObject} };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockSetGoalForClient.mockRejectedValue(new Error("Unexpected error"));
+      await setGoal(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 
   describe("listGoals", () => {
-    test.todo("Returns status code 200 and lists goals of the given client on sucess");
-    test.todo("Returns error code 400 when ProfessionalError is thrown");
-    test.todo("Passes to next on unknown error");
+    test("Returns status code 200 and lists goals of the given client on sucess", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const goals = [{ id: 1, nutritionId: 1, targetValue: 2000 }];
+      mockGetClientGoalsForProfessional.mockResolvedValue(goals);
+      await listGoals(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetClientGoalsForProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ goals });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientGoalsForProfessional.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await listGoals(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next on unknown error", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetClientGoalsForProfessional.mockRejectedValue(new Error("Unexpected error"));
+      await listGoals(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
   });
 });
