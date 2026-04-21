@@ -1,22 +1,10 @@
-<!--
-  HomeView.vue — Public homepage / landing page
-  Sections:
-    1. Hero       — headline, tagline, CTA buttons
-    2. Features   — 4 feature cards (Food Diary, Nutrition, Recipes, Pro Support)
-    3. How it Works — 4-step numbered process
-    4. Auth       — Login + Sign-up forms side-by-side
--->
 <template>
   <div>
 
-    <!-- ============================================================
-         HERO SECTION
-         ============================================================ -->
     <section class="py-5" style="background:#f0f6ef;">
       <div class="container">
         <div class="row align-items-center">
 
-          <!-- Left: headline + CTA -->
           <div class="col-md-6">
             <h1 style="color:#5a9e56;font-weight:800;font-size:2.8rem;line-height:1.2;">
               Eat Better.<br>Feel Better.<br>Live Better.
@@ -25,12 +13,10 @@
               Track your meals, get personalised nutritional advice,
               and discover healthy home-cooked recipes.
             </p>
-            <!-- Scrolls down to the login/sign-up section on this same page -->
             <a href="#auth-section" class="btn btn-gf mt-3 px-4">Get Started →</a>
             <a href="#features" class="btn btn-gf-outline mt-3 ms-2 px-4">Learn More →</a>
           </div>
 
-          <!-- Right: hero image placeholder -->
           <div class="col-md-6 mt-4 mt-md-0">
             <div class="rounded"
                  style="background:#e0e0e0;height:260px;display:flex;align-items:center;justify-content:center;color:#aaa;">
@@ -42,9 +28,6 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         FEATURES SECTION
-         ============================================================ -->
     <section id="features" class="py-5">
       <div class="container">
         <div class="section-header text-center mb-4">
@@ -52,7 +35,6 @@
         </div>
         <h6 class="mb-3 fw-bold">Core Features</h6>
 
-        <!-- v-for loops over the `features` array defined in <script setup> below -->
         <div class="row g-3">
           <div class="col-md-3" v-for="feature in features" :key="feature.title">
             <div class="card card-gf h-100"
@@ -72,20 +54,16 @@
           </div>
         </div>
 
-        <!-- ---- Feature detail modal overlay ---- -->
         <Teleport to="body">
           <div v-if="activeFeature"
                style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1050;display:flex;align-items:center;justify-content:center;"
                @click.self="activeFeature = null">
             <div style="background:#fff;border-radius:12px;max-width:440px;width:90%;padding:2rem;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-              <!-- Close button -->
               <button @click="activeFeature = null"
                       style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;color:#999;cursor:pointer;">✕</button>
-              <!-- Header -->
               <div style="font-size:2rem;margin-bottom:0.4rem;">{{ activeFeature.icon }}</div>
               <h5 class="fw-bold mb-1" style="color:#5a9e56;">{{ activeFeature.title }}</h5>
               <p class="text-muted small mb-3">{{ activeFeature.detail }}</p>
-              <!-- Feature bullet list -->
               <ul class="list-unstyled mb-4">
                 <li v-for="item in activeFeature.items" :key="item" class="mb-2 d-flex align-items-start gap-2">
                   <span style="color:#5a9e56;font-weight:700;">✓</span>
@@ -99,16 +77,12 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         HOW IT WORKS SECTION
-         ============================================================ -->
     <section class="py-5" style="background:#f9f9f9;">
       <div class="container">
         <div class="section-header text-center mb-4">
           <h5>How It Works</h5>
         </div>
         <div class="row g-3 text-center">
-          <!-- v-for loops over the `steps` array -->
           <div class="col-md-3" v-for="step in steps" :key="step.num">
             <div class="card h-100 border">
               <div class="card-body">
@@ -122,9 +96,6 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         AUTH SECTION — Login & Sign-up forms
-         ============================================================ -->
     <section id="auth-section" class="py-5">
       <div class="container">
         <div class="section-header text-center mb-4" style="background:#5a9e56;">
@@ -133,14 +104,12 @@
 
         <div class="row g-4">
 
-          <!-- ---- LOGIN FORM ---- -->
           <div class="col-md-6">
             <div class="card border p-4">
               <h6 class="fw-bold mb-3 border-bottom pb-2">Returning User — Log In</h6>
 
               <div class="mb-3">
                 <label class="form-label small">Email Address</label>
-                <!-- v-model two-way binds the input to loginForm.email -->
                 <input type="email" class="form-control"
                        placeholder="user@example.com"
                        v-model="loginForm.email">
@@ -153,11 +122,15 @@
                        v-model="loginForm.password">
               </div>
 
-              <button class="btn btn-gf w-100 mt-3" @click="handleLogin">Log In →</button>
+              <div v-if="loginError" class="alert alert-danger py-2 small mt-2 mb-0">{{ loginError }}</div>
+
+              <button class="btn btn-gf w-100 mt-3" @click="handleLogin" :disabled="loginLoading">
+                <span v-if="loginLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                Log In →
+              </button>
             </div>
           </div>
 
-          <!-- ---- SIGN-UP FORM ---- -->
           <div class="col-md-6">
             <div class="card border p-4">
               <h6 class="fw-bold mb-3 border-bottom pb-2">New User — Create Account</h6>
@@ -183,7 +156,13 @@
                        v-model="signupForm.password">
               </div>
 
-              <button class="btn btn-gf w-100" @click="handleSignup">Create My Account →</button>
+              <div v-if="signupError"   class="alert alert-danger py-2 small mb-2">{{ signupError }}</div>
+              <div v-if="signupSuccess" class="alert alert-success py-2 small mb-2">{{ signupSuccess }}</div>
+
+              <button class="btn btn-gf w-100" @click="handleSignup" :disabled="signupLoading">
+                <span v-if="signupLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                Create My Account →
+              </button>
             </div>
           </div>
 
@@ -197,32 +176,55 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { login } from '../auth.js'
+import { login, register } from '../auth.js'
 
 const router = useRouter()
 
-// Form state objects — bound to inputs via v-model
 const loginForm  = ref({ email: '', password: '' })
 const signupForm = ref({ name: '', email: '', password: '' })
 
-// In a real app these would call the backend API to verify credentials.
-// For now they just set the auth flag and navigate to the dashboard.
-function handleLogin() {
-  // Use the part before @ in the email as a display name fallback
-  const name = loginForm.value.email.split('@')[0]
-  login(name)
-  router.push('/dashboard')
+const loginLoading  = ref(false)
+const loginError    = ref('')
+const signupLoading = ref(false)
+const signupError   = ref('')
+const signupSuccess = ref('')
+
+async function handleLogin() {
+  loginError.value   = ''
+  loginLoading.value = true
+  try {
+    const ok = await login(loginForm.value.email, loginForm.value.password)
+    if (ok) {
+      router.push('/dashboard')
+    } else {
+      const { authError } = await import('../auth.js')
+      loginError.value = authError.value || 'Login failed'
+    }
+  } finally {
+    loginLoading.value = false
+  }
 }
 
-function handleSignup() {
-  login(signupForm.value.name)
-  router.push('/dashboard')
+async function handleSignup() {
+  signupError.value   = ''
+  signupSuccess.value = ''
+  signupLoading.value = true
+  try {
+    const ok = await register(signupForm.value.email, signupForm.value.name, signupForm.value.password)
+    if (ok) {
+      signupSuccess.value = 'Account created! You can now log in.'
+      signupForm.value = { name: '', email: '', password: '' }
+    } else {
+      const { authError } = await import('../auth.js')
+      signupError.value = authError.value || 'Registration failed'
+    }
+  } finally {
+    signupLoading.value = false
+  }
 }
 
-// ---- Feature modal state ----
 const activeFeature = ref(null)
 
-// ---- Feature cards data ----
 const features = [
   {
     icon: '📓', title: 'Food Diary',
@@ -268,7 +270,6 @@ const features = [
   },
 ]
 
-// ---- How-it-works steps data ----
 const steps = [
   { num: '①', title: 'Sign Up',      desc: 'Create your account and set your goals',      note: 'Free to join' },
   { num: '②', title: 'Log Meals',    desc: 'Record what you eat each day',                note: 'Quick & easy' },

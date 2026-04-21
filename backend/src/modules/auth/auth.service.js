@@ -87,8 +87,6 @@ async function registerUser(email, username, password) {
 }
 
 async function generateRefreshToken(email) {
-    //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
-
     const user = await prisma.user.findUnique({
         where: { email }
     });
@@ -97,15 +95,12 @@ async function generateRefreshToken(email) {
         throw new UserNotFoundError();
     }
 
-    // This implementation is enough for now, but we will store the refreshtoken in the database later, so we can invalidate it if needed. 
-    // That means we will also include a unique identifier for the token in the payload, so we can find it in the database later.
-    const payload = { 
+    const payload = {
         userId: user.userId,
         tokenType: "refresh"
     };
 
     const refreshToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
-    // Optionally, you can store the refresh token in the database for later validation.
     return refreshToken;
 }
 

@@ -42,7 +42,7 @@ async function register(req, res) {
         return res.status(201).json({ message: "User registered successfully", userId: user.userId });
     } catch (error) {
         if (error instanceof AuthError) {
-            if (error.message.includes("already in use")) { // even though currently only possible errors are email or username already in use, this is a safeguard for future error messages
+            if (error.message.includes("already in use")) {
                 return res.status(409).json({ message: error.message });
             }
             return res.status(400).json({ message: error.message });
@@ -71,4 +71,13 @@ async function refreshToken(req, res) {
 
 }
 
-export { login, register, refreshToken };
+async function logoutController(_req, res) {
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    return res.json({ message: "Logged out successfully" });
+}
+
+export { login, register, refreshToken, logoutController };
