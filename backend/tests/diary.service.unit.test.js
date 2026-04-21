@@ -1,7 +1,6 @@
 // tests/diary.service.unit.test.js
 import { expect, jest } from "@jest/globals";
-import { validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateUpdatedEntryItem } from "../src/modules/diary/diary.validator.js";
-import { updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, checkDiaryEntryItemOwnership } from "../src/modules/diary/diary.repository.js";
+import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
 
 // Mock the module(s) that the diary service depends on
 const TEST_ID = 1;
@@ -16,18 +15,58 @@ const mockValidateDeletedDiaryEntry = jest.fn();
 const mockDeleteDiaryEntry = jest.fn();
 const mockValidateDeletedDiaryEntryItem = jest.fn();
 const mockDeleteDiaryEntryItem = jest.fn();
+const mockValidateCreateDiaryEntryInput = jest.fn();
+const mockValidateSummaryInput = jest.fn();
+const mockValidateListDisplay = jest.fn();
+const mockValidateNewEntryDetails = jest.fn();
+const mockValidateEntryDetails = jest.fn();
+const mockValidateUserIdForDashboard = jest.fn();
+const mockValidateCreateFoodItemInput = jest.fn();
+const mockValidateCreateFoodPortionInput = jest.fn();
+
+const mockFetchSummaryData = jest.fn();
+const mockInsertDiaryEntry = jest.fn();
+const mockListDiaryEntries = jest.fn();
+const mockFindDiaryEntryById = jest.fn();
+const mockCreateDiaryEntryItem = jest.fn();
+const mockCheckDiaryEntryOwnership = jest.fn();
+const mockGetDaysLogged = jest.fn();
+const mockInsertFoodItem = jest.fn();
+const mockInsertFoodPortion = jest.fn();
+const mockFetchWeeklyCalorieTrend = jest.fn();
+const mockCheckExistingFoodItemByExternalId = jest.fn();
 
 jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
+  DiaryEntryError: DiaryEntryError,
+  validateCreateDiaryEntryInput: mockValidateCreateDiaryEntryInput,
+  validateSummaryInput: mockValidateSummaryInput,
+  validateListDisplay: mockValidateListDisplay,
+  validateNewEntryDetails: mockValidateNewEntryDetails,
   validateUpdatedEntryItem: mockValidateUpdatedEntryItem,
   validateDeletedDiaryEntry: mockValidateDeletedDiaryEntry,
+  validateEntryDetails: mockValidateEntryDetails,
   validateDeletedDiaryEntryItem: mockValidateDeletedDiaryEntryItem,
+  validateUserIdForDashboard: mockValidateUserIdForDashboard,
+  validateCreateFoodItemInput: mockValidateCreateFoodItemInput,
+  validateCreateFoodPortionInput: mockValidateCreateFoodPortionInput,
 }));
 
 jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
+  fetchSummaryData: mockFetchSummaryData,
+  insertDiaryEntry: mockInsertDiaryEntry,
+  listDiaryEntries: mockListDiaryEntries,
+  findDiaryEntryById: mockFindDiaryEntryById,
+  createDiaryEntryItem: mockCreateDiaryEntryItem,
+  checkDiaryEntryOwnership: mockCheckDiaryEntryOwnership,
   checkDiaryEntryItemOwnership: mockCheckDiaryEntryItemOwnership,
-  updateDiaryEntryItemRepository: mockUpdateDiaryEntryItem,
+  updateDiaryEntryItem: mockUpdateDiaryEntryItem,
   deleteDiaryEntry: mockDeleteDiaryEntry,
   deleteDiaryEntryItem: mockDeleteDiaryEntryItem,
+  getDaysLogged: mockGetDaysLogged,
+  insertFoodItem: mockInsertFoodItem,
+  insertFoodPortion: mockInsertFoodPortion,
+  fetchWeeklyCalorieTrend: mockFetchWeeklyCalorieTrend,
+  checkExistingFoodItemByExternalId: mockCheckExistingFoodItemByExternalId,
 }));
 
 const {
@@ -41,8 +80,6 @@ const {
   deleteExistingDiaryEntryItem,
   getDashboardDataForSubscriber,
 } = await import("../src/modules/diary/diary.service.js");
-
-const { DiaryEntryError } = await import("../src/modules/diary/diary.validator.js");
 
 describe("Diary Service", () => {
   beforeEach(() => {
