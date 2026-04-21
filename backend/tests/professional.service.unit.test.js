@@ -79,8 +79,8 @@ describe("Professional Service", () => {
 
     describe("setUserAsProfessional", () => {
         test("should set a user as a professional when given a valid professionalId", async () => {
-            const validRes = {professionalId: PROFESSIONAL_ID};
-            mockValidateProfessionalId.mockReturnValue(validRes);
+            const validatorRes = {professionalId: PROFESSIONAL_ID};
+            mockValidateProfessionalId.mockReturnValue(validatorRes);
             mockUpdateRoleToProfessional.mockReturnValue({
                 userId: PROFESSIONAL_ID,
                 role: "Professional"
@@ -89,7 +89,7 @@ describe("Professional Service", () => {
             const result = await setUserAsProfessional({professionalId: PROFESSIONAL_ID});
 
             expect(mockValidateProfessionalId).toHaveBeenCalledWith({professionalId: PROFESSIONAL_ID});
-            expect(mockUpdateRoleToProfessional).toHaveBeenCalledWith(validRes);
+            expect(mockUpdateRoleToProfessional).toHaveBeenCalledWith(validatorRes);
             expect(result).toEqual({
                 userId: PROFESSIONAL_ID,
                 role: "Professional"
@@ -111,8 +111,8 @@ describe("Professional Service", () => {
 
     describe("inviteClientToProfessional", () => {
         test("should send invitation to the client when given valid professionalId and subscriberId", async () => {
-            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
-            mockValidateInviteClientInput.mockReturnValue(validRes);
+            const validatorRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validatorRes);
             mockFindProfessionalClientLink.mockReturnValue(null);
             const link = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID, status: "active"};
             mockCreateProfessionalClientLink.mockReturnValue(link);
@@ -123,14 +123,14 @@ describe("Professional Service", () => {
                 professionalId: PROFESSIONAL_ID,
                 clientId: SUBSCRIBER_ID,
             });
-            expect(mockCreateProfessionalClientLink).toHaveBeenCalledWith(validRes);
+            expect(mockCreateProfessionalClientLink).toHaveBeenCalledWith(validatorRes);
             expect(result).toEqual(
                 link
             )
         });
         test("should throw ProfessionalError when the client is already assigned to the professional", async () => {
-            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
-            mockValidateInviteClientInput.mockReturnValue(validRes);
+            const validatorRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validatorRes);
             const existingLink = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID, status: "active"};
             mockFindProfessionalClientLink.mockReturnValue(existingLink);
 
@@ -142,8 +142,8 @@ describe("Professional Service", () => {
             }
         });
         test("should throw ProfessionalError when the client invitation fails", async () => {
-            const validRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
-            mockValidateInviteClientInput.mockReturnValue(validRes);
+            const validatorRes = {professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID};
+            mockValidateInviteClientInput.mockReturnValue(validatorRes);
             mockFindProfessionalClientLink.mockReturnValue(null);
             mockCreateProfessionalClientLink.mockReturnValue(null);
 
@@ -157,50 +157,291 @@ describe("Professional Service", () => {
     });
 
     describe("getProfessionalClients", () => {
-        test.todo("should return list of clients assigned to the professional when given a valid professionalId");
-        test.todo("should throw ProfessionalError if given an invalid professionalId");
+        test("should return list of clients assigned to the professional when given a valid professionalId", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, includeDetails: true };
+            mockValidateListClientsInput.mockReturnValue(validatorRes);
+            const clients = [{ id: SUBSCRIBER_ID, name: "Client User" }];
+            mockListProfessionalClients.mockReturnValue(clients);
+
+            const result = await getProfessionalClients({ professionalId: PROFESSIONAL_ID, include: "details" });
+
+            expect(mockValidateListClientsInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, include: "details" });
+            expect(mockListProfessionalClients).toHaveBeenCalledWith({
+                professionalId: PROFESSIONAL_ID,
+                includeDetails: true,
+            });
+            expect(result).toEqual(clients);
+        });
+        test("should throw ProfessionalError if given an invalid professionalId", async () => {
+            try {
+                mockValidateListClientsInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID is required");
+                });
+                await getProfessionalClients({ professionalId: null, include: "details" });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID is required");
+            }
+        });
     });
 
     describe("removeProfessionalClient", () => {
-        test.todo("should remove the client from professional if valid professionalId and clientId is provided");
-        test.todo("should throw ProfessionalError if a valid relationship is not found");
+        test("should remove the client from professional if valid professionalId and clientId is provided", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            const existingLink = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" };
+            mockFindProfessionalClientLink.mockReturnValue(existingLink);
+            const removedLink = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "disabled" };
+            mockDeleteProfessionalClientLink.mockReturnValue(removedLink);
+
+            const result = await removeProfessionalClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatorRes);
+            expect(mockDeleteProfessionalClientLink).toHaveBeenCalledWith(validatorRes);
+            expect(result).toEqual(removedLink);
+        });
+        test("should throw ProfessionalError if a valid relationship is not found", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue(null);
+
+            try {
+                await removeProfessionalClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client relationship not found");
+            }
+        });
     });
 
     describe("getClientSummaryForProfessional", () => {
-        test.todo("should return the client summary when given valid professionalId and clientId");
-        test.todo("should throw ProfessionalError if professionalId or clientId is invalid");
+        test("should return the client summary when given valid professionalId and clientId", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, period: "week", endDate: "2026-04-20" };
+            mockValidateSummaryInput.mockReturnValue(validatorRes);
+            mockValidateRelationshipInput.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const summary = { calories: 1200, protein: 80 };
+            mockGetNutritionSummary.mockReturnValue(summary);
+
+            const result = await getClientSummaryForProfessional({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, period: "week", endDate: "2026-04-20" });
+
+            expect(mockValidateSummaryInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, period: "week", endDate: "2026-04-20" });
+            expect(mockGetNutritionSummary).toHaveBeenCalledWith({
+                subscriberId: SUBSCRIBER_ID,
+                period: "week",
+                endDate: "2026-04-20",
+            });
+            expect(result).toEqual(summary);
+        });
+        test("should throw ProfessionalError if professionalId or clientId is invalid", async () => {
+            try {
+                mockValidateSummaryInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await getClientSummaryForProfessional({ professionalId: null, clientId: null, period: "week", endDate: "2026-04-20" });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
     });
 
     describe("getClientDashboardForProfessional", () => {
-        test.todo("should return the client dashboard when given valid professionalId and clientId");
-        test.todo("should throw ProfessionalError if professionalId or clientId is invalid");
+        test("should return the client dashboard when given valid professionalId and clientId", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const dashboard = { entries: 5, streak: 4 };
+            mockgetDashboardDataForSubscriber.mockReturnValue(dashboard);
+
+            const result = await getClientDashboardForProfessional({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockgetDashboardDataForSubscriber).toHaveBeenCalledWith({
+                subscriberId: SUBSCRIBER_ID,
+            });
+            expect(result).toEqual(dashboard);
+        });
+        test("should throw ProfessionalError if professionalId or clientId is invalid", async () => {
+            try {
+                mockValidateRelationshipInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await getClientDashboardForProfessional({ professionalId: null, clientId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
     });
 
     describe("sendMessageToClient", () => {
-        test.todo("should send a message to the client when given valid professionalId, clientId and message");
-        test.todo("should throw ProfessionalError if professionalId, clientId or message is invalid");
+        test("should send a message to the client when given valid professionalId, clientId and message", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, message: "Keep going!" };
+            mockValidateMessageInput.mockReturnValue(validatorRes);
+            mockValidateRelationshipInput.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const insertedMessage = { id: 1, ...validatorRes };
+            mockInsertMessage.mockReturnValue(insertedMessage);
+
+            const result = await sendMessageToClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, message: "Keep going!" });
+
+            expect(mockValidateMessageInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, message: "Keep going!" });
+            expect(mockInsertMessage).toHaveBeenCalledWith(validatorRes);
+            expect(result).toEqual(insertedMessage);
+        });
+        test("should throw ProfessionalError if professionalId, clientId or message is invalid", async () => {
+            try {
+                mockValidateMessageInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID, Client ID and message are required");
+                });
+                await sendMessageToClient({ professionalId: null, clientId: null, message: "" });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID, Client ID and message are required");
+            }
+        });
     });
 
     describe("getMessagesWithClient", () => {
-        test.todo("should return the list of messages between professional and client when given valid professionalId and clientId");
-        test.todo("should throw ProfessionalError if professionalId or clientId is invalid");
+        test("should return the list of messages between professional and client when given valid professionalId and clientId", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const messages = [{ id: 1, message: "Hello" }];
+            mockListMessages.mockReturnValue(messages);
+
+            const result = await getMessagesWithClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockListMessages).toHaveBeenCalledWith(validatorRes);
+            expect(result).toEqual(messages);
+        });
+        test("should throw ProfessionalError if professionalId or clientId is invalid", async () => {
+            try {
+                mockValidateRelationshipInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await getMessagesWithClient({ professionalId: null, clientId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
     });
 
     describe("setGoalForClient", () => {
-        test.todo("should set a goal for the client when given valid professionalId, clientId and goal data");
-        test.todo("should throw ProfessionalError if professionalId, clientId or goal data is invalid");
+        test("should set a goal for the client when given valid professionalId, clientId and goal data", async () => {
+            const goalInput = { nutritionId: 1, targetValue: 2000 };
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, goal: goalInput };
+            mockValidateSetGoalInput.mockReturnValue(validatorRes);
+            mockValidateRelationshipInput.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const goalResult = { id: 9, goal: goalInput, status: "active" };
+            mockCreateGoalForSubscriber.mockReturnValue(goalResult);
+
+            const result = await setGoalForClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, goal: goalInput });
+
+            expect(mockValidateSetGoalInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, goal: goalInput });
+            expect(mockCreateGoalForSubscriber).toHaveBeenCalledWith({
+                subscriberId: SUBSCRIBER_ID,
+                goal: goalInput,
+                options: {
+                    forcedSource: "professional_defined",
+                    forcedStatus: "active",
+                    forcedSetByProfessionalId: PROFESSIONAL_ID,
+                },
+            });
+            expect(result).toEqual(goalResult);
+        });
+        test("should throw ProfessionalError if professionalId, clientId or goal data is invalid", async () => {
+            try {
+                mockValidateSetGoalInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID, Client ID and goal are required");
+                });
+                await setGoalForClient({ professionalId: null, clientId: null, goal: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID, Client ID and goal are required");
+            }
+        });
     });
 
     describe("getClientGoalsForProfessional", () => {
-        test.todo("should return list of goals for the client when given valid professionalId and clientId");
-        test.todo("should throw ProfessionalError if professionalId or clientId is invalid");
+        test("should return list of goals for the client when given valid professionalId and clientId", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const goals = [{ id: 1, name: "Protein", status: "active" }];
+            mockGetGoalsService.mockReturnValue(goals);
+
+            const result = await getClientGoalsForProfessional({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockGetGoalsService).toHaveBeenCalledWith({ subscriberId: SUBSCRIBER_ID, effective: true });
+            expect(result).toEqual(goals);
+        });
+        test("should throw ProfessionalError if professionalId or clientId is invalid", async () => {
+            try {
+                mockValidateRelationshipInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await getClientGoalsForProfessional({ professionalId: null, clientId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
     });
 
     describe("ensureProfessionalClientRelation", () => {
-        test.todo("should not throw an error if a valid professional-client relationship exists");
-        test.todo("should throw ProfessionalError if no relationship exists");
-        test.todo("should throw ProfessionalError if the relationship exists but is not active");
-        test.todo("should throw ProfessionalError if professionalId or clientId is invalid");
+        test("should not throw an error if a valid professional-client relationship exists", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+
+            const result = await ensureProfessionalClientRelation({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatorRes);
+            expect(result).toEqual(validatorRes);
+        });
+        test("should throw ProfessionalError if no relationship exists", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue(null);
+
+            try {
+                await ensureProfessionalClientRelation({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client is not assigned to this professional");
+            }
+        });
+        test("should throw ProfessionalError if the relationship exists but is not active", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "disabled" });
+
+            try {
+                await ensureProfessionalClientRelation({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client is not assigned to this professional");
+            }
+        });
+        test("should throw ProfessionalError if professionalId or clientId is invalid", async () => {
+            try {
+                mockValidateRelationshipInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await ensureProfessionalClientRelation({ professionalId: null, clientId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
     });
 
 });
