@@ -116,21 +116,18 @@ function validateSetGoalInput({ professionalId, clientId, goal }) {
         throw new ProfessionalError("goal is required");
     }
 
-    if (goal.nutrientId !== undefined) {
-        const nutrientId = normalizePositiveInteger(goal.nutrientId);
-        if (!nutrientId) {
-            throw new ProfessionalError("goal.nutrientId must be a positive integer");
-        }
-    }
-
-    if (goal.nutrientCode !== undefined && typeof goal.nutrientCode !== "string") {
-        throw new ProfessionalError("goal.nutrientCode must be a string");
+    const notes = goal.notes == null ? "" : String(goal.notes).trim();
+    if (!notes) {
+        throw new ProfessionalError("goal.notes is required");
     }
 
     return {
         professionalId: normalizedRelationship.professionalId,
         clientId: normalizedRelationship.clientId,
-        goal,
+        goal: {
+            ...goal,
+            notes,
+        },
     };
 }
 

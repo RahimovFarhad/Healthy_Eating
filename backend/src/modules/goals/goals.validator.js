@@ -156,29 +156,9 @@ function validateCreateGoalInput(goal, options = {}) {
     throw new GoalError("goal is required");
   }
 
-  const nutrientCode = typeof goal.nutrientCode === "string" ? goal.nutrientCode.trim() : "";
-  const nutrientId = normalizePositiveInteger(goal.nutrientId);
-  if (!nutrientCode && !nutrientId) {
-    throw new GoalError("goal must include nutrientCode or nutrientId");
-  }
-
-  const targetMin = normalizeNonNegativeNumber(goal.targetMin);
-  const targetMax = normalizeNonNegativeNumber(goal.targetMax);
-
-  if (goal.targetMin !== undefined && targetMin === null) {
-    throw new GoalError("targetMin must be a non-negative number");
-  }
-
-  if (goal.targetMax !== undefined && targetMax === null) {
-    throw new GoalError("targetMax must be a non-negative number");
-  }
-
-  if (targetMin === null && targetMax === null) {
-    throw new GoalError("At least one of targetMin or targetMax is required");
-  }
-
-  if (targetMin !== null && targetMax !== null && targetMin > targetMax) {
-    throw new GoalError("targetMin must be less than or equal to targetMax");
+  const notes = goal.notes == null ? "" : String(goal.notes).trim();
+  if (!notes) {
+    throw new GoalError("goal.notes is required");
   }
 
   const startDate = normalizeDateOnly(goal.startDate, "startDate") ?? new Date();
@@ -202,11 +182,6 @@ function validateCreateGoalInput(goal, options = {}) {
     throw new GoalError("forcedStatus must be one of: active, archived");
   }
 
-  const status = forcedStatus ?? (goal.status === undefined ? "active" : String(goal.status));
-  if (!GOAL_STATUSES.has(status)) {
-    throw new GoalError("status must be one of: active, archived");
-  }
-
   const forcedSetByProfessionalId = options.forcedSetByProfessionalId;
   const normalizedForcedSetByProfessionalId =
     forcedSetByProfessionalId == null ? null : normalizePositiveInteger(forcedSetByProfessionalId);
@@ -223,15 +198,13 @@ function validateCreateGoalInput(goal, options = {}) {
     throw new GoalError("setByProfessionalId is required for professional_defined goals");
   }
 
-  const notes = goal.notes == null ? null : String(goal.notes);
-
   return {
-    nutrientCode,
-    nutrientId: nutrientId ?? null,
-    targetMin,
-    targetMax,
+    nutrientCode: null,
+    nutrientId: null,
+    targetMin: null,
+    targetMax: null,
     source,
-    status,
+    status: "active",
     setByProfessionalId,
     startDate,
     endDate,

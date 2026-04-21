@@ -237,7 +237,7 @@ model Message {
 model NutritionGoal {
   goalId              Int         @id @default(autoincrement()) @map("goal_id")
   subscriberId        Int         @map("subscriber_id")
-  nutrientId          Int         @map("nutrient_id")
+  nutrientId          Int?        @map("nutrient_id")
   source              GoalSource  @default(system_default)
   status              GoalStatus  @default(active)
   targetMin           Decimal?    @map("target_min") @db.Decimal(12, 4)
@@ -251,7 +251,7 @@ model NutritionGoal {
 
   subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
   setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
-  nutrient          Nutrient      @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
+  nutrient          Nutrient?     @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
 
   @@map("nutrition_goal")
 }

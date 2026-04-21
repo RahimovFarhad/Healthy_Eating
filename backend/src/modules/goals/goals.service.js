@@ -1,4 +1,4 @@
-import { fetchGoals, findNutrientById, findNutrientByCode, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals } from "./goals.repository.js";
+import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
 async function getGoalsService({ subscriberId, effective }) {
@@ -64,21 +64,13 @@ async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const validatedGoal = validateCreateGoalInput(goal, options);
 
-  const nutrient = validatedGoal.nutrientId
-    ? await findNutrientById({ nutrientId: validatedGoal.nutrientId })
-    : await findNutrientByCode({ nutrientCode: validatedGoal.nutrientCode });
-
-  if (!nutrient) {
-    throw new GoalError("Nutrient not found");
-  }
-
   return insertGoal({
     subscriberId: normalizedSubscriberId,
-    nutrientId: nutrient.nutrientId,
+    nutrientId: null,
     source: validatedGoal.source,
-    status: validatedGoal.status,
-    targetMin: validatedGoal.targetMin,
-    targetMax: validatedGoal.targetMax,
+    status: "active",
+    targetMin: null,
+    targetMax: null,
     setByProfessionalId: validatedGoal.setByProfessionalId,
     startDate: validatedGoal.startDate,
     endDate: validatedGoal.endDate,
