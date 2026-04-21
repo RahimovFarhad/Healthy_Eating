@@ -396,17 +396,15 @@ describe("Professional API", () => {
       expect(res.statusCode).toBe(400);
     });
 
-    test("success on valid input", async () => {      
+    test("success on valid input", async () => {  
         const res = await request(app)
         .post(`/professional/clients/${subscriber.userId}/goals`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           goal: {
-            nutrientId: 1,
-            targetMin: 100,
+            notes: "Eat less than you burn",
             startDate: "2026-01-01",
             endDate: "2026-12-31",
-
           },
         });
 
@@ -414,8 +412,7 @@ describe("Professional API", () => {
       expect(res.body).toHaveProperty("createdGoal");
       expect(res.body.createdGoal).toHaveProperty("subscriberId", subscriber.userId);
       expect(res.body.createdGoal).toHaveProperty("setByProfessionalId", userPayload.userId);
-      expect(res.body.createdGoal).toHaveProperty("nutrientId", 1);
-      expect(res.body.createdGoal).toHaveProperty("targetMin", "100");
+      expect(res.body.createdGoal).toHaveProperty("notes", "Eat less than you burn")
     });
   });
 
