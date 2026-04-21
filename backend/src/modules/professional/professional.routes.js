@@ -5,8 +5,9 @@ const professionalRouter = Router();
 
 professionalRouter.patch("/setAsProfessional", setAsProfessional);
 professionalRouter.post("/client-invitations", requireProfessional, inviteClient);
+// professionalRouter.get("/client-invitations", requireProfessional, listClients);  // to be implemented 
 
-professionalRouter.get("/clients", listClients); //list of clients for the currently authenticated professional; if include=details, sends with details (risk points + risky nutrients with their goals)
+professionalRouter.get("/clients", requireProfessional, listClients); //list of clients for the currently authenticated professional; if include=details, sends with details (risk points + risky nutrients with their goals)
 professionalRouter.delete("/clients/:clientId", requireProfessional, removeClient); //professional removes client from their list
 
 // Below are the functions that encapsulate professional's features
