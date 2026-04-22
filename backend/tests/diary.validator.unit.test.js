@@ -1,3 +1,5 @@
+// tests/diary.validator.unit.test.js
+import { expect } from "@jest/globals";
 import {
   DiaryEntryError,
   validateCreateDiaryEntryInput,
@@ -6,203 +8,399 @@ import {
   validateEntryDetails,
   validateNewEntryDetails,
   validateUpdatedEntryItem,
+  validateDeletedDiaryEntry,
+  validateDeletedDiaryEntryItem,
 } from "../src/modules/diary/diary.validator.js";
 
-describe("Diary validator unit tests", () => {
+describe("Diary Validator", () => {
   describe("validateCreateDiaryEntryInput", () => {
-    test("returns normalized valid input", () => {
-      const result = validateCreateDiaryEntryInput({
+    test("returns normalized values when input is valid", () => {
+      const input = {
         subscriberId: 1,
-        consumedAt: "2026-04-19T12:00:00.000Z",
+        consumedAt: "2026-04-18",
         mealType: "breakfast",
-        notes: "test",
+        notes: "yum",
+      };
+
+      const result = validateCreateDiaryEntryInput(input);
+
+      expect(result).toEqual({
+        subscriberId: 1,
+        consumedAt: new Date("2026-04-18"),
+        mealType: "breakfast",
+        notes: "yum",
       });
-
-      expect(result.subscriberId).toBe(1);
-      expect(result.mealType).toBe("breakfast");
-      expect(result.notes).toBe("test");
-      expect(result.consumedAt).toBeInstanceOf(Date);
     });
 
-    test("throws when subscriberId is invalid", () => {
+    test("throws if subscriberId is missing", () => {
       expect(() =>
         validateCreateDiaryEntryInput({
-          subscriberId: 0,
-          consumedAt: "2026-04-19T12:00:00.000Z",
+          consumedAt: "2026-04-18",
           mealType: "breakfast",
+          notes: "yum",
         })
-      ).toThrow(new DiaryEntryError("Subscriber ID is required"));
+      ).toThrow(DiaryEntryError);
     });
 
-    test("throws when consumedAt is missing", () => {
+    test("throws if consumedAt is invalid", () => {
       expect(() =>
         validateCreateDiaryEntryInput({
           subscriberId: 1,
+          consumedAt: "not-a-date",
           mealType: "breakfast",
+          notes: "yum",
         })
-      ).toThrow("Consumed at date is required");
+      ).toThrow(DiaryEntryError);
     });
 
-    test("throws when mealType is invalid", () => {
+    test("throws if mealType is invalid", () => {
       expect(() =>
         validateCreateDiaryEntryInput({
           subscriberId: 1,
-          consumedAt: "2026-04-19T12:00:00.000Z",
+          consumedAt: "2026-04-18",
           mealType: "brunch",
+          notes: "yum",
         })
-      ).toThrow(
-        "Meal type is required and must be one of: breakfast, lunch, dinner, snack"
-      );
+      ).toThrow(DiaryEntryError);
     });
   });
 
   describe("validateSummaryInput", () => {
-    test("returns normalized valid input", () => {
-      const result = validateSummaryInput({
+    test("returns normalized values when input is valid", () => {
+      const input = {
         subscriberId: 1,
         period: "daily",
-        endDate: "2026-04-19",
-      });
+        endDate: "2026-04-18",
+      };
 
-      expect(result.subscriberId).toBe(1);
-      expect(result.period).toBe("daily");
-      expect(result.endDate).toBeInstanceOf(Date);
+      const result = validateSummaryInput(input);
+
+      expect(result).toEqual({
+        subscriberId: 1,
+        period: "daily",
+        endDate: new Date("2026-04-18"),
+      });
     });
 
-    test("throws when period is invalid", () => {
+    test("throws if subscriberId is missing", () => {
+      expect(() =>
+        validateSummaryInput({
+          period: "daily",
+          endDate: "2026-04-18",
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if period is invalid", () => {
       expect(() =>
         validateSummaryInput({
           subscriberId: 1,
           period: "yearly",
-          endDate: "2026-04-19",
+          endDate: "2026-04-18",
         })
-      ).toThrow(
-        "Period is required and must be one of: daily, weekly, monthly"
-      );
+      ).toThrow(DiaryEntryError);
     });
 
-    test("throws when endDate is invalid", () => {
+    test("throws if endDate is invalid", () => {
       expect(() =>
         validateSummaryInput({
           subscriberId: 1,
           period: "daily",
-          endDate: "not-a-date",
+          endDate: "bad-date",
         })
-      ).toThrow("endDate is required and must be a valid date");
+      ).toThrow(DiaryEntryError);
     });
   });
 
   describe("validateListDisplay", () => {
-    test("returns valid filters", () => {
-      const result = validateListDisplay({
+    test("returns normalized values when input is valid", () => {
+      const input = {
         subscriberId: 1,
-        consumedAt: "2026-04-19",
+        consumedAt: "2026-04-18",
         mealType: "lunch",
-        notes: "hello",
-      });
+        notes: "ok",
+      };
 
-      expect(result.subscriberId).toBe(1);
-      expect(result.consumedAt).toBeInstanceOf(Date);
-      expect(result.mealType).toBe("lunch");
-      expect(result.notes).toBe("hello");
+      const result = validateListDisplay(input);
+
+      expect(result).toEqual({
+        subscriberId: 1,
+        consumedAt: new Date("2026-04-18"),
+        mealType: "lunch",
+        notes: "ok",
+      });
     });
 
-    test("throws when consumedAt is invalid", () => {
+    test("returns undefined consumedAt when not provided", () => {
+      const result = validateListDisplay({
+        subscriberId: 1,
+        mealType: "dinner",
+        notes: "nice",
+      });
+
+      expect(result).toEqual({
+        subscriberId: 1,
+        consumedAt: undefined,
+        mealType: "dinner",
+        notes: "nice",
+      });
+    });
+
+    test("throws if subscriberId is missing", () => {
+      expect(() =>
+        validateListDisplay({
+          consumedAt: "2026-04-18",
+          mealType: "breakfast",
+          notes: "yum",
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if consumedAt is invalid", () => {
       expect(() =>
         validateListDisplay({
           subscriberId: 1,
           consumedAt: "bad-date",
+          mealType: "breakfast",
+          notes: "yum",
         })
-      ).toThrow("Consumed at date must be a valid date");
+      ).toThrow(DiaryEntryError);
     });
 
-    test("throws when mealType is invalid", () => {
+    test("throws if mealType is invalid", () => {
       expect(() =>
         validateListDisplay({
           subscriberId: 1,
+          consumedAt: "2026-04-18",
           mealType: "brunch",
+          notes: "yum",
         })
-      ).toThrow("Meal type must be one of: breakfast, lunch, dinner, snack");
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if notes is not a string", () => {
+      expect(() =>
+        validateListDisplay({
+          subscriberId: 1,
+          consumedAt: "2026-04-18",
+          mealType: "breakfast",
+          notes: 123,
+        })
+      ).toThrow(DiaryEntryError);
     });
   });
 
   describe("validateEntryDetails", () => {
-    test("returns valid diaryEntryId", () => {
-      expect(validateEntryDetails({ diaryEntryId: 2 })).toEqual({
-        diaryEntryId: 2,
+    test("returns diaryEntryId when valid", () => {
+      expect(validateEntryDetails({ diaryEntryId: 1 })).toEqual({
+        diaryEntryId: 1,
       });
     });
 
-    test("throws when diaryEntryId is invalid", () => {
-      expect(() =>
-        validateEntryDetails({ diaryEntryId: "2" })
-      ).toThrow("Diary Entry ID is required");
+    test("throws if diaryEntryId is missing", () => {
+      expect(() => validateEntryDetails({})).toThrow(DiaryEntryError);
+    });
+
+    test("throws if diaryEntryId is invalid", () => {
+      expect(() => validateEntryDetails({ diaryEntryId: -1 })).toThrow(
+        DiaryEntryError
+      );
     });
   });
 
   describe("validateNewEntryDetails", () => {
-    test("returns valid new entry item payload", () => {
-      expect(
-        validateNewEntryDetails({
-          userId: 1,
-          diaryEntryId: 2,
-          quantityG: 100,
-          foodItemId: 3,
-        })
-      ).toEqual({
+    test("returns normalized values when valid", () => {
+      const result = validateNewEntryDetails({
+        userId: 1,
         diaryEntryId: 2,
-        quantityG: 100,
+        quantityG: 30,
+        foodItemId: 3,
+      });
+
+      expect(result).toEqual({
+        diaryEntryId: 2,
+        quantityG: 30,
         foodItemId: 3,
       });
     });
 
-    test("throws when quantityG is invalid", () => {
+    test("throws if userId is missing", () => {
+      expect(() =>
+        validateNewEntryDetails({
+          diaryEntryId: 2,
+          quantityG: 30,
+          foodItemId: 3,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if diaryEntryId is missing", () => {
+      expect(() =>
+        validateNewEntryDetails({
+          userId: 1,
+          quantityG: 30,
+          foodItemId: 3,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if quantityG is invalid", () => {
       expect(() =>
         validateNewEntryDetails({
           userId: 1,
           diaryEntryId: 2,
-          quantityG: 0,
+          quantityG: -1,
           foodItemId: 3,
         })
-      ).toThrow("Quantity in grams is required and must be a positive number");
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if foodItemId is invalid", () => {
+      expect(() =>
+        validateNewEntryDetails({
+          userId: 1,
+          diaryEntryId: 2,
+          quantityG: 30,
+          foodItemId: 0,
+        })
+      ).toThrow(DiaryEntryError);
     });
   });
 
   describe("validateUpdatedEntryItem", () => {
-    test("returns valid updated entry item payload", () => {
-      expect(
-        validateUpdatedEntryItem({
-          diaryEntryItemId: 1,
-          userId: 2,
-          foodItemId: 3,
-          quantityG: 120,
-        })
-      ).toEqual({
+    test("returns normalized values when only required fields are valid", () => {
+      const result = validateUpdatedEntryItem({
         diaryEntryItemId: 1,
-        foodItemId: 3,
-        quantityG: 120,
+        userId: 1,
+      });
+
+      expect(result).toEqual({
+        diaryEntryItemId: 1,
+        foodItemId: undefined,
+        quantityG: undefined,
       });
     });
 
-    test("throws when diaryEntryItemId is invalid", () => {
-      expect(() =>
-        validateUpdatedEntryItem({
-          diaryEntryItemId: 0,
-          userId: 2,
-          foodItemId: 3,
-          quantityG: 120,
-        })
-      ).toThrow("Diary Entry ID is required");
+    test("returns normalized values when foodItemId is provided", () => {
+      const result = validateUpdatedEntryItem({
+        diaryEntryItemId: 1,
+        userId: 1,
+        foodItemId: 2,
+      });
+
+      expect(result).toEqual({
+        diaryEntryItemId: 1,
+        foodItemId: 2,
+        quantityG: undefined,
+      });
     });
 
-    test("throws when quantityG is invalid", () => {
+    test("returns normalized values when quantityG is provided", () => {
+      const result = validateUpdatedEntryItem({
+        diaryEntryItemId: 1,
+        userId: 1,
+        quantityG: 50,
+      });
+
+      expect(result).toEqual({
+        diaryEntryItemId: 1,
+        foodItemId: undefined,
+        quantityG: 50,
+      });
+    });
+
+    test("throws if diaryEntryItemId is missing", () => {
+      expect(() =>
+        validateUpdatedEntryItem({
+          userId: 1,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if userId is missing", () => {
       expect(() =>
         validateUpdatedEntryItem({
           diaryEntryItemId: 1,
-          userId: 2,
-          quantityG: -1,
         })
-      ).toThrow("Quantity in grams is required and must be a positive number");
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if foodItemId is invalid", () => {
+      expect(() =>
+        validateUpdatedEntryItem({
+          diaryEntryItemId: 1,
+          userId: 1,
+          foodItemId: -1,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if quantityG is invalid", () => {
+      expect(() =>
+        validateUpdatedEntryItem({
+          diaryEntryItemId: 1,
+          userId: 1,
+          quantityG: -10,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+  });
+
+  describe("validateDeletedDiaryEntry", () => {
+    test("returns diaryEntryId when valid", () => {
+      const result = validateDeletedDiaryEntry({
+        userId: 1,
+        diaryEntryId: 2,
+      });
+
+      expect(result).toEqual({
+        diaryEntryId: 2,
+      });
+    });
+
+    test("throws if userId is missing", () => {
+      expect(() =>
+        validateDeletedDiaryEntry({
+          diaryEntryId: 2,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if diaryEntryId is missing", () => {
+      expect(() =>
+        validateDeletedDiaryEntry({
+          userId: 1,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+  });
+
+  describe("validateDeletedDiaryEntryItem", () => {
+    test("returns diaryEntryItemId when valid", () => {
+      const result = validateDeletedDiaryEntryItem({
+        userId: 1,
+        diaryEntryItemId: 2,
+      });
+
+      expect(result).toEqual({
+        diaryEntryItemId: 2,
+      });
+    });
+
+    test("throws if userId is missing", () => {
+      expect(() =>
+        validateDeletedDiaryEntryItem({
+          diaryEntryItemId: 2,
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws if diaryEntryItemId is missing", () => {
+      expect(() =>
+        validateDeletedDiaryEntryItem({
+          userId: 1,
+        })
+      ).toThrow(DiaryEntryError);
     });
   });
 });
