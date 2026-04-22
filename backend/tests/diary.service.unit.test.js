@@ -1,13 +1,20 @@
 // tests/diary.service.unit.test.js
+<<<<<<< HEAD
 import { expect, jest } from "@jest/globals";
 import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
 
 // Mock the module(s) that the diary service depends on
 const TEST_ID = 1;
+=======
+import { describe, test, expect, jest, beforeEach } from "@jest/globals";
+
+// ===== test constants =====
+>>>>>>> auth_and_schema
 const TEST_USERID = 2;
 const TEST_ENTRYID = 3;
 const TEST_ENTRYITEMID = 4;
 
+<<<<<<< HEAD
 const mockCheckDiaryEntryItemOwnership = jest.fn();
 const mockValidateUpdatedEntryItem = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
@@ -319,10 +326,133 @@ describe("Diary Service", () => {
       });
 
       mockCheckDiaryEntryOwnership.mockResolvedValue(true); // set to true, indicating that diary entry item does belong to user
+=======
+// ===== validator mocks =====
+const mockValidateCreateDiaryEntryInput = jest.fn();
+const mockValidateSummaryInput = jest.fn();
+const mockValidateListDisplay = jest.fn();
+const mockValidateEntryDetails = jest.fn();
+const mockValidateNewEntryDetails = jest.fn();
+const mockValidateUpdatedEntryItem = jest.fn();
+const mockValidateDeletedDiaryEntry = jest.fn();
+const mockValidateDeletedDiaryEntryItem = jest.fn();
+const mockValidateUserIdForDashboard = jest.fn();
+
+// ===== repository mocks =====
+const mockInsertDiaryEntry = jest.fn();
+const mockFetchSummaryData = jest.fn();
+const mockListDiaryEntriesRepo = jest.fn();
+const mockFindDiaryEntryById = jest.fn();
+const mockCreateDiaryEntryItem = jest.fn();
+const mockUpdateDiaryEntryItemRepo = jest.fn();
+const mockDeleteDiaryEntry = jest.fn();
+const mockDeleteDiaryEntryItem = jest.fn();
+const mockCheckDiaryEntryItemOwnership = jest.fn();
+const mockCheckDiaryEntryOwnership = jest.fn();
+
+// ===== mock validator module =====
+jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
+  validateCreateDiaryEntryInput: mockValidateCreateDiaryEntryInput,
+  validateSummaryInput: mockValidateSummaryInput,
+  validateListDisplay: mockValidateListDisplay,
+  validateEntryDetails: mockValidateEntryDetails,
+  validateNewEntryDetails: mockValidateNewEntryDetails,
+  validateUpdatedEntryItem: mockValidateUpdatedEntryItem,
+  validateDeletedDiaryEntry: mockValidateDeletedDiaryEntry,
+  validateDeletedDiaryEntryItem: mockValidateDeletedDiaryEntryItem,
+  validateUserIdForDashboard: mockValidateUserIdForDashboard,
+}));
+
+// ===== mock repository module =====
+jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
+  insertDiaryEntry: mockInsertDiaryEntry,
+  fetchSummaryData: mockFetchSummaryData,
+  listDiaryEntries: mockListDiaryEntriesRepo,
+  findDiaryEntryById: mockFindDiaryEntryById,
+  createDiaryEntryItem: mockCreateDiaryEntryItem,
+  updateDiaryEntryItem: mockUpdateDiaryEntryItemRepo,
+  deleteDiaryEntry: mockDeleteDiaryEntry,
+  deleteDiaryEntryItem: mockDeleteDiaryEntryItem,
+  checkDiaryEntryItemOwnership: mockCheckDiaryEntryItemOwnership,
+  checkDiaryEntryOwnership: mockCheckDiaryEntryOwnership,
+}));
+
+// ===== import service after mocks =====
+const {
+  updateDiaryEntryItem,
+  deleteExistingDiaryEntry,
+  deleteExistingDiaryEntryItem,
+} = await import("../src/modules/diary/diary.service.js");
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+describe("Diary Service", () => {
+  describe("updateDiaryEntryItem", () => {
+    test("returns updated item when valid", async () => {
+      mockValidateUpdatedEntryItem.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryItemId: 5,
+        portionId: 1,
+        quantity: 30,
+      });
+
+      mockCheckDiaryEntryItemOwnership.mockResolvedValue(true);
+      mockUpdateDiaryEntryItemRepo.mockResolvedValue({
+        id: TEST_ENTRYITEMID,
+        diaryEntryId: TEST_ENTRYID,
+        portionId: 1,
+        quantity: 30,
+      });
+
+      await expect(
+        updateDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryItemId: 5,
+          portionId: 1,
+          quantity: 30,
+        })
+      ).resolves.toEqual({
+        id: TEST_ENTRYITEMID,
+        diaryEntryId: TEST_ENTRYID,
+        portionId: 1,
+        quantity: 30,
+      });
+    });
+
+    test("returns null when item does not exist", async () => {
+      mockValidateUpdatedEntryItem.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryItemId: 10,
+      });
+
+      mockCheckDiaryEntryItemOwnership.mockResolvedValue(true);
+      mockUpdateDiaryEntryItemRepo.mockResolvedValue(null);
+
+      await expect(
+        updateDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryItemId: 10,
+        })
+      ).resolves.toBeNull();
+    });
+  });
+
+  describe("deleteExistingDiaryEntry", () => {
+    test("returns deleted entry when valid", async () => {
+      mockValidateDeletedDiaryEntry.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: 5,
+      });
+
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+>>>>>>> auth_and_schema
       mockDeleteDiaryEntry.mockResolvedValue({
         diaryEntryId: TEST_ENTRYID,
       });
 
+<<<<<<< HEAD
       const result = await deleteExistingDiaryEntry({
         userId: TEST_USERID,
         diaryEntryId: TEST_ENTRYID,
@@ -398,10 +528,49 @@ describe("Diary Service", () => {
       });
 
       mockCheckDiaryEntryItemOwnership.mockResolvedValue(true); // set to true, indicating that diary entry item does belong to user
+=======
+      await expect(
+        deleteExistingDiaryEntry({
+          userId: TEST_USERID,
+          diaryEntryId: 5,
+        })
+      ).resolves.toEqual({
+        diaryEntryId: TEST_ENTRYID,
+      });
+    });
+
+    test("returns null when entry does not exist", async () => {
+      mockValidateDeletedDiaryEntry.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: 10,
+      });
+
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockDeleteDiaryEntry.mockResolvedValue(null);
+
+      await expect(
+        deleteExistingDiaryEntry({
+          userId: TEST_USERID,
+          diaryEntryId: 10,
+        })
+      ).resolves.toBeNull();
+    });
+  });
+
+  describe("deleteExistingDiaryEntryItem", () => {
+    test("returns deleted item when valid", async () => {
+      mockValidateDeletedDiaryEntryItem.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryItemId: 5,
+      });
+
+      mockCheckDiaryEntryItemOwnership.mockResolvedValue(true);
+>>>>>>> auth_and_schema
       mockDeleteDiaryEntryItem.mockResolvedValue({
         diaryEntryItemId: TEST_ENTRYITEMID,
       });
 
+<<<<<<< HEAD
       const result = await deleteExistingDiaryEntryItem({
         userId: TEST_USERID,
         diaryEntryItemId: TEST_ENTRYITEMID,
@@ -451,11 +620,25 @@ describe("Diary Service", () => {
       }));
     });
     test("throws DiaryEntryError when diary entry item does not exist", async () => {
+=======
+      await expect(
+        deleteExistingDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryItemId: 5,
+        })
+      ).resolves.toEqual({
+        diaryEntryItemId: TEST_ENTRYITEMID,
+      });
+    });
+
+    test("returns null when item does not exist", async () => {
+>>>>>>> auth_and_schema
       mockValidateDeletedDiaryEntryItem.mockReturnValue({
         userId: TEST_USERID,
         diaryEntryItemId: 10,
       });
 
+<<<<<<< HEAD
       mockCheckDiaryEntryItemOwnership.mockResolvedValue(true); // set to true, indicating that diary entry item does belong to user
       mockDeleteDiaryEntryItem.mockResolvedValue(null); // null value due to P2025 error
 
@@ -471,3 +654,17 @@ describe("Diary Service", () => {
   describe("getDashboardDataForSubscriber (unit)", () => {
   });
 });
+=======
+      mockCheckDiaryEntryItemOwnership.mockResolvedValue(true);
+      mockDeleteDiaryEntryItem.mockResolvedValue(null);
+
+      await expect(
+        deleteExistingDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryItemId: 10,
+        })
+      ).resolves.toBeNull();
+    });
+  });
+});
+>>>>>>> auth_and_schema
