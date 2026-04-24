@@ -3,6 +3,7 @@ import { createGoal, deleteGoal, getGoals, updateGoal } from "./goals.controller
 
 const goalsRouter = Router();
 
+// Whether or not system generated goals are completed should be done by system automatically
 
 goalsRouter.get("/", getGoals);
 goalsRouter.patch("/", updateGoal);
