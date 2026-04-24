@@ -100,12 +100,8 @@ async function readJSON(fileName) {
   const __dirname = path.dirname(__filename);
   const recipesPath = path.join(__dirname, fileName);
 
-  fs.readFile(recipesPath, function(err, data) { 
-
-    if (err) throw err; 
-
-    return JSON.parse(data); 
-  }); 
+  const data = await fs.promises.readFile(recipesPath, 'utf-8');
+  return JSON.parse(data);
 }
 
 async function main() {
@@ -170,7 +166,43 @@ async function main() {
 
   const recipes = await readJSON("./recipes.json");
 
-  
+  for (const r of recipes) {
+    const recipe = await prisma.recipe.create({
+      data: {
+        title: r.title,
+        instructions: r.steps.join('\n\n'),
+        kcal:         r.kcal,
+        protein:      r.protein,
+        carbs:        r.carbs,
+        sugars:       r.sugars,
+        fat:          r.fat,
+        saturatedFat: r.saturatedFat,
+        salt:         r.salt,
+      }
+    });
+
+    for (let i = 0; i < r.ingredients.length; i++) {
+      const name = r.ingredientNames[i] ?? r.ingredients[i]
+
+      const ingredient = await prisma.ingredient.upsert({ // I do upsert to prevent potential issues if same ingredients are reused
+        where:  { name },
+        update: {},
+        create: { name }
+      })
+
+      await prisma.recipeIngredient.create({
+        data: {
+          recipeId:     recipe.recipeId,
+          ingredientId: ingredient.ingredientId,
+          quantity:     r.ingredients[i] 
+        }
+      })
+    }
+
+  }
+
+  console.log(`Seeded ${recipes.length} recipes`)
+
 
 
 }
