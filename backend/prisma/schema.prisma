@@ -115,8 +115,7 @@ model User {
   recipeFavorites                   RecipeFavorite[]
   recipeAssignmentsAsProfessional   RecipeAssignment[]   @relation("RecipeAssignmentProfessional")
   recipeAssignmentsAsSubscriber     RecipeAssignment[]   @relation("RecipeAssignmentSubscriber")
-  recipeRatings                     RecipeRating[]
-  recipeComments                    RecipeComment[]
+  recipeReviews                     RecipeReview[]
   plans                             Plan[]
   createdFoodItems                  FoodItem[]           @relation("FoodItemCreatedByUser")
 
@@ -313,8 +312,7 @@ model Recipe {
   recipeIngredients RecipeIngredient[]
   favorites         RecipeFavorite[]
   assignments       RecipeAssignment[]
-  ratings           RecipeRating[]
-  comments          RecipeComment[]
+  reviews           RecipeReview[]
   planItems         PlanItem[]
 
   @@map("recipe")
@@ -371,31 +369,19 @@ model RecipeAssignment {
   @@map("recipe_assignment")
 }
 
-model RecipeRating {
-  ratingId     Int      @id @default(autoincrement()) @map("rating_id")
+model RecipeReview {
+  reviewId     Int      @id @default(autoincrement()) @map("review_id")
   subscriberId Int      @map("subscriber_id")
   recipeId     Int      @map("recipe_id")
   rating       Int
+  comment      String?   @db.Text
   createdAt    DateTime @default(now()) @map("created_at")
 
   subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
   recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
 
-  @@unique([subscriberId, recipeId])
-  @@map("recipe_rating")
-}
-
-model RecipeComment {
-  commentId    Int      @id @default(autoincrement()) @map("comment_id")
-  subscriberId Int      @map("subscriber_id")
-  recipeId     Int      @map("recipe_id")
-  comment      String   @db.Text
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
-  recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
-
-  @@map("recipe_comment")
+  @@unique([subscriberId, reviewId])
+  @@map("recipe_review")
 }
 
 // ==================== MEAL PLANNING ====================
