@@ -2,6 +2,10 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
+import fs from "fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
@@ -91,6 +95,19 @@ const guidelines = [
   ["sodium",        "older_adult", null,  2400],
 ];
 
+async function readJSON(fileName) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const recipesPath = path.join(__dirname, fileName);
+
+  fs.readFile(recipesPath, function(err, data) { 
+
+    if (err) throw err; 
+
+    return JSON.parse(data); 
+  }); 
+}
+
 async function main() {
   for (const nutrient of nutrients) {
     await prisma.nutrient.upsert({
@@ -150,6 +167,11 @@ async function main() {
   }
 
   console.log(`Seeded ${guidelineCount} guidelines across 6 demographics`);
+
+  const recipes = await readJSON("./recipes.json");
+
+  
+
 
 }
 

@@ -308,6 +308,13 @@ model Recipe {
   recipeId     Int    @id @default(autoincrement()) @map("recipe_id")
   title        String
   instructions String @db.Text
+  kcal         Int?
+  protein      Decimal? @db.Decimal(8,2)
+  carbs        Decimal? @db.Decimal(8,2)
+  sugars       Decimal? @db.Decimal(8,2)
+  fat          Decimal? @db.Decimal(8,2)
+  saturatedFat Decimal? @map("saturated_fat") @db.Decimal(8,2)
+  salt         Decimal? @db.Decimal(8,2)
 
   recipeIngredients RecipeIngredient[]
   favorites         RecipeFavorite[]
@@ -380,7 +387,7 @@ model RecipeReview {
   subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
   recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
 
-  @@unique([subscriberId, reviewId])
+  @@unique([subscriberId, recipeId])
   @@map("recipe_review")
 }
 
