@@ -6,16 +6,21 @@ async function listRecipes({ category, cuisine, ingredients }){
             ...(category && { category }),
             ...(cuisine && { cuisine }),
             ...(ingredients && ingredients.length > 0 && {
-                recipeIngredients: {
-                    some: {
-                        ingredient: {
-                            name: {
-                                in: ingredients
+                AND: ingredients.map((i) => ({
+                    recipeIngredients: {
+                        some: {
+                            ingredient: {
+                                name: {
+                                    contains: i,
+                                    mode: "insensitive",
+                                }
                             }
                         }
                     }
-                }
+                }))
             })
         }
     });
 }
+
+export {listRecipes}
