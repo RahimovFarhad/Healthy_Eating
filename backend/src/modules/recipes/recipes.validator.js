@@ -5,6 +5,14 @@ class RecipeError extends Error {
   }
 }
 
+function normalizePositiveInteger(value) {
+  const parsed = typeof value === "string" ? Number(value) : value;
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
 function validateListRecipesInput({ category, cuisine, ingredients }) {
   const normalizedCategory =
     typeof category === "string" && category.trim() !== "" ? category.trim() : null;
@@ -31,4 +39,24 @@ function validateListRecipesInput({ category, cuisine, ingredients }) {
   };
 }
 
-export { RecipeError, validateListRecipesInput };
+function validatePositiveInteger({ value }){
+  const normalized = normalizePositiveInteger(value);
+    if (!value) {
+      throw new GoalError("Value is required");
+    }
+    return normalized;
+}
+
+function validateReviewInput({ rating, comment }) {
+  const normalizedRating = normalizePositiveInteger(rating);
+  if (normalizedRating == null || normalizedRating < 1 || normalizedRating > 5) {
+    throw new RecipeError("Rating must be an integer between 1 and 5");
+  }
+
+  const normalizedComment =
+    typeof comment === "string" && comment.trim() !== "" ? comment.trim() : null;
+
+  return { rating: normalizedRating, comment: normalizedComment };
+}
+
+export { RecipeError, validateListRecipesInput, validatePositiveInteger };
