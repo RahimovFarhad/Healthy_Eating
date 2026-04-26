@@ -18,21 +18,135 @@ import {
 
 describe("Diary Validator", () => {
   describe("getDiaryErrorStatus", () => {
+    test("returns 403 for unauthorised message", () => {
+      const result = getDiaryErrorStatus("Unauthorised access");
+      expect(result).toBe(403);
+    });
+
+    test("returns 404 for not found message", () => {
+      const result = getDiaryErrorStatus("Diary entry is not found");
+      expect(result).toBe(404);
+    });
   });
 
   describe("validateCreateDiaryEntryInput", () => {
+    test("returns normalised values when input is valid", () => {
+      const input = {
+        subscriberId: 1,
+        consumedAt: "2026-04-18",
+        mealType: "breakfast",
+        notes: "ok",
+        items: [],
+      };
+
+      const result = validateCreateDiaryEntryInput(input);
+
+      expect(result.subscriberId).toBe(1);
+      expect(result.mealType).toBe("breakfast");
+    });
+
+    test("throws error when subscriberId is missing", () => {
+      expect(() =>
+        validateCreateDiaryEntryInput({
+          consumedAt: "2026-04-18",
+          mealType: "breakfast",
+        })
+      ).toThrow(DiaryEntryError);
+    });
+
+    test("throws error when mealType is invalid", () => {
+      expect(() =>
+        validateCreateDiaryEntryInput({
+          subscriberId: 1,
+          consumedAt: "2026-04-18",
+          mealType: "invalid",
+        })
+      ).toThrow(DiaryEntryError);
+    });
   });
 
   describe("validateSummaryInput", () => {
+    test("returns normalised values when input is valid", () => {
+      const input = {
+        subscriberId: 1,
+        period: "weekly",
+        endDate: "2026-04-18",
+      };
+
+      const result = validateSummaryInput(input);
+
+      expect(result.subscriberId).toBe(1);
+    });
+
+    test("throws error when subscriberId is missing", () => {
+      expect(() =>
+        validateSummaryInput({
+          period: "weekly",
+          endDate: "2026-04-18",
+        })
+      ).toThrow(DiaryEntryError);
+    });
   });
 
   describe("validateListDisplay", () => {
+    test("returns normalised values when input is valid", () => {
+      const input = {
+        subscriberId: 1,
+      };
+
+      const result = validateListDisplay(input);
+
+      expect(result.subscriberId).toBe(1);
+    });
+
+    test("throws error when subscriberId is missing", () => {
+      expect(() => validateListDisplay({})).toThrow(DiaryEntryError);
+    });
   });
 
   describe("validateEntryDetails", () => {
+    test("returns normalised values when valid", () => {
+      const input = {
+        subscriberId: 1,
+        diaryEntryId: 2,
+      };
+
+      const result = validateEntryDetails(input);
+
+      expect(result.diaryEntryId).toBe(2);
+    });
+
+    test("throws error when subscriberId missing", () => {
+      expect(() =>
+        validateEntryDetails({
+          diaryEntryId: 2,
+        })
+      ).toThrow(DiaryEntryError);
+    });
   });
 
   describe("validateNewEntryDetails", () => {
+    test("returns normalised values when valid", () => {
+      const input = {
+        userId: 1,
+        diaryEntryId: 2,
+        quantity: 10,
+        portionId: 1,
+      };
+
+      const result = validateNewEntryDetails(input);
+
+      expect(result.quantity).toBe(10);
+    });
+
+    test("throws error when quantity is missing", () => {
+      expect(() =>
+        validateNewEntryDetails({
+          userId: 1,
+          diaryEntryId: 2,
+        })
+      ).toThrow(DiaryEntryError);
+    });
   });
 
   describe("validateUpdatedEntryItem", () => {
