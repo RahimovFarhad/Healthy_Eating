@@ -34,23 +34,25 @@
           <RouterLink class="nav-link" to="/dashboard"
                       :class="{ active: $route.path === '/dashboard' }">Dashboard</RouterLink>
         </li>
-        <li class="nav-item">
-          <RouterLink class="nav-link" to="/diary"
-                      :class="{ active: $route.path === '/diary' }">Food Diary</RouterLink>
-        </li>
-        <li class="nav-item">
-          <RouterLink class="nav-link" to="/nutrition"
-                      :class="{ active: $route.path === '/nutrition' }">Nutrition</RouterLink>
-        </li>
-        <li class="nav-item">
-          <RouterLink class="nav-link" to="/recipes"
-                      :class="{ active: $route.path === '/recipes' }">Recipes</RouterLink>
-        </li>
+        <template v-if="!isProfessional">
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/diary"
+                        :class="{ active: $route.path === '/diary' }">Food Diary</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/nutrition"
+                        :class="{ active: $route.path === '/nutrition' }">Nutrition</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/recipes"
+                        :class="{ active: $route.path === '/recipes' }">Recipes</RouterLink>
+          </li>
+        </template>
         <li class="nav-item">
           <RouterLink class="nav-link" to="/messages"
                       :class="{ active: $route.path === '/messages' }">Messages</RouterLink>
         </li>
-        <li class="nav-item">
+        <li v-if="!isProfessional" class="nav-item">
           <RouterLink class="nav-link" to="/goals"
                       :class="{ active: $route.path === '/goals' }">Goals</RouterLink>
         </li>
@@ -81,6 +83,8 @@ const initials = computed(() => {
   if (parts.length === 0) return '?'
   return parts.slice(0, 2).map(p => p[0].toUpperCase()).join('')
 })
+
+const isProfessional = computed(() => currentUser.value.role === 'professional')
 
 async function handleLogout() {
   await logout()
