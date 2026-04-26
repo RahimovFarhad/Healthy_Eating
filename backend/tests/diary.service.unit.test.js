@@ -87,15 +87,84 @@ describe("Diary Service", () => {
   });
 
   describe("createDiaryEntry (unit)", () => {
+    test("creates a diary entry when input is valid", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        consumedAt: new Date("2026-04-18"),
+        mealType: "breakfast",
+        notes: "test",
+        items: [],
+      };
+
+      mockValidateCreateDiaryEntryInput.mockReturnValue(validatedInput);
+      mockInsertDiaryEntry.mockResolvedValue({
+        diaryEntryId: TEST_ENTRYID,
+      });
+
+      await createDiaryEntry({
+        subscriberId: TEST_USERID,
+        consumedAt: "2026-04-18",
+        mealType: "breakfast",
+        notes: "test",
+        items: [],
+      });
+
+      expect(mockValidateCreateDiaryEntryInput).toHaveBeenCalled();
+      expect(mockInsertDiaryEntry).toHaveBeenCalledWith(validatedInput);
+      });
   });
 
   describe("getNutritionSummary (unit)", () => {
+    
   });
 
   describe("listDiaryEntries (unit)", () => {
+    test("returns a list of diary entries when input is valid", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+      };
+
+      const entries = [
+        { diaryEntryId: 1 },
+        { diaryEntryId: 2 },
+      ];
+
+      mockValidateListDisplay.mockReturnValue(validatedInput);
+      mockListDiaryEntries.mockResolvedValue(entries);
+
+      const result = await listDiaryEntries({
+        subscriberId: TEST_USERID,
+      });
+
+      expect(mockValidateListDisplay).toHaveBeenCalled();
+      expect(mockListDiaryEntries).toHaveBeenCalledWith(validatedInput);
+      expect(result).toEqual(entries);
+    });
   });
 
   describe("getDiaryEntryById (unit)", () => {
+    test("returns diary entry when it exists", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+      };
+
+      const entry = {
+        diaryEntryId: TEST_ENTRYID,
+      };
+
+      mockValidateEntryDetails.mockReturnValue(validatedInput);
+      mockFindDiaryEntryById.mockResolvedValue(entry);
+
+      const result = await getDiaryEntryById({
+        subscriberId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+      });
+
+      expect(mockValidateEntryDetails).toHaveBeenCalled();
+      expect(mockFindDiaryEntryById).toHaveBeenCalledWith(validatedInput);
+      expect(result).toEqual(entry);
+    });
   });
 
   describe("createDiaryEntryItem (unit)", () => {
