@@ -59,4 +59,4 @@ function validateReviewInput({ rating, comment }) {
   return { rating: normalizedRating, comment: normalizedComment };
 }
 
-export { RecipeError, validateListRecipesInput, validatePositiveInteger };
+export { RecipeError, validateListRecipesInput, validatePositiveInteger, validateReviewInput };
