@@ -6,6 +6,7 @@ import diaryRouter from "./modules/diary/diary.routes.js";
 import goalRouter from "./modules/goals/goals.routes.js";
 import professionalRouter from "./modules/professional/professional.routes.js";
 import clientRouter from "./modules/client/client.routes.js";
+import recipesRouter from "./modules/recipes/recipes.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
 
@@ -19,6 +20,7 @@ app.use("/goals", requireAuth, goalRouter);
 
 app.use("/professional", requireAuth, professionalRouter)
 app.use("/client", requireAuth, clientRouter)
+app.use("/api/recipes", recipesRouter)
 
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;

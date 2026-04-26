@@ -21,7 +21,12 @@ async function inviteClientToProfessional({ professionalId, subscriberId }) {
         throw new ProfessionalError("Client is already assigned to this professional");
     }
 
-    return createProfessionalClientLink(validated);
+    const result = await createProfessionalClientLink(validated);
+    if (!result) {
+        throw new ProfessionalError("Client invitation failed");
+    }
+
+    return result;
 }
 
 async function getProfessionalClients({ professionalId, include }) {

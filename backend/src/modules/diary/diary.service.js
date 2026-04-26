@@ -1,7 +1,8 @@
-import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId } from "./diary.repository.js";
+import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId } from "./diary.repository.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
+
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
@@ -126,8 +127,6 @@ const toDateStr = (val) => {
 async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
     const { fromDate, toDate } = getSummaryRange("weekly", endDate);
     const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate });
-    console.log(fromDate, toDate);
-    console.log(rows);
     const caloriesByDate = new Map(rows.map(row => [toDateStr(row.date), Number(row.calories)]));
 
     return Array.from({ length: 7 }, (_, i) => {
@@ -146,24 +145,32 @@ async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) {
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
 
-async function getDiaryEntryById({ diaryEntryId }) {
-    const entries = validateEntryDetails({ diaryEntryId }); // validation on data
+async function getDiaryEntryById({ diaryEntryId, subscriberId }) {
+    const entries = validateEntryDetails({ diaryEntryId, subscriberId }); // validation on data
 
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
 async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood, fatSecret }) {
     let resolvedPortionId = portionId;
+    const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId, isCustomOrFatSecret: !!customFood || !!fatSecret }); // validation on data
+
+    const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
+
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
 
     if (resolvedPortionId == null) {
         if (!customFood && !fatSecret) throw new DiaryEntryError("Must provide either portionId, customFood, or fatSecret");
         // Create the food item + portion first, get back the portionId
         resolvedPortionId = await createCustomFoodAndGetPortionId({ userId, customFood, fatSecret });
+        validatedEntries.portionId = resolvedPortionId; // update the validated entries with the new portionId for the next steps
     }
 
-    const entry = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId }); // validation on data
+    const entryCheck = await createDiaryEntryItemRepository(validatedEntries);
 
-    return createDiaryEntryItemRepository(entry);
+    return entryCheck;
 }
 
 async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }) {
@@ -227,21 +234,57 @@ async function createFoodPortion({ foodItemId, description, weightG, nutrients }
 }
 
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
-    const entry = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
+    const validatedEntries = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
-    return updateDiaryEntryItemRepository(entry);
+    const ownershipCheck = await checkDiaryEntryItemOwnership({ userId: validatedEntries.userId, diaryEntryItemId: validatedEntries.diaryEntryItemId });
+
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await updateDiaryEntryItemRepository(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry item is not found");
+    }
+
+    return entryCheck;
 }
 
 async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
-    const entry = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
+    const validatedEntries = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
+    
+    const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
 
-    return deleteDiaryEntry(entry);
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await deleteDiaryEntry(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry is not found");
+    }
+
+    return entryCheck;
 }
 
 async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
-    const entry = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
+    const validatedEntries = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
+    
+    const ownershipCheck = await checkDiaryEntryItemOwnership({ userId: validatedEntries.userId, diaryEntryItemId: validatedEntries.diaryEntryItemId });
 
-    return deleteDiaryEntryItem({ diaryEntryItemId: entry.diaryEntryItemId });
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
+    const entryCheck = await deleteDiaryEntryItem(validatedEntries);
+
+    if (!entryCheck) {
+        throw new DiaryEntryError("Diary entry item is not found");
+    }
+
+    return entryCheck;
 }
 
 async function getDashboardDataForSubscriber({ subscriberId }) {

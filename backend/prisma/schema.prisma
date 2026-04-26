@@ -115,8 +115,7 @@ model User {
   recipeFavorites                   RecipeFavorite[]
   recipeAssignmentsAsProfessional   RecipeAssignment[]   @relation("RecipeAssignmentProfessional")
   recipeAssignmentsAsSubscriber     RecipeAssignment[]   @relation("RecipeAssignmentSubscriber")
-  recipeRatings                     RecipeRating[]
-  recipeComments                    RecipeComment[]
+  recipeReviews                     RecipeReview[]
   plans                             Plan[]
   createdFoodItems                  FoodItem[]           @relation("FoodItemCreatedByUser")
 
@@ -237,7 +236,7 @@ model Message {
 model NutritionGoal {
   goalId              Int         @id @default(autoincrement()) @map("goal_id")
   subscriberId        Int         @map("subscriber_id")
-  nutrientId          Int         @map("nutrient_id")
+  nutrientId          Int?        @map("nutrient_id")
   source              GoalSource  @default(system_default)
   status              GoalStatus  @default(active)
   targetMin           Decimal?    @map("target_min") @db.Decimal(12, 4)
@@ -251,7 +250,7 @@ model NutritionGoal {
 
   subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
   setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
-  nutrient          Nutrient      @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
+  nutrient          Nutrient?     @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
 
   @@map("nutrition_goal")
 }
@@ -309,12 +308,18 @@ model Recipe {
   recipeId     Int    @id @default(autoincrement()) @map("recipe_id")
   title        String
   instructions String @db.Text
+  kcal         Int?
+  protein      Decimal? @db.Decimal(8,2)
+  carbs        Decimal? @db.Decimal(8,2)
+  sugars       Decimal? @db.Decimal(8,2)
+  fat          Decimal? @db.Decimal(8,2)
+  saturatedFat Decimal? @map("saturated_fat") @db.Decimal(8,2)
+  salt         Decimal? @db.Decimal(8,2)
 
   recipeIngredients RecipeIngredient[]
   favorites         RecipeFavorite[]
   assignments       RecipeAssignment[]
-  ratings           RecipeRating[]
-  comments          RecipeComment[]
+  reviews           RecipeReview[]
   planItems         PlanItem[]
 
   @@map("recipe")
@@ -371,31 +376,19 @@ model RecipeAssignment {
   @@map("recipe_assignment")
 }
 
-model RecipeRating {
-  ratingId     Int      @id @default(autoincrement()) @map("rating_id")
+model RecipeReview {
+  reviewId     Int      @id @default(autoincrement()) @map("review_id")
   subscriberId Int      @map("subscriber_id")
   recipeId     Int      @map("recipe_id")
   rating       Int
+  comment      String?   @db.Text
   createdAt    DateTime @default(now()) @map("created_at")
 
   subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
   recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
 
   @@unique([subscriberId, recipeId])
-  @@map("recipe_rating")
-}
-
-model RecipeComment {
-  commentId    Int      @id @default(autoincrement()) @map("comment_id")
-  subscriberId Int      @map("subscriber_id")
-  recipeId     Int      @map("recipe_id")
-  comment      String   @db.Text
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
-  recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
-
-  @@map("recipe_comment")
+  @@map("recipe_review")
 }
 
 // ==================== MEAL PLANNING ====================

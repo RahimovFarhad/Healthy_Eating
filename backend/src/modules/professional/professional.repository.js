@@ -8,24 +8,38 @@ async function updateRoleToProfessional({ professionalId }) {
 }
 
 async function findProfessionalClientLink({ professionalId, clientId }) {
-    return prisma.professionalClient.findUnique({
-        where: {
-            professionalId_subscriberId: {
-                professionalId: professionalId,
-                subscriberId: clientId,
+    try {
+        const link = await prisma.professionalClient.findUnique({
+            where: {
+                professionalId_subscriberId: {
+                    professionalId: professionalId,
+                    subscriberId: clientId,
+                },
             },
-        },
-    });
+        });
+        return link;
+    } catch (error) {
+        if (error.code === "P2023") {
+            return null; // Professional or subscriber does not exist
+        }
+    }
 }
 
 async function createProfessionalClientLink({ professionalId, subscriberId }) {
-    return prisma.professionalClient.create({
-        data: {
-            professionalId,
-            subscriberId,
-            status: "invited",
-        },
-    });
+    try {
+        const result = await prisma.professionalClient.create({
+            data: {
+                professionalId,
+                subscriberId,
+                status: "invited",
+            },
+        }); 
+        return result;
+    } catch (error) {
+        if (error.code === "P2003") {
+            return null; // Professional or subscriber does not exist
+        }
+    }
 }
 
 async function listProfessionalClients({ professionalId, includeDetails }) {
@@ -141,7 +155,7 @@ async function listMessages({ professionalId, clientId }) {
             professionalId,
             subscriberId: clientId,
         },
-        orderBy: [{ createdAt: "desc" }, { adviceId: "desc" }],
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 }
 

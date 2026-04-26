@@ -1,0 +1,34 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2021
+  },
+  "extends": "eslint:recommended",
+  // custom linting rules within the code
+  "rules": {
+    "no-unused-vars": "warn", // warning for unused variables in the code
+    "no-console": "warn", // warning if any console methods used for debugging
+    "no-undef": "warn", // warning for any function names unclear
+    "quotes": ["warn","double",{"avoidEscape": true}], // warning for inconsistent use of double quotations
+    "no-case-declarations": "off" // turned off, as it doesn't affect code logic
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js", "tests/**/*.js"],
+      "env": {
+        "jest": true
+      }
+    },
+    {
+    "files": ["backend/src/server.js", "backend/src/app.js"],
+    "rules": {
+      "no-console": "off"
+    }
+  }
+  ]
+  
+}

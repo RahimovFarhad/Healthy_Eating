@@ -120,7 +120,11 @@ async function insertGoal({
       endDate,
       notes,
     },
-    select: GOAL_SELECT,
+    select: {
+      ...GOAL_SELECT, 
+      setByProfessionalId: true, 
+    }
+      
   });
 }
 
