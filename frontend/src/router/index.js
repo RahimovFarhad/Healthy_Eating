@@ -8,6 +8,7 @@ import NutritionView from '../views/NutritionView.vue'
 import RecipesView   from '../views/RecipesView.vue'
 import GoalsView     from '../views/GoalsView.vue'
 import MessagesView  from '../views/MessagesView.vue'
+import ProfileView   from '../views/ProfileView.vue'
 
 const routes = [
   { path: '/',          component: HomeView      },
@@ -17,6 +18,7 @@ const routes = [
   { path: '/recipes',   component: RecipesView,   meta: { requiresAuth: true } },
   { path: '/goals',     component: GoalsView,     meta: { requiresAuth: true } },
   { path: '/messages',  component: MessagesView,  meta: { requiresAuth: true } },
+  { path: '/profile',   component: ProfileView,   meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({

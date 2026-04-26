@@ -3,7 +3,7 @@ import { ref } from 'vue'
 let _accessToken = null
 
 export const isAuthenticated = ref(false)
-export const currentUser     = ref({ name: '', userId: null, role: null })
+export const currentUser     = ref({ name: '', email: '', userId: null, role: null })
 export const authError       = ref('')
 
 function setSession(token) {
@@ -13,20 +13,22 @@ function setSession(token) {
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    const email = payload.email ?? ''
     currentUser.value = {
-      name:   payload.email?.split('@')[0] ?? '',
+      name:   email.split('@')[0] ?? '',
+      email,
       userId: payload.userId ?? null,
       role:   payload.role   ?? null,
     }
   } catch {
-    currentUser.value = { name: '', userId: null, role: null }
+    currentUser.value = { name: '', email: '', userId: null, role: null }
   }
 }
 
 function clearSession() {
   _accessToken          = null
   isAuthenticated.value = false
-  currentUser.value     = { name: '', userId: null, role: null }
+  currentUser.value     = { name: '', email: '', userId: null, role: null }
 }
 
 export async function login(email, password) {

@@ -55,7 +55,10 @@
                       :class="{ active: $route.path === '/goals' }">Goals</RouterLink>
         </li>
         <li class="nav-item">
-          <div class="avatar-circle ms-2">{{ initials }}</div>
+          <RouterLink to="/profile" class="text-decoration-none"
+                      :title="`View profile (${currentUser.name || 'account'})`">
+            <div class="avatar-circle ms-2" style="cursor:pointer;">{{ initials }}</div>
+          </RouterLink>
         </li>
         <li class="nav-item">
           <button class="btn btn-outline-light btn-sm ms-1" @click="handleLogout">Log Out</button>
