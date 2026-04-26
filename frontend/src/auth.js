@@ -49,7 +49,7 @@ export async function login(email, password) {
   return true
 }
 
-export async function register(email, username, password) {
+export async function register(email, username, password, isProfessional = false) {
   authError.value = ''
   const res = await fetch('/api/auth/register', {
     method:  'POST',
@@ -62,6 +62,19 @@ export async function register(email, username, password) {
   if (!res.ok) {
     authError.value = data.message ?? 'Registration failed'
     return false
+  }
+
+  if (isProfessional) {
+    const loggedIn = await login(email, password)
+    if (!loggedIn) return false
+
+    const upgradeRes = await apiFetch('/api/professional/setAsProfessional', { method: 'PATCH' })
+    if (!upgradeRes.ok) {
+      authError.value = 'Account created but failed to upgrade to professional.'
+      return false
+    }
+
+    await tryRefresh()
   }
 
   return true

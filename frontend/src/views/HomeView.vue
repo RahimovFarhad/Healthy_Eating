@@ -156,6 +156,14 @@
                        v-model="signupForm.password">
               </div>
 
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="isProfessional"
+                       v-model="signupForm.isProfessional">
+                <label class="form-check-label small" for="isProfessional">
+                   Are you a nutrition professional?
+                </label>
+              </div>
+
               <div v-if="signupError"   class="alert alert-danger py-2 small mb-2">{{ signupError }}</div>
               <div v-if="signupSuccess" class="alert alert-success py-2 small mb-2">{{ signupSuccess }}</div>
 
@@ -181,7 +189,7 @@ import { login, register } from '../auth.js'
 const router = useRouter()
 
 const loginForm  = ref({ email: '', password: '' })
-const signupForm = ref({ name: '', email: '', password: '' })
+const signupForm = ref({ name: '', email: '', password: '', isProfessional: false })
 
 const loginLoading  = ref(false)
 const loginError    = ref('')
@@ -210,10 +218,19 @@ async function handleSignup() {
   signupSuccess.value = ''
   signupLoading.value = true
   try {
-    const ok = await register(signupForm.value.email, signupForm.value.name, signupForm.value.password)
+    const ok = await register(
+      signupForm.value.email,
+      signupForm.value.name,
+      signupForm.value.password,
+      signupForm.value.isProfessional,
+    )
     if (ok) {
+      if (signupForm.value.isProfessional) {
+        router.push('/dashboard')
+        return
+      }
       signupSuccess.value = 'Account created! You can now log in.'
-      signupForm.value = { name: '', email: '', password: '' }
+      signupForm.value = { name: '', email: '', password: '', isProfessional: false }
     } else {
       const { authError } = await import('../auth.js')
       signupError.value = authError.value || 'Registration failed'
