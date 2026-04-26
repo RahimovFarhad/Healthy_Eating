@@ -23,6 +23,8 @@
       <RouterLink to="/diary" class="btn btn-gf btn-sm">+ Log Meal</RouterLink>
     </div>
 
+    <div v-if="error" class="alert alert-danger small">{{ error }}</div>
+
     <!-- ============================================================
          QUICK STATS STRIP
          v-for loops over `quickStats` array to render each tile
@@ -32,7 +34,11 @@
       <div class="col-6 col-md-3">
         <div class="stat-card h-100">
           <div class="stat-label">🔥 Calories Today</div>
-          <div class="stat-value">— kcal</div>
+          <div class="stat-value">
+            <span v-if="loading">…</span>
+            <span v-else-if="caloriesToday != null">{{ Math.round(caloriesToday) }} kcal</span>
+            <span v-else>— kcal</span>
+          </div>
         </div>
       </div>
 
@@ -59,7 +65,10 @@
       <div class="col-6 col-md-3">
         <div class="stat-card h-100">
           <div class="stat-label">🥗 Meals Logged</div>
-          <div class="stat-value">0 today</div>
+          <div class="stat-value">
+            <span v-if="loading">…</span>
+            <span v-else>{{ mealsLoggedToday ?? 0 }} today</span>
+          </div>
         </div>
       </div>
 
@@ -67,7 +76,10 @@
       <div class="col-6 col-md-3">
         <div class="stat-card h-100">
           <div class="stat-label">📅 Days Logged</div>
-          <div class="stat-value">0 days</div>
+          <div class="stat-value">
+            <span v-if="loading">…</span>
+            <span v-else>{{ daysLogged ?? 0 }} days</span>
+          </div>
         </div>
       </div>
     </div>
@@ -88,8 +100,28 @@
           </div>
           <div class="card-body p-0">
 
-            <!-- Empty state — no meals logged yet -->
-            <div class="p-3 text-center text-muted">
+            <!-- Loading -->
+            <div v-if="loading" class="p-3 text-center text-muted">
+              <small>Loading…</small>
+            </div>
+
+            <!-- Logged meals -->
+            <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0 p-3">
+              <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
+                  class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
+                <span class="small">
+                  {{ mealIcons[entry.mealType] ?? '🍽' }}
+                  <span class="fw-semibold text-capitalize">{{ entry.mealType }}</span>
+                </span>
+                <span class="text-muted" style="font-size:0.75rem;">
+                  {{ entry.items?.length ?? 0 }}
+                  {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
+                </span>
+              </li>
+            </ul>
+
+            <!-- Empty state -->
+            <div v-else class="p-3 text-center text-muted">
               <small>No meals logged today yet.</small><br>
               <RouterLink to="/diary" class="btn btn-gf btn-sm mt-2">+ Log your first meal</RouterLink>
             </div>
@@ -110,8 +142,22 @@
           </div>
           <div class="card-body">
 
-            <!-- Empty state — no nutrition data yet -->
-            <div class="p-3 text-center text-muted">
+            <!-- Loading -->
+            <div v-if="loading" class="p-3 text-center text-muted">
+              <small>Loading…</small>
+            </div>
+
+            <!-- Nutrient breakdown -->
+            <ul v-else-if="nutritionPreview.length > 0" class="list-unstyled mb-0">
+              <li v-for="n in nutritionPreview" :key="n.code"
+                  class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
+                <span class="small">{{ nutrientLabels[n.code] ?? n.name ?? n.code }}</span>
+                <span class="fw-semibold small">{{ formatAmount(n) }}</span>
+              </li>
+            </ul>
+
+            <!-- Empty state -->
+            <div v-else class="p-3 text-center text-muted">
               <small>No data yet. Log meals in the Food Diary to see your nutrition breakdown.</small><br>
               <RouterLink to="/diary" class="btn btn-gf-outline btn-sm mt-2">Go to Food Diary</RouterLink>
             </div>
@@ -192,9 +238,52 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { apiFetch } from '../auth.js'
 
 const waterGlasses = ref(0)
-
 const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+const dashboard = ref(null)
+const loading   = ref(true)
+const error     = ref('')
+
+onMounted(async () => {
+  try {
+    const res = await apiFetch('/api/diary/dashboard')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      error.value = data.message || data.error || 'Failed to load dashboard'
+      return
+    }
+    dashboard.value = data.dashboardData ?? data
+  } catch {
+    error.value = 'Network error — could not load dashboard'
+  } finally {
+    loading.value = false
+  }
+})
+
+const quickStats        = computed(() => dashboard.value?.quickStats ?? {})
+const foodDiaryPreview  = computed(() => dashboard.value?.foodDiaryPreview ?? [])
+const nutritionPreview  = computed(() => dashboard.value?.nutritionPreview ?? [])
+
+const caloriesToday   = computed(() => quickStats.value.calories_today ?? null)
+const mealsLoggedToday = computed(() => quickStats.value.meals_logged_today ?? null)
+const daysLogged      = computed(() => quickStats.value.days_logged ?? null)
+
+const mealIcons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍎' }
+
+const nutrientLabels = {
+  protein:       'Protein',
+  carbohydrates: 'Carbs',
+  fat:           'Fat',
+  fibre:         'Fibre',
+}
+
+function formatAmount(n) {
+  const value = Number(n.totalAmount ?? 0)
+  const unit = n.unit ?? 'g'
+  return `${Math.round(value)}${unit}`
+}
 </script>
