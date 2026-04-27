@@ -6,7 +6,7 @@
          style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
         <h4 style="color:#5a9e56;" class="mb-0">Welcome 🌿</h4>
-        <small class="text-secondary">Here's your health summary for today — {{ today }}</small>
+        <small class="text-secondary">Here's your health summary for today - {{ today }}</small>
       </div>
       <RouterLink to="/diary" class="btn btn-gf btn-sm">Log Meal</RouterLink>
     </div>
@@ -20,7 +20,7 @@
           <div class="stat-value">
             <span v-if="loading">…</span>
             <span v-else-if="caloriesToday != null">{{ Math.round(caloriesToday) }} kcal</span>
-            <span v-else>— kcal</span>
+            <span v-else>- kcal</span>
           </div>
         </div>
       </div>
@@ -211,7 +211,7 @@ onMounted(async () => {
     }
     dashboard.value = data.dashboardData ?? data
   } catch {
-    error.value = 'Network error — could not load dashboard'
+    error.value = 'Network error - could not load dashboard'
   } finally {
     loading.value = false
   }

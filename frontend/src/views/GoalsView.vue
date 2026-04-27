@@ -215,7 +215,7 @@ const customGoal = ref({
 const presets = [
   { title: 'Meet Daily Calorie Goal', desc: 'Stay within your personalised calorie target each day', duration: '30 days' },
   { title: 'Eat 5-a-Day for 2 Weeks', desc: 'Log 5 portions of fruit & veg every day for 14 days', duration: '14 days' },
-  { title: 'Drink 8 Glasses of Water Daily', desc: 'Stay hydrated — log 8 glasses every day for 21 days', duration: '21 days' },
+  { title: 'Drink 8 Glasses of Water Daily', desc: 'Stay hydrated - log 8 glasses every day for 21 days', duration: '21 days' },
   { title: 'Hit Protein Target Every Day', desc: 'Reach your daily protein goal based on your profile', duration: '30 days' },
   { title: 'Reduce Sugar to <30g/day', desc: 'Cut added sugars to below 30g daily for 30 days', duration: '30 days' },
 ]

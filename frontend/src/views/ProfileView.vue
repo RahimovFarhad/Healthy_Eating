@@ -73,8 +73,8 @@ import { currentUser, logout } from '../auth.js'
 
 const router = useRouter()
 
-const displayName = computed(() => currentUser.value.name || '—')
-const email = computed(() => currentUser.value.email || '—')
+const displayName = computed(() => currentUser.value.name || '-')
+const email = computed(() => currentUser.value.email || '-')
 const userId = computed(() => currentUser.value.userId)
 
 const roleLabel = computed(() => {
@@ -98,7 +98,7 @@ async function copyId() {
     copied.value = true
     setTimeout(() => { copied.value = false }, 1500)
   } catch {
-    // navigator.clipboard isn't available on http or older browsers — just no-op
+    // navigator.clipboard isn't available on http or older browsers - just no-op
   }
 }
 

@@ -6,14 +6,9 @@
          style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
         <h4 style="color:#5a9e56;" class="mb-0">Professional Dashboard</h4>
-        <small class="text-secondary">{{ today }} — manage and review your assigned clients</small>
+        <small class="text-secondary">{{ today }} - manage and review your assigned clients</small>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="showDetails"
-                 v-model="showDetails" @change="loadClients">
-          <label class="form-check-label small" for="showDetails">Show details</label>
-        </div>
         <button class="btn btn-gf btn-sm" @click="showInvite = !showInvite">
           {{ showInvite ? 'Cancel' : 'Invite Client' }}
         </button>
@@ -56,7 +51,7 @@
          class="text-center text-muted py-4 border rounded"
          style="border-style:dashed!important;">
       <p class="mb-1">No active clients yet.</p>
-      <small>Invite a subscriber using their User ID — they'll appear here once they accept.</small>
+      <small>Invite a subscriber using their User ID - they'll appear here once they accept.</small>
     </div>
 
     <div v-else>
@@ -103,32 +98,77 @@
             <div v-else-if="client.dashboard.error" class="alert alert-danger small mb-0">
               {{ client.dashboard.error }}
             </div>
-            <div v-else-if="client.dashboard.data" class="row g-3">
-              <div class="col-md-6">
-                <h6 class="fw-bold mb-2" style="color:#5a9e56;">Recent Diary</h6>
-                <div v-if="recentEntries(client.dashboard.data).length === 0"
-                     class="text-muted small">No entries logged yet.</div>
-                <ul v-else class="list-unstyled small mb-0">
-                  <li v-for="entry in recentEntries(client.dashboard.data)" :key="entry.diaryEntryId"
-                      class="mb-1 pb-1 border-bottom">
-                    <span class="fw-semibold">{{ entry.mealType }}</span>
-                    <span class="text-muted ms-1">— {{ formatDate(entry.consumedAt) }}</span>
-                  </li>
-                </ul>
+            <div v-else-if="client.dashboard.data">
+              <div class="row g-2 mb-3">
+                <div class="col-4">
+                  <div class="p-2 rounded text-center" style="background:#f0f8f0;border:1px solid #c3e0c3;">
+                    <div class="fw-bold" style="color:#5a9e56;font-size:1.1rem;">
+                      {{ client.dashboard.data.quickStats?.calories_today ?? 0 }}
+                    </div>
+                    <div class="text-muted" style="font-size:0.7rem;">kcal today</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-2 rounded text-center" style="background:#f0f8f0;border:1px solid #c3e0c3;">
+                    <div class="fw-bold" style="color:#5a9e56;font-size:1.1rem;">
+                      {{ client.dashboard.data.quickStats?.meals_logged_today ?? 0 }}
+                    </div>
+                    <div class="text-muted" style="font-size:0.7rem;">meals today</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-2 rounded text-center" style="background:#f0f8f0;border:1px solid #c3e0c3;">
+                    <div class="fw-bold" style="color:#5a9e56;font-size:1.1rem;">
+                      {{ client.dashboard.data.quickStats?.days_logged ?? 0 }}
+                    </div>
+                    <div class="text-muted" style="font-size:0.7rem;">days logged</div>
+                  </div>
+                </div>
               </div>
-              <div class="col-md-6" v-if="riskSnapshots(client.dashboard.data).length">
-                <h6 class="fw-bold mb-2" style="color:#5a9e56;">Recent Risk Flags</h6>
-                <ul class="list-unstyled small mb-0">
-                  <li v-for="snap in riskSnapshots(client.dashboard.data)" :key="snap.snapshotId"
-                      class="mb-1 pb-1 border-bottom">
-                    <span class="badge me-2"
-                          :style="`background:${severityColor(snap.riskLevel)};font-size:0.65rem;`">
-                      {{ snap.riskLevel }}
-                    </span>
-                    <span class="fw-semibold">{{ snap.rule?.name ?? 'Rule' }}</span>
-                    <span class="text-muted ms-1" v-if="snap.reason">— {{ snap.reason }}</span>
-                  </li>
-                </ul>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-2" style="color:#5a9e56;">Today's Diary</h6>
+                  <div v-if="recentEntries(client.dashboard.data).length === 0"
+                       class="text-muted small">No entries logged today.</div>
+                  <ul v-else class="list-unstyled small mb-0">
+                    <li v-for="entry in recentEntries(client.dashboard.data)" :key="entry.diaryEntryId"
+                        class="mb-1 pb-1 border-bottom">
+                      <span class="fw-semibold text-capitalize">{{ entry.mealType }}</span>
+                      <span class="text-muted ms-1">- {{ formatDate(entry.consumedAt) }}</span>
+                      <span v-if="entry.items?.length" class="text-muted ms-1"
+                            style="font-size:0.7rem;">({{ entry.items.length }} item{{ entry.items.length !== 1 ? 's' : '' }})</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-2" style="color:#5a9e56;">Today's Nutrition</h6>
+                  <div v-if="!(client.dashboard.data.nutritionPreview?.length)"
+                       class="text-muted small">No nutrition data yet.</div>
+                  <ul v-else class="list-unstyled small mb-0">
+                    <li v-for="n in client.dashboard.data.nutritionPreview" :key="n.code"
+                        class="mb-1 pb-1 border-bottom d-flex justify-content-between">
+                      <span class="fw-semibold">{{ n.name }}</span>
+                      <span class="text-muted">{{ n.totalAmount }} {{ n.unit }}</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="col-12" v-if="riskSnapshots(client.dashboard.data).length">
+                  <h6 class="fw-bold mb-2" style="color:#5a9e56;">Recent Risk Flags</h6>
+                  <ul class="list-unstyled small mb-0">
+                    <li v-for="snap in riskSnapshots(client.dashboard.data)" :key="snap.snapshotId"
+                        class="mb-1 pb-1 border-bottom">
+                      <span class="badge me-2"
+                            :style="`background:${severityColor(snap.riskLevel)};font-size:0.65rem;`">
+                        {{ snap.riskLevel }}
+                      </span>
+                      <span class="fw-semibold">{{ snap.rule?.name ?? 'Rule' }}</span>
+                      <span class="text-muted ms-1" v-if="snap.reason">- {{ snap.reason }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -153,12 +193,145 @@
                 {{ client.summary.loading ? '…' : 'Load' }}
               </button>
             </div>
-            <div v-if="client.summary.error" class="alert alert-danger small">{{ client.summary.error }}</div>
-            <pre v-if="client.summary.data"
-                 class="small p-2 rounded"
-                 style="background:#f7f7f7;max-height:300px;overflow:auto;">{{ JSON.stringify(client.summary.data, null, 2) }}</pre>
-            <div v-if="!client.summary.data && !client.summary.error && !client.summary.loading"
-                 class="text-muted small">Select a period and end date, then press Load.</div>
+
+            <div v-if="client.summary.loading" class="text-muted small">Loading…</div>
+            <div v-else-if="client.summary.error" class="alert alert-danger small">{{ client.summary.error }}</div>
+            <div v-else-if="client.summary.data">
+              <div class="row g-3 mb-3">
+
+                <div class="col-md-4">
+                  <div class="card border p-3 text-center h-100">
+                    <h6 class="fw-bold mb-2" style="color:#5a9e56;">Calories</h6>
+                    <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
+                      <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                      <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"
+                              stroke-dasharray="389.6"
+                              :stroke-dashoffset="calorieOffset(client.summary.data)"
+                              stroke-linecap="round"
+                              transform="rotate(-90 80 80)"/>
+                      <text x="80" y="74" text-anchor="middle" font-size="18" font-weight="bold" fill="#5a9e56">
+                        {{ summaryNutrient(client.summary.data, 'calories')?.totalAmount ?? 0 }}
+                      </text>
+                      <text x="80" y="90" text-anchor="middle" font-size="10" fill="#888">kcal</text>
+                    </svg>
+                    <div class="mt-2 text-start small text-muted">
+                      <div>Eaten: <strong>{{ summaryNutrient(client.summary.data, 'calories')?.totalAmount ?? 0 }} kcal</strong></div>
+                      <div>Reference: <strong>2,000 kcal</strong></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="card border p-3 text-center h-100" style="position:relative;">
+                    <h6 class="fw-bold mb-2" style="color:#5a9e56;">Macronutrients</h6>
+                    <div style="position:absolute;top:8px;right:8px;text-align:center;">
+                      <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+                        <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                        <template v-for="seg in IDEAL_MACRO_SEGS" :key="seg.code">
+                          <circle cx="80" cy="80" r="62" fill="none"
+                                  :stroke="seg.color" stroke-width="18"
+                                  :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                                  :stroke-dashoffset="seg.offset"
+                                  transform="rotate(-90 80 80)"/>
+                        </template>
+                      </svg>
+                      <span style="font-size:0.6rem;color:#888;">Ideal</span>
+                    </div>
+                    <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
+                      <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                      <template v-for="seg in macroSegments(client.summary.data)" :key="seg.code">
+                        <circle cx="80" cy="80" r="62" fill="none"
+                                :stroke="seg.color" stroke-width="18"
+                                :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                                :stroke-dashoffset="seg.offset"
+                                transform="rotate(-90 80 80)"/>
+                      </template>
+                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Macros</text>
+                    </svg>
+                    <div class="mt-2 text-start small">
+                      <div v-for="m in donutLegend(client.summary.data, MACRO_CODES)" :key="m.code"
+                           class="d-flex align-items-center gap-1 mb-1">
+                        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
+                              :style="`background:${m.color};`"></span>
+                        <span class="text-muted">{{ m.name }}:</span>
+                        <strong>{{ m.amount }} {{ m.unit }}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="card border p-3 text-center h-100" style="position:relative;">
+                    <h6 class="fw-bold mb-2" style="color:#5a9e56;">Micronutrients</h6>
+                    <div style="position:absolute;top:8px;right:8px;text-align:center;">
+                      <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+                        <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                        <template v-for="seg in IDEAL_MICRO_SEGS" :key="seg.code">
+                          <circle cx="80" cy="80" r="62" fill="none"
+                                  :stroke="seg.color" stroke-width="18"
+                                  :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                                  :stroke-dashoffset="seg.offset"
+                                  transform="rotate(-90 80 80)"/>
+                        </template>
+                      </svg>
+                      <span style="font-size:0.6rem;color:#888;">Ideal</span>
+                    </div>
+                    <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
+                      <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                      <template v-for="seg in microSegments(client.summary.data)" :key="seg.code">
+                        <circle cx="80" cy="80" r="62" fill="none"
+                                :stroke="seg.color" stroke-width="18"
+                                :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                                :stroke-dashoffset="seg.offset"
+                                transform="rotate(-90 80 80)"/>
+                      </template>
+                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Micros</text>
+                    </svg>
+                    <div class="mt-2 text-start small">
+                      <div v-for="m in donutLegend(client.summary.data, MICRO_CODES)" :key="m.code"
+                           class="d-flex align-items-center gap-1 mb-1">
+                        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
+                              :style="`background:${m.color};`"></span>
+                        <span class="text-muted">{{ m.name }}:</span>
+                        <strong>{{ m.amount }} {{ m.unit }}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <h6 class="fw-bold mb-2" style="color:#5a9e56;">Full Nutrient Breakdown</h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped border mb-0">
+                  <thead style="background:#5a9e56;color:#fff;">
+                    <tr>
+                      <th class="small">Nutrient</th>
+                      <th class="small">Amount</th>
+                      <th class="small">Unit</th>
+                      <th class="small">Reference</th>
+                      <th class="small">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in summaryBreakdown(client.summary.data)" :key="row.code">
+                      <td class="small fw-semibold">{{ row.name }}</td>
+                      <td class="small">{{ row.amount }}</td>
+                      <td class="small text-muted">{{ row.unit }}</td>
+                      <td class="small text-muted">{{ row.reference }}</td>
+                      <td style="width:120px;">
+                        <div class="progress" style="height:8px;">
+                          <div class="progress-bar"
+                               :style="`width:${row.pct}%;background-color:${row.color};`"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-else class="text-muted small">Select a period and end date, then press Load.</div>
           </div>
 
           <div v-if="activeTab[client.id] === 'goals'">
@@ -286,7 +459,6 @@ const clients = ref([])
 const loading = ref(true)
 const error = ref('')
 const expandedId = ref(null)
-const showDetails = ref(false)
 const activeTab = reactive({})
 
 const showInvite = ref(false)
@@ -341,9 +513,7 @@ async function loadClients() {
   loading.value = true
   error.value = ''
   try {
-    const url = showDetails.value
-      ? '/api/professional/clients?include=details'
-      : '/api/professional/clients'
+    const url = '/api/professional/clients'
     const { ok, data, message } = await fetchJson(url)
     if (!ok) {
       error.value = message || 'Failed to load clients'
@@ -351,7 +521,7 @@ async function loadClients() {
     }
     clients.value = (data.clients ?? []).map(c => ({ ...c, ...blankClientState() }))
   } catch {
-    error.value = 'Network error — could not load clients'
+    error.value = 'Network error - could not load clients'
   } finally {
     loading.value = false
   }
@@ -373,7 +543,7 @@ async function sendInvite() {
     inviteSuccess.value = `Invitation sent to user #${inviteId.value}.`
     inviteId.value = null
   } catch {
-    inviteError.value = 'Network error — could not send invitation'
+    inviteError.value = 'Network error - could not send invitation'
   } finally {
     inviteLoading.value = false
   }
@@ -392,7 +562,7 @@ async function removeClient(client) {
     clients.value = clients.value.filter(c => c.id !== client.id)
     if (expandedId.value === client.id) expandedId.value = null
   } catch {
-    alert('Network error — could not remove client')
+    alert('Network error - could not remove client')
   }
 }
 
@@ -457,7 +627,7 @@ function loadMessages(client) {
   return loadResource(
     client.messages,
     `/api/professional/clients/${client.subscriberId}/messages`,
-    d => d.messages ?? d,
+    d => (d.messages ?? d).slice().reverse(),
     'Failed to load messages',
   )
 }
@@ -540,7 +710,8 @@ function formatDateTime(value) {
 }
 
 function recentEntries(data) {
-  return data?.recentDiaryEntries ?? data?.diaryEntries ?? data?.entries ?? []
+  const entries = data?.foodDiaryPreview ?? data?.recentDiaryEntries ?? data?.diaryEntries ?? data?.entries ?? []
+  return entries.filter(e => e.items?.length > 0)
 }
 
 function riskSnapshots(data) {
@@ -561,6 +732,107 @@ function goalSourceColor(source) {
   if (source === 'professional_defined') return '#5a9e56'
   if (source === 'user_defined') return '#3a7fbf'
   return '#888'
+}
+
+// NHS reference intakes used for progress bars
+const REFERENCES = {
+  calories:      { ref: 2000, unit: 'kcal', label: '2,000 kcal' },
+  protein:       { ref: 50,   unit: 'g',    label: '50 g' },
+  carbohydrates: { ref: 260,  unit: 'g',    label: '260 g' },
+  fat:           { ref: 70,   unit: 'g',    label: '70 g' },
+  fibre:         { ref: 30,   unit: 'g',    label: '30 g' },
+  sugar:         { ref: 30,   unit: 'g',    label: '≤ 30 g' },
+  salt:          { ref: 6,    unit: 'g',    label: '≤ 6 g' },
+}
+
+const MACRO_CODES = ['carbohydrates', 'protein', 'fat']
+const MICRO_CODES = ['fibre', 'sugar', 'salt']
+
+const NUTRIENT_COLORS = {
+  carbohydrates: '#4e9af1',
+  protein:       '#5a9e56',
+  fat:           '#e8a820',
+  fibre:         '#a86cc1',
+  sugar:         '#d94f4f',
+  salt:          '#6ec6c2',
+}
+
+function summaryNutrient(data, code) {
+  return data?.nutrients?.find(n => n.code === code)
+}
+
+const SVG_CIRC = 2 * Math.PI * 62  // ≈ 389.6
+
+function calorieOffset(data) {
+  const eaten = summaryNutrient(data, 'calories')?.totalAmount ?? 0
+  const pct = Math.min(eaten / REFERENCES.calories.ref, 1)
+  return SVG_CIRC * (1 - pct)
+}
+
+function buildSegments(data, codes) {
+  const amounts = codes.map(code => summaryNutrient(data, code)?.totalAmount ?? 0)
+  const total = amounts.reduce((s, v) => s + v, 0) || 1
+  let cumulative = 0
+  return codes.map((code, i) => {
+    const dash = (amounts[i] / total) * SVG_CIRC
+    const gap = SVG_CIRC - dash
+    const offset = SVG_CIRC - cumulative
+    cumulative += dash
+    return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
+  })
+}
+
+function macroSegments(data) { return buildSegments(data, MACRO_CODES) }
+function microSegments(data) { return buildSegments(data, MICRO_CODES) }
+
+function buildIdealSegments(codes) {
+  const amounts = codes.map(code => REFERENCES[code]?.ref ?? 0)
+  const total = amounts.reduce((s, v) => s + v, 0) || 1
+  let cumulative = 0
+  return codes.map((code, i) => {
+    const dash = (amounts[i] / total) * SVG_CIRC
+    const gap = SVG_CIRC - dash
+    const offset = SVG_CIRC - cumulative
+    cumulative += dash
+    return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
+  })
+}
+
+const IDEAL_MACRO_SEGS = buildIdealSegments(MACRO_CODES)
+const IDEAL_MICRO_SEGS = buildIdealSegments(MICRO_CODES)
+
+function donutLegend(data, codes) {
+  return codes.map(code => {
+    const n = summaryNutrient(data, code)
+    return {
+      code,
+      name: n?.name ?? code,
+      amount: n?.totalAmount ?? 0,
+      unit: n?.unit ?? 'g',
+      color: NUTRIENT_COLORS[code],
+    }
+  })
+}
+
+function summaryBreakdown(data) {
+  const nutrients = data?.nutrients ?? []
+  return nutrients.map(n => {
+    const ref = REFERENCES[n.code]
+    const pct = ref ? Math.min((n.totalAmount / ref.ref) * 100, 100) : null
+    const color = pct == null ? '#aaa'
+      : pct < 50 ? '#e8a820'
+      : pct <= 100 ? '#5a9e56'
+      : '#d94f4f'
+    return {
+      code: n.code,
+      name: n.name,
+      amount: n.totalAmount,
+      unit: n.unit,
+      reference: ref?.label ?? '-',
+      pct: pct ?? 50,
+      color,
+    }
+  })
 }
 
 function severityColor(level) {

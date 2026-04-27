@@ -29,8 +29,8 @@
             <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
           </svg>
           <div class="mt-2 text-start small text-muted">
-            <div>Eaten: —</div>
-            <div>Remaining: —</div>
+            <div>Eaten: -</div>
+            <div>Remaining: -</div>
             <div>Goal: 2,000 kcal</div>
           </div>
         </div>
@@ -45,9 +45,9 @@
             <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
           </svg>
           <div class="mt-2 text-start small text-muted">
-            <div>Carbs: —</div>
-            <div>Protein: —</div>
-            <div>Fat: —</div>
+            <div>Carbs: -</div>
+            <div>Protein: -</div>
+            <div>Fat: -</div>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ const periods = ['Today', 'Week', 'Month']
 const activePeriod = ref('Today')
 
 // targets follow NHS reference intakes. Eaten values come from the diary API once wired up.
-const blank = { eaten: '—', status: '—', pct: 0 }
+const blank = { eaten: '-', status: '-', pct: 0 }
 const nutrients = [
   { name: 'Calories', target: '2,000', ...blank },
   { name: 'Protein', target: '55g', ...blank },
@@ -134,13 +134,13 @@ const nutrients = [
 ]
 
 const weekBars = [
-  { day: 'Mon', val: '—', height: 0, over: false },
-  { day: 'Tue', val: '—', height: 0, over: false },
-  { day: 'Wed', val: '—', height: 0, over: false },
-  { day: 'Thu', val: '—', height: 0, over: false },
-  { day: 'Fri', val: '—', height: 0, over: false },
-  { day: 'Sat', val: '—', height: 0, over: false },
-  { day: 'Today', val: '—', height: 0, over: false },
+  { day: 'Mon', val: '-', height: 0, over: false },
+  { day: 'Tue', val: '-', height: 0, over: false },
+  { day: 'Wed', val: '-', height: 0, over: false },
+  { day: 'Thu', val: '-', height: 0, over: false },
+  { day: 'Fri', val: '-', height: 0, over: false },
+  { day: 'Sat', val: '-', height: 0, over: false },
+  { day: 'Today', val: '-', height: 0, over: false },
 ]
 
 function statusClass(s) {

@@ -6,7 +6,7 @@
          style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
         <h4 style="color:#5a9e56;" class="mb-0">Food Diary</h4>
-        <small class="text-secondary">{{ formattedDate }} — Log everything you eat and drink today</small>
+        <small class="text-secondary">{{ formattedDate }} - Log everything you eat and drink today</small>
       </div>
 
       <div class="d-flex align-items-center gap-2">
@@ -27,7 +27,7 @@
         </div>
         <div>
           <div class="stat-label">Remaining</div>
-          <div class="stat-value text-success">— kcal</div>
+          <div class="stat-value text-success">- kcal</div>
         </div>
         <div><div class="stat-label">Protein</div><div class="stat-value">{{ headerTotals.protein }}g</div></div>
         <div><div class="stat-label">Carbs</div><div class="stat-value">{{ headerTotals.carbs }}g</div></div>
@@ -102,7 +102,7 @@
       <div v-if="meal.entries.length === 0"
            class="border rounded p-3 text-center text-muted my-1"
            style="border-style:dashed!important;">
-        <small>Nothing logged yet for {{ meal.label.toLowerCase() }} — use the panel below to add</small>
+        <small>Nothing logged yet for {{ meal.label.toLowerCase() }} - use the panel below to add</small>
       </div>
 
       <div class="mt-2">
@@ -484,7 +484,7 @@ async function searchSnacks() {
     }
     snackResults.value = Array.isArray(foods) ? foods : [foods]
   } catch {
-    snackError.value = 'Search failed — is the backend running?'
+    snackError.value = 'Search failed - is the backend running?'
   } finally {
     snackLoading.value = false
   }

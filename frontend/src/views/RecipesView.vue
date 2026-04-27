@@ -135,7 +135,7 @@
            @click.self="pendingRecipe = null">
         <div class="p-4 rounded bg-white shadow" style="min-width:300px;max-width:380px;">
           <h6 class="fw-bold mb-1" style="color:#5a9e56;">Add to Diary</h6>
-          <p class="small text-muted mb-3">{{ pendingRecipe.title }} — choose a meal:</p>
+          <p class="small text-muted mb-3">{{ pendingRecipe.title }} - choose a meal:</p>
           <div class="d-grid gap-2">
             <button v-for="meal in meals" :key="meal.id"
                     class="btn btn-gf"

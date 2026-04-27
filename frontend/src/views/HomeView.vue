@@ -99,14 +99,14 @@
     <section id="auth-section" class="py-5">
       <div class="container">
         <div class="section-header text-center mb-4" style="background:#5a9e56;">
-          <h5 class="text-white">Get Started — Log In or Create an Account</h5>
+          <h5 class="text-white">Get Started - Log In or Create an Account</h5>
         </div>
 
         <div class="row g-4">
 
           <div class="col-md-6">
             <div class="card border p-4">
-              <h6 class="fw-bold mb-3 border-bottom pb-2">Returning User — Log In</h6>
+              <h6 class="fw-bold mb-3 border-bottom pb-2">Returning User - Log In</h6>
 
               <div class="mb-3">
                 <label class="form-label small">Email Address</label>
@@ -133,7 +133,7 @@
 
           <div class="col-md-6">
             <div class="card border p-4">
-              <h6 class="fw-bold mb-3 border-bottom pb-2">New User — Create Account</h6>
+              <h6 class="fw-bold mb-3 border-bottom pb-2">New User - Create Account</h6>
 
               <div class="mb-3">
                 <label class="form-label small">Full Name</label>
