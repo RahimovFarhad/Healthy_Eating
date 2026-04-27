@@ -314,7 +314,7 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
     return {
         quickStats: {
             calories_today: summary.nutrients.find(n => n.code === "calories")?.totalAmount || 0,
-            meals_logged_today: foodDiaryPreview.length,
+            meals_logged_today: foodDiaryPreview.filter(e => e.items?.length > 0).length,
             days_logged: await getDaysLogged({ subscriberId: entry.subscriberId }), // this would require a separate query to count distinct days with entries, can be implemented later
         },
         foodDiaryPreview,

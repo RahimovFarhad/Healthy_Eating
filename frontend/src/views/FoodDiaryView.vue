@@ -6,95 +6,94 @@
          style="background:#e8f4e6;border:1px solid #5a9e56;">
       <div>
         <h4 style="color:#5a9e56;" class="mb-0">Food Diary</h4>
-        <small class="text-secondary">{{ currentDate }} — Log everything you eat and drink today</small>
+        <small class="text-secondary">{{ formattedDate }} — Log everything you eat and drink today</small>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary btn-sm" @click="prevDay">‹</button>
-        <span class="border rounded px-3 py-1 bg-white small">{{ currentDate }}</span>
-        <button class="btn btn-outline-secondary btn-sm" @click="nextDay">›</button>
+        <button class="btn btn-outline-secondary btn-sm" @click="handlePrevDay">‹</button>
+        <span class="border rounded px-3 py-1 bg-white small">{{ formattedDate }}</span>
+        <button class="btn btn-outline-secondary btn-sm" @click="handleNextDay">›</button>
       </div>
     </div>
 
+    <div v-if="diaryLoading" class="text-center text-muted py-3">Loading diary…</div>
+    <div v-if="diaryError" class="alert alert-danger py-2">{{ diaryError }}</div>
+
     <div class="card border mb-3 p-3">
-      <div class="row g-2 align-items-center">
-        <div class="col-auto">
+      <div class="d-flex flex-wrap gap-4 align-items-center">
+        <div>
           <div class="stat-label">Today's Total</div>
-          <div class="stat-value">0 kcal</div>
+          <div class="stat-value">{{ headerTotals.kcal }} kcal</div>
         </div>
-        <div class="col-auto">
+        <div>
           <div class="stat-label">Remaining</div>
           <div class="stat-value text-success">— kcal</div>
         </div>
-        <div class="col-auto"><div class="stat-label">Protein</div><div class="stat-value">0g</div></div>
-        <div class="col-auto"><div class="stat-label">Carbs</div><div class="stat-value">0g</div></div>
-        <div class="col-auto"><div class="stat-label">Fat</div><div class="stat-value">0g</div></div>
-        <div class="col-auto"><div class="stat-label">Fibre</div><div class="stat-value">0g</div></div>
-        <div class="col-auto"><div class="stat-label">Sugar</div><div class="stat-value">0g</div></div>
-        <div class="col ms-auto" style="max-width:220px;">
-          <small class="text-muted">0% of daily kcal goal</small>
-          <div class="progress mt-1" style="height:10px;">
-            <div class="progress-bar" style="width:0%;background:#5a9e56;"></div>
-          </div>
+        <div><div class="stat-label">Protein</div><div class="stat-value">{{ headerTotals.protein }}g</div></div>
+        <div><div class="stat-label">Carbs</div><div class="stat-value">{{ headerTotals.carbs }}g</div></div>
+        <div><div class="stat-label">Fat</div><div class="stat-value">{{ headerTotals.fat }}g</div></div>
+        <div><div class="stat-label">Fibre</div><div class="stat-value">{{ headerTotals.fibre }}g</div></div>
+        <div><div class="stat-label">Sugar</div><div class="stat-value">{{ headerTotals.sugar }}g</div></div>
+        <div><div class="stat-label">Salt</div><div class="stat-value">{{ headerTotals.salt }}g</div></div>
+        <div class="ms-auto">
+          <RouterLink to="/nutrition" class="btn btn-gf-outline btn-sm" style="white-space:nowrap;">
+            Nutrition Analysis
+          </RouterLink>
         </div>
       </div>
     </div>
 
-    <div v-for="meal in meals" :key="meal.id" class="mb-4">
+    <div v-for="meal in mainMeals" :key="meal.id" class="mb-4">
 
       <div class="meal-section-header d-flex justify-content-between">
         <span>{{ meal.label.toUpperCase() }}</span>
         <span>Total: {{ meal.entries.reduce((s, e) => s + (e.kcal || 0), 0) }} kcal</span>
       </div>
 
-      <div v-for="(entry, idx) in meal.entries" :key="idx" class="diary-entry-row mt-1">
+      <div v-for="entry in meal.entries" :key="entry.itemId" class="diary-entry-row mt-1">
 
-        <div v-if="editingEntry?.mealId !== meal.id || editingEntry?.idx !== idx"
+        <div v-if="editingItem?.itemId !== entry.itemId"
              class="d-flex justify-content-between align-items-start">
           <div>
             <div class="fw-semibold small">{{ entry.name }}</div>
-            <div style="font-size:0.75rem;color:#666;">{{ entry.detail }}</div>
+            <div style="font-size:0.75rem;color:#666;">{{ entry.detail }} · qty {{ entry.quantity }}</div>
           </div>
           <div class="d-flex align-items-center gap-2">
             <span class="small text-muted">Carbs: {{ entry.carbs }}g</span>
             <span class="small text-muted">Protein: {{ entry.protein }}g</span>
             <span class="small text-muted">Fat: {{ entry.fat }}g</span>
+            <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
+            <span class="small text-muted">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
             <button class="btn btn-gf-outline btn-sm py-0 px-1" title="Edit entry"
-                    @click="startEdit(meal.id, idx, entry)">Edit</button>
+                    @click="startEditItem(entry)">Edit</button>
             <button class="btn btn-sm py-0 px-1"
                     style="background:#fde8e8;border:1px solid #d99;color:#c44;"
                     title="Remove entry"
-                    @click="removeEntry(meal.id, idx)">Remove</button>
+                    :disabled="removingItemId === entry.itemId"
+                    @click="handleRemoveItem(entry.itemId)">
+              {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
+            </button>
           </div>
         </div>
 
         <div v-else class="p-2 rounded" style="background:#f0f7ef;border:1px solid #5a9e56;">
-          <div class="row g-2 mb-2">
-            <div class="col-md-3">
-              <label class="form-label form-label-sm">Food Name</label>
-              <input type="text" class="form-control form-control-sm" v-model="editDraft.name">
+          <div class="row g-2 mb-2 align-items-end">
+            <div class="col-auto">
+              <div class="small fw-semibold mb-1">{{ entry.name }}</div>
+              <div class="text-muted" style="font-size:0.75rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
-              <label class="form-label form-label-sm">Calories (kcal)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="editDraft.kcal">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Protein (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="editDraft.protein">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Carbs (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="editDraft.carbs">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Fat (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="editDraft.fat">
+              <label class="form-label form-label-sm">Quantity (servings)</label>
+              <input type="number" min="0.1" step="0.1" class="form-control form-control-sm" v-model.number="editQty">
             </div>
           </div>
+          <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
-            <button class="btn btn-gf btn-sm" @click="saveEdit(meal.id, idx)">Save</button>
-            <button class="btn btn-outline-secondary btn-sm" @click="editingEntry = null">Cancel</button>
+            <button class="btn btn-gf btn-sm" :disabled="editSaving" @click="saveEditItem(entry.itemId)">
+              {{ editSaving ? 'Saving…' : 'Save' }}
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" @click="editingItem = null">Cancel</button>
           </div>
         </div>
 
@@ -128,43 +127,60 @@
           <div class="row g-2 mb-2">
             <div class="col-md-4">
               <label class="form-label form-label-sm">Food Name</label>
-              <input type="text" class="form-control form-control-sm" placeholder="e.g. Porridge">
+              <input type="text" class="form-control form-control-sm" placeholder="e.g. Porridge"
+                     v-model="customForm[meal.id].name">
             </div>
             <div class="col-md-2">
               <label class="form-label form-label-sm">Calories (kcal)</label>
-              <input type="number" class="form-control form-control-sm">
+              <input type="number" class="form-control form-control-sm" v-model.number="customForm[meal.id].kcal">
             </div>
             <div class="col-md-2">
               <label class="form-label form-label-sm">Serving Size</label>
-              <input type="text" class="form-control form-control-sm" placeholder="e.g. 100g">
+              <input type="text" class="form-control form-control-sm" placeholder="e.g. 100g"
+                     v-model="customForm[meal.id].serving">
             </div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col" v-for="nutrient in ['Protein (g)', 'Carbs (g)', 'Fat (g)', 'Fibre (g)', 'Sugar (g)', 'Salt (g)', 'Saturates (g)']" :key="nutrient">
-              <label class="form-label form-label-sm">{{ nutrient }}</label>
-              <input type="number" class="form-control form-control-sm">
+            <div class="col" v-for="field in customNutrientFields" :key="field.key">
+              <label class="form-label form-label-sm">{{ field.label }}</label>
+              <input type="number" class="form-control form-control-sm" v-model.number="customForm[meal.id][field.key]">
             </div>
           </div>
+          <div v-if="customError[meal.id]" class="text-danger small mb-1">{{ customError[meal.id] }}</div>
           <div class="d-flex gap-2">
-            <button class="btn btn-gf btn-sm">Add Entry</button>
-            <button class="btn btn-gf-outline btn-sm">Save to DB</button>
+            <button class="btn btn-gf btn-sm" :disabled="customSaving[meal.id]" @click="handleAddCustom(meal.id)">
+              {{ customSaving[meal.id] ? 'Adding…' : 'Add Entry' }}
+            </button>
           </div>
         </div>
 
         <div v-if="activeTab[meal.id] === 'saved'">
-          <input type="text" class="form-control form-control-sm mb-2"
-                 placeholder="Search saved foods...">
-          <div v-for="food in savedFoods" :key="food.name"
-               class="d-flex justify-content-between align-items-center p-2 bg-white border rounded mb-1">
-            <div>
-              <span class="small fw-semibold">{{ food.name }}</span>
-              <span class="text-muted small ms-2">{{ food.serving }}</span>
-              <span class="text-muted small ms-2">{{ food.macros }}</span>
-            </div>
-            <div class="d-flex gap-1">
-              <span class="small fw-bold me-2">{{ food.kcal }} kcal</span>
-              <button class="btn btn-gf btn-sm py-0">Add</button>
-              <button class="btn btn-gf-outline btn-sm py-0">Edit serving</button>
+          <div class="d-flex gap-2 mb-2">
+            <input type="text" class="form-control form-control-sm"
+                   placeholder="Search food database…"
+                   v-model="mealSearchQuery[meal.id]"
+                   @keyup.enter="searchMealFood(meal.id)">
+            <button class="btn btn-gf btn-sm px-3"
+                    :disabled="mealSearchLoading[meal.id]"
+                    @click="searchMealFood(meal.id)">
+              {{ mealSearchLoading[meal.id] ? '…' : 'Search' }}
+            </button>
+          </div>
+          <div v-if="mealSearchError[meal.id]" class="text-danger small mb-2">{{ mealSearchError[meal.id] }}</div>
+          <div v-if="(mealSearchResults[meal.id] ?? []).length > 0"
+               class="border rounded p-2 mb-2" style="background:#fff;">
+            <div v-for="food in mealSearchResults[meal.id]" :key="food.food_id"
+                 class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <div>
+                <span class="small fw-semibold">{{ food.food_name }}</span>
+                <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
+                <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
+              </div>
+              <button class="btn btn-gf btn-sm ms-2"
+                      :disabled="mealAddingFoodId[meal.id] === food.food_id"
+                      @click="handleAddMealFood(meal.id, food.food_id)">
+                {{ mealAddingFoodId[meal.id] === food.food_id ? '…' : 'Add' }}
+              </button>
             </div>
           </div>
         </div>
@@ -184,7 +200,10 @@
                   <div style="font-size:0.72rem;color:#888;">{{ r.time }}</div>
                   <button class="btn btn-gf btn-sm w-100 mt-1"
                           style="font-size:0.72rem;"
-                          @click="addRecipeToDiary(r, meal.id)">Add (1 serving)</button>
+                          :disabled="recipeAdding[r.id + meal.id]"
+                          @click="handleAddRecipe(r, meal.id)">
+                    {{ recipeAdding[r.id + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -197,59 +216,55 @@
     <div class="mb-4">
       <div class="meal-section-header d-flex justify-content-between">
         <span>SNACKS &amp; DRINKS</span>
-        <span>Total: {{ snackEntries.reduce((s, e) => s + (e.kcal || 0), 0) }} kcal</span>
+        <span>Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
       </div>
 
-      <div v-for="(entry, idx) in snackEntries" :key="idx" class="diary-entry-row mt-1">
-        <div v-if="editingSnack !== idx" class="d-flex justify-content-between align-items-start">
+      <div v-for="entry in (snackMeal?.entries ?? [])" :key="entry.itemId" class="diary-entry-row mt-1">
+        <div v-if="editingItem?.itemId !== entry.itemId" class="d-flex justify-content-between align-items-start">
           <div>
             <div class="fw-semibold small">{{ entry.name }}</div>
-            <div style="font-size:0.75rem;color:#666;">{{ entry.detail }}</div>
+            <div style="font-size:0.75rem;color:#666;">{{ entry.detail }} · qty {{ entry.quantity }}</div>
           </div>
           <div class="d-flex align-items-center gap-2">
             <span class="small text-muted">Carbs: {{ entry.carbs }}g</span>
             <span class="small text-muted">Protein: {{ entry.protein }}g</span>
             <span class="small text-muted">Fat: {{ entry.fat }}g</span>
+            <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
+            <span class="small text-muted">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
             <button class="btn btn-gf-outline btn-sm py-0 px-1" title="Edit entry"
-                    @click="startEditSnack(idx, entry)">Edit</button>
+                    @click="startEditItem(entry)">Edit</button>
             <button class="btn btn-sm py-0 px-1"
                     style="background:#fde8e8;border:1px solid #d99;color:#c44;"
                     title="Remove entry"
-                    @click="snackEntries.splice(idx, 1)">Remove</button>
+                    :disabled="removingItemId === entry.itemId"
+                    @click="handleRemoveItem(entry.itemId)">
+              {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
+            </button>
           </div>
         </div>
         <div v-else class="p-2 rounded" style="background:#f0f7ef;border:1px solid #5a9e56;">
-          <div class="row g-2 mb-2">
-            <div class="col-md-3">
-              <label class="form-label form-label-sm">Food Name</label>
-              <input type="text" class="form-control form-control-sm" v-model="snackEditDraft.name">
+          <div class="row g-2 mb-2 align-items-end">
+            <div class="col-auto">
+              <div class="small fw-semibold mb-1">{{ entry.name }}</div>
+              <div class="text-muted" style="font-size:0.75rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
-              <label class="form-label form-label-sm">Calories (kcal)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="snackEditDraft.kcal">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Protein (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="snackEditDraft.protein">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Carbs (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="snackEditDraft.carbs">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label form-label-sm">Fat (g)</label>
-              <input type="number" class="form-control form-control-sm" v-model.number="snackEditDraft.fat">
+              <label class="form-label form-label-sm">Quantity (servings)</label>
+              <input type="number" min="0.1" step="0.1" class="form-control form-control-sm" v-model.number="editQty">
             </div>
           </div>
+          <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
-            <button class="btn btn-gf btn-sm" @click="saveSnackEdit(idx)">Save</button>
-            <button class="btn btn-outline-secondary btn-sm" @click="editingSnack = null">Cancel</button>
+            <button class="btn btn-gf btn-sm" :disabled="editSaving" @click="saveEditItem(entry.itemId)">
+              {{ editSaving ? 'Saving…' : 'Save' }}
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" @click="editingItem = null">Cancel</button>
           </div>
         </div>
       </div>
 
-      <div v-if="snackEntries.length === 0"
+      <div v-if="!snackMeal || snackMeal.entries.length === 0"
            class="border rounded p-3 text-center text-muted my-1"
            style="border-style:dashed!important;">
         <small>Nothing logged yet for snacks &amp; drinks</small>
@@ -285,28 +300,13 @@
               <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
             </div>
             <button class="btn btn-gf btn-sm ms-2" style="white-space:nowrap;"
-                    @click="selectSnackFood(food)"
-                    :disabled="loadingFoodId === food.food_id">
-              {{ loadingFoodId === food.food_id ? '...' : 'Select' }}
+                    :disabled="snackAddingFoodId === food.food_id"
+                    @click="handleAddSnack(food.food_id)">
+              {{ snackAddingFoodId === food.food_id ? '...' : 'Add' }}
             </button>
           </div>
         </div>
 
-        <div v-if="snackPortions.length > 0"
-             class="border rounded p-3 mb-2" style="background:#f0f7ef;border-color:#5a9e56!important;">
-          <div class="fw-semibold small mb-2">{{ snackSelectedName }} — choose a portion:</div>
-          <div v-for="(portion, pi) in snackPortions" :key="pi"
-               class="d-flex justify-content-between align-items-center py-1 border-bottom">
-            <div>
-              <span class="small">{{ portion.description }}</span>
-              <span class="text-muted small ms-2">
-                {{ portion.kcal }} kcal · P:{{ portion.protein }}g · C:{{ portion.carbs }}g · F:{{ portion.fat }}g
-              </span>
-            </div>
-            <button class="btn btn-gf btn-sm ms-2" @click="addSnackPortion(portion)">Add</button>
-          </div>
-          <button class="btn btn-outline-secondary btn-sm mt-2" @click="snackPortions = []">Cancel</button>
-        </div>
       </div>
     </div>
 
@@ -316,27 +316,37 @@
                 placeholder="How are you feeling today? Any notes about meals?"></textarea>
     </div>
 
-    <div class="d-flex flex-wrap gap-2 p-3 rounded"
-         style="background:#f0f7ef;border:1px solid #5a9e56;">
-      <button class="btn btn-gf">Save Diary Entry</button>
-      <button class="btn btn-outline-secondary">View History</button>
-      <RouterLink to="/nutrition" class="btn btn-outline-secondary ms-auto">
-        View Nutrition Analysis
-      </RouterLink>
-    </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { meals, recipes, addRecipeToDiary, snackEntries } from '../diaryStore.js'
+import { ref, computed, watch, onMounted } from 'vue'
+import {
+  meals, recipes, headerTotals,
+  diaryLoading, diaryError,
+  viewDate, prevDay, nextDay,
+  loadDiary,
+  addFatSecretItem, addCustomItem, addRecipeToDiary,
+  updateItem, removeItem,
+} from '../diaryStore.js'
 
-const currentDate = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+const formattedDate = computed(() =>
+  viewDate.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+)
+
+const snackMeal = computed(() => meals.value.find(m => m.id === 'snack'))
+const mainMeals = computed(() => meals.value.filter(m => m.id !== 'snack'))
+
+onMounted(loadDiary)
+watch(viewDate, loadDiary)
+
+function handlePrevDay() { prevDay() }
+function handleNextDay() { nextDay() }
 
 const addTabs = [
-  { id: 'custom', label: 'Custom Entry' },
-  { id: 'saved', label: 'Saved Foods' },
+  { id: 'custom',  label: 'Custom Entry' },
+  { id: 'saved',   label: 'Food Search' },
   { id: 'recipes', label: 'From Recipes' },
 ]
 
@@ -348,32 +358,107 @@ const activeTab = ref({
   dinner: 'recipes',
 })
 
-const savedFoods = []
-
 const recipeSearch = ref('')
+const recipeAdding = ref({})
 const filteredRecipes = computed(() => {
   if (!recipeSearch.value) return recipes.value
   const q = recipeSearch.value.toLowerCase()
   return recipes.value.filter(r => r.title.toLowerCase().includes(q))
 })
 
-const editingEntry = ref(null)
-const editDraft = ref({})
-
-function startEdit(mealId, idx, entry) {
-  editingEntry.value = { mealId, idx }
-  editDraft.value = { ...entry }
+async function handleAddRecipe(recipe, mealId) {
+  const key = recipe.id + mealId
+  recipeAdding.value[key] = true
+  try {
+    await addRecipeToDiary(recipe, mealId)
+    openPanel.value = null
+  } catch (e) {
+    alert(e.message)
+  } finally {
+    recipeAdding.value[key] = false
+  }
 }
 
-function saveEdit(mealId, idx) {
-  const meal = meals.value.find(m => m.id === mealId)
-  meal.entries[idx] = { ...meal.entries[idx], ...editDraft.value }
-  editingEntry.value = null
+function blankCustomForm() {
+  return { name: '', kcal: null, serving: '', protein: null, carbs: null, fat: null, fibre: null, sugar: null, salt: null }
 }
 
-function removeEntry(mealId, idx) {
-  const meal = meals.value.find(m => m.id === mealId)
-  meal.entries.splice(idx, 1)
+const customForm = ref({
+  breakfast: blankCustomForm(),
+  lunch: blankCustomForm(),
+  dinner: blankCustomForm(),
+  snack: blankCustomForm(),
+})
+const customError = ref({})
+const customSaving = ref({})
+const customNutrientFields = [
+  { key: 'protein', label: 'Protein (g)' },
+  { key: 'carbs', label: 'Carbs (g)' },
+  { key: 'fat', label: 'Fat (g)' },
+  { key: 'fibre', label: 'Fibre (g)' },
+  { key: 'sugar', label: 'Sugar (g)' },
+  { key: 'salt', label: 'Salt (g)' },
+]
+
+async function handleAddCustom(mealId) {
+  const form = customForm.value[mealId]
+  if (!form.name?.trim()) {
+    customError.value[mealId] = 'Food name is required.'
+    return
+  }
+  customError.value[mealId] = ''
+  customSaving.value[mealId] = true
+  try {
+    await addCustomItem({ mealType: mealId, ...form })
+    customForm.value[mealId] = blankCustomForm()
+    openPanel.value = null
+  } catch (e) {
+    customError.value[mealId] = e.message
+  } finally {
+    customSaving.value[mealId] = false
+  }
+}
+
+const mealSearchQuery = ref({})
+const mealSearchLoading = ref({})
+const mealSearchError = ref({})
+const mealSearchResults = ref({})
+const mealAddingFoodId = ref({})
+
+async function searchMealFood(mealId) {
+  const q = mealSearchQuery.value[mealId]?.trim()
+  if (!q) return
+  mealSearchLoading.value[mealId] = true
+  mealSearchError.value[mealId] = ''
+  mealSearchResults.value[mealId] = []
+  try {
+    const res = await fetch(`/api/search?query=${encodeURIComponent(q)}`)
+    const data = await res.json()
+    const foods = data?.foods?.food
+    if (!foods) {
+      mealSearchError.value[mealId] = 'No results found.'
+      return
+    }
+    mealSearchResults.value[mealId] = Array.isArray(foods) ? foods : [foods]
+  } catch {
+    mealSearchError.value[mealId] = 'Search failed.'
+  } finally {
+    mealSearchLoading.value[mealId] = false
+  }
+}
+
+async function handleAddMealFood(mealId, food_id) {
+  mealAddingFoodId.value[mealId] = food_id
+  try {
+    await addFatSecretItem({ mealType: mealId, food_id })
+    mealSearchResults.value[mealId] = []
+    mealSearchQuery.value[mealId] = ''
+    openPanel.value = null
+  } catch (e) {
+    mealSearchError.value[mealId] = e.message
+  } finally {
+    mealAddingFoodId.value[mealId] = null
+  }
 }
 
 const showSnackPanel = ref(false)
@@ -382,19 +467,13 @@ const snackQuery = ref('')
 const snackLoading = ref(false)
 const snackError = ref('')
 const snackResults = ref([])
-const snackPortions = ref([])
-const snackSelectedName = ref('')
-const loadingFoodId = ref(null)
-
-const editingSnack = ref(null)
-const snackEditDraft = ref({})
+const snackAddingFoodId = ref(null)
 
 async function searchSnacks() {
   if (!snackQuery.value.trim()) return
   snackLoading.value = true
   snackError.value = ''
   snackResults.value = []
-  snackPortions.value = []
   try {
     const res = await fetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
     const data = await res.json()
@@ -411,54 +490,59 @@ async function searchSnacks() {
   }
 }
 
-async function selectSnackFood(food) {
-  loadingFoodId.value = food.food_id
-  snackPortions.value = []
+async function handleAddSnack(food_id) {
+  snackAddingFoodId.value = food_id
   try {
-    const res = await fetch(`/api/search-by-id?food_id=${food.food_id}`)
-    const data = await res.json()
-    snackSelectedName.value = data.name
-    snackPortions.value = data.portions.map(p => {
-      const n = id => p.nutrients.find(x => x.nutrientId === id)?.amount ?? 0
-      return {
-        description: p.description,
-        kcal: n(1),
-        protein: n(2),
-        carbs: n(3),
-        fat: n(4),
-      }
-    })
-  } catch {
-    snackError.value = 'Could not load food details.'
+    await addFatSecretItem({ mealType: 'snack', food_id })
+    snackResults.value = []
+    snackQuery.value = ''
+    showSnackPanel.value = false
+  } catch (e) {
+    snackError.value = e.message
   } finally {
-    loadingFoodId.value = null
+    snackAddingFoodId.value = null
   }
 }
 
-function addSnackPortion(portion) {
-  snackEntries.value.push({
-    name: snackSelectedName.value,
-    detail: portion.description,
-    kcal: portion.kcal,
-    protein: portion.protein,
-    carbs: portion.carbs,
-    fat: portion.fat,
-  })
-  snackPortions.value = []
-  snackResults.value = []
-  snackQuery.value = ''
+// backend only supports updating quantity, not renaming the food after it's been saved
+const editingItem = ref(null)
+const editQty = ref(1)
+const editSaving = ref(false)
+const editError = ref('')
+
+function startEditItem(entry) {
+  editingItem.value = entry
+  editQty.value = entry.quantity
+  editError.value = ''
 }
 
-function startEditSnack(idx, entry) {
-  editingSnack.value = idx
-  snackEditDraft.value = { ...entry }
+async function saveEditItem(itemId) {
+  if (!editQty.value || editQty.value <= 0) {
+    editError.value = 'Quantity must be greater than 0.'
+    return
+  }
+  editSaving.value = true
+  editError.value = ''
+  try {
+    await updateItem({ itemId, quantity: editQty.value })
+    editingItem.value = null
+  } catch (e) {
+    editError.value = e.message
+  } finally {
+    editSaving.value = false
+  }
 }
 
-function saveSnackEdit(idx) {
-  snackEntries.value[idx] = { ...snackEntries.value[idx], ...snackEditDraft.value }
-  editingSnack.value = null
-}
+const removingItemId = ref(null)
 
-function prevDay() {}
-function nextDay() {}
+async function handleRemoveItem(itemId) {
+  removingItemId.value = itemId
+  try {
+    await removeItem(itemId)
+  } catch (e) {
+    alert(e.message)
+  } finally {
+    removingItemId.value = null
+  }
+}
 </script>

@@ -112,7 +112,11 @@ async function findDiaryEntryById({ diaryEntryId, subscriberId }) {
             diaryEntryId,
             subscriberId,
         },
-        select: { 
+        select: {
+            diaryEntryId: true,
+            mealType: true,
+            consumedAt: true,
+            notes: true,
             items: {
                 select: {
                     id: true,

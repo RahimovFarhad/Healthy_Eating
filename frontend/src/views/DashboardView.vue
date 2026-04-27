@@ -218,7 +218,7 @@ onMounted(async () => {
 })
 
 const quickStats = computed(() => dashboard.value?.quickStats ?? {})
-const foodDiaryPreview = computed(() => dashboard.value?.foodDiaryPreview ?? [])
+const foodDiaryPreview = computed(() => (dashboard.value?.foodDiaryPreview ?? []).filter(e => (e.items?.length ?? 0) > 0))
 const nutritionPreview = computed(() => dashboard.value?.nutritionPreview ?? [])
 
 const caloriesToday = computed(() => quickStats.value.calories_today ?? null)

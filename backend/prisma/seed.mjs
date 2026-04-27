@@ -17,7 +17,7 @@ const nutrients = [
   { code: "fat", name: "Fat", unit: "g", type: "macro" },
   { code: "fibre", name: "Fibre", unit: "g", type: "macro" },
   { code: "sugar", name: "Sugar", unit: "g", type: "macro" },
-  { code: "sodium", name: "Sodium", unit: "mg", type: "micro" }
+  { code: "salt", name: "Salt", unit: "g", type: "micro" }
 ];
 
 // ──────────────────────────────────────────────

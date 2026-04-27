@@ -91,8 +91,10 @@ body {
 .meal-section-header {
   background-color: var(--gf-green);
   color: #fff;
-  padding: 6px 16px;
+  padding: 6px 24px;
   font-weight: 700;
+  margin-left: -24px;
+  margin-right: -24px;
 }
 
 .diary-entry-row {
