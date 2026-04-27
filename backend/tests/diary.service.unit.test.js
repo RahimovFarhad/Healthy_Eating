@@ -115,7 +115,26 @@ describe("Diary Service", () => {
   });
 
   describe("getNutritionSummary (unit)", () => {
-    
+    test("returns summary when valid", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "weekly",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateSummaryInput.mockReturnValue(validatedInput);
+      mockFetchSummaryData.mockResolvedValue([]);
+
+      const result = await getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "weekly",
+        endDate: "2026-04-18",
+      });
+
+      expect(mockValidateSummaryInput).toHaveBeenCalled();
+      expect(mockFetchSummaryData).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
   });
 
   describe("listDiaryEntries (unit)", () => {
@@ -168,6 +187,28 @@ describe("Diary Service", () => {
   });
 
   describe("createDiaryEntryItem (unit)", () => {
+    test("creates entry item when valid", async () => {
+      const validatedInput = {
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 10,
+        portionId: 1,
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue(validatedInput);
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockCreateDiaryEntryItem.mockResolvedValue({
+        diaryEntryItemId: TEST_ENTRYITEMID,
+      });
+
+      const result = await createDiaryEntryItem(validatedInput);
+
+      expect(mockValidateNewEntryDetails).toHaveBeenCalled();
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalled();
+      expect(result).toEqual({
+        diaryEntryItemId: TEST_ENTRYITEMID,
+      });
+    });
   });
 
   describe("updateDiaryEntryItem (unit)", () => {
@@ -538,5 +579,29 @@ describe("Diary Service", () => {
   });
 
   describe("getDashboardDataForSubscriber (unit)", () => {
+    test("returns dashboard data when valid", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "weekly",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockGetDaysLogged.mockResolvedValue(5);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([
+        { date: "2026-04-13", calories: 100 },
+        { date: "2026-04-14", calories: 200 },
+      ]);
+      mockFetchSummaryData.mockResolvedValue([]);
+
+      const result = await getDashboardDataForSubscriber({
+        subscriberId: TEST_USERID,
+        period: "weekly",
+        endDate: "2026-04-18",
+      });
+
+      expect(mockValidateUserIdForDashboard).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
   });
 });
