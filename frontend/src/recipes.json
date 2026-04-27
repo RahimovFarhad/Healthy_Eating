@@ -24,11 +24,20 @@
     "steps": [
       "Turn the grill on to preheat to a medium-high temperature.",
       "Heat the vegetable oil in a non-stick frying pan. Add the courgette and tomatoes and cook on the hob for 3 to 4 minutes, stirring often, until soft. Spread out over the base of the frying pan.",
-      "Beat the eggs and milk together and pour into the frying pan. Cook over a medium-low heat for 4 or 5 minutes to set the base, then transfer to the grill to set the surface \u2013 about 3 minutes.",
+      "Beat the eggs and milk together and pour into the frying pan. Cook over a medium-low heat for 4 or 5 minutes to set the base, then transfer to the grill to set the surface – about 3 minutes.",
       "Remove from the heat and let the frittata cool for 3 or 4 minutes.",
       "Toast the slices of bread. Slice the frittata into wedges and serve with the toast."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/27.-Veggie-Fritatta-.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/27.-Veggie-Fritatta-.width-320.jpg",
+    "ingredientNames": [
+      "vegetable oil",
+      "eggs",
+      "milk",
+      "bread",
+      "tomatoes",
+      "courgette",
+      "black pepper"
+    ]
   },
   {
     "title": "Baked Potatoes with Mince",
@@ -50,19 +59,31 @@
       "1 garlic clove, crushed",
       "1 handful cup or button mushrooms, finely chopped",
       "100ml reduced-salt vegetable stock",
-      "1 teaspoon tomato pur\u00e9e",
+      "1 teaspoon tomato purée",
       "1 handful shredded lettuce leaves",
       "1 medium red onion, sliced",
       "1 handful cherry tomatoes"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C, fan 180\u00b0C, gas mark 6.",
+      "Preheat the oven to 200°C, fan 180°C, gas mark 6.",
       "Prick potatoes all over with a fork before baking for 1 hour, or until tender.",
       "Meanwhile, heat a large saucepan and add the mince, a handful at a time, cooking until browned.",
-      "Add the onion and garlic, cook for 1 minute, then add the mushrooms, stock and tomato pur\u00e9e. Stir well until hot, then simmer, part-covered, for 20 to 25 minutes.",
+      "Add the onion and garlic, cook for 1 minute, then add the mushrooms, stock and tomato purée. Stir well until hot, then simmer, part-covered, for 20 to 25 minutes.",
       "Once everything's ready, split the baked potatoes open and divide the filling between them. Serve with the lettuce, onion and tomato side salad."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Baked_potatoes_with_mince_CkDF3kp.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Baked_potatoes_with_mince_CkDF3kp.width-320.png",
+    "ingredientNames": [
+      "potatoes",
+      "minced beef",
+      "onion",
+      "garlic",
+      "mushrooms",
+      "vegetable stock",
+      "tomato purée",
+      "lettuce",
+      "red onion",
+      "cherry tomatoes"
+    ]
   },
   {
     "title": "Brilliant Beef Curry",
@@ -86,7 +107,7 @@
       "2 teaspoons curry powder",
       "2 tins chopped tomatoes",
       "2 tablespoons mango chutney",
-      "2 tablespoons tomato pur\u00e9e",
+      "2 tablespoons tomato purée",
       "300ml water",
       "200g easy-cook long grain white rice"
     ],
@@ -94,10 +115,23 @@
       "Brown the beef in a large saucepan or flameproof casserole dish over a low heat.",
       "Add the onion and cook for 5 minutes, stirring occasionally.",
       "Add the peppers, carrots and garlic. Cook for 5 minutes, stirring often.",
-      "Add the curry powder and stir well, then add the tomatoes, mango chutney, 300ml water and the tomato pur\u00e9e. Cover and simmer gently for 90 minutes to 2 hours.",
+      "Add the curry powder and stir well, then add the tomatoes, mango chutney, 300ml water and the tomato purée. Cover and simmer gently for 90 minutes to 2 hours.",
       "About 15 minutes before serving, cook the rice according to packet instructions. Serve with the curry."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-beef-curry.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-beef-curry.width-320.jpg",
+    "ingredientNames": [
+      "braising steak",
+      "onion",
+      "pepper",
+      "carrots",
+      "garlic",
+      "curry powder",
+      "chopped tomatoes",
+      "mango chutney",
+      "tomato purée",
+      "water",
+      "rice"
+    ]
   },
   {
     "title": "Breakfast Burritos",
@@ -130,7 +164,18 @@
       "Layer 1 tortilla with the cooked egg, a quarter of the tomato mixture and 10g of cheese. Grill to further set the egg and melt the cheese.",
       "Roll up the tortilla and slice in half. Repeat to make the other 3 tortillas."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Breakfast-burritos_CRIO3JA.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Breakfast-burritos_CRIO3JA.width-320.jpg",
+    "ingredientNames": [
+      "flour tortillas",
+      "eggs",
+      "milk",
+      "tomatoes",
+      "spring onion",
+      "pepper",
+      "vegetable oil",
+      "hard cheese",
+      "black pepper"
+    ]
   },
   {
     "title": "Breakfast Fruit Salad",
@@ -157,7 +202,14 @@
       "In a separate bowl, mix together the low-fat yoghurt and ginger (if using).",
       "Share the fruit between 4 serving bowls and spoon the yoghurt mixture on top."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/A_freshnfruity_start_xOzdcM7.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/A_freshnfruity_start_xOzdcM7.width-320.png",
+    "ingredientNames": [
+      "kiwi",
+      "grapes",
+      "melon",
+      "natural yoghurt",
+      "ground ginger"
+    ]
   },
   {
     "title": "Cheat's Pizza Calzone",
@@ -192,7 +244,19 @@
       "Add a quarter of the vegetable mixture to one side of the tortilla, then fold it in half. Cook for a few moments, then slide onto a warm serving plate.",
       "Repeat with the remaining tortillas. Serve with the salad leaves, grated carrot and celery."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/2.-Cheats-Pizza-Calzone.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/2.-Cheats-Pizza-Calzone.width-320.jpg",
+    "ingredientNames": [
+      "flour tortillas",
+      "tomatoes",
+      "hard cheese",
+      "red pepper",
+      "yellow pepper",
+      "mushrooms",
+      "salad leaves",
+      "carrots",
+      "celery",
+      "mixed herbs"
+    ]
   },
   {
     "title": "Cheese and Tomato Grilled Fish",
@@ -210,17 +274,25 @@
     "ingredients": [
       "0.5 teaspoon vegetable oil",
       "4 fillets frozen or fresh haddock",
-      "4 tablespoons tomato pur\u00e9e",
+      "4 tablespoons tomato purée",
       "4 tomatoes, thinly sliced",
       "1 pinch ground black pepper",
       "40g reduced-fat mature cheddar cheese, grated"
     ],
     "steps": [
       "Preheat the grill to medium-high. Grease a baking sheet with the vegetable oil.",
-      "Arrange the fish fillets on the baking sheet and spread 1 tablespoon of the tomato pur\u00e9e over each one. Top with the tomatoes, season and scatter the cheese on top.",
+      "Arrange the fish fillets on the baking sheet and spread 1 tablespoon of the tomato purée over each one. Top with the tomatoes, season and scatter the cheese on top.",
       "Grill for 6 to 8 minutes, until the fish is cooked. Serve with green vegetables and cooked rice or boiled potatoes."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheese-and-tomato-grilled-fish_R0dMpwM.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheese-and-tomato-grilled-fish_R0dMpwM.width-320.jpg",
+    "ingredientNames": [
+      "vegetable oil",
+      "haddock",
+      "tomato purée",
+      "tomatoes",
+      "black pepper",
+      "cheddar cheese"
+    ]
   },
   {
     "title": "Pasta Vegetable Cheese Wedges",
@@ -254,7 +326,18 @@
       "Put the frying pan under the grill and cook for 4 to 5 minutes until golden brown.",
       "Leave to cool for a minute, then cut into 4 slices and serve with vegetables or salad."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheesy_veggie_wedges.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheesy_veggie_wedges.width-320.png",
+    "ingredientNames": [
+      "pasta shapes",
+      "vegetable oil",
+      "onion",
+      "courgette",
+      "carrots",
+      "eggs",
+      "hard cheese",
+      "mixed herbs",
+      "black pepper"
+    ]
   },
   {
     "title": "Chicken and Vegetable Parcels",
@@ -283,10 +366,20 @@
       "Cut 4 pieces of greaseproof paper each measuring approximately 30cm square. Put each chicken breast onto a separate square.",
       "Mix the vegetables together and place an equal amount on top of each piece of chicken. Sprinkle with 5-spice powder, ginger, soy sauce and pepper.",
       "Fold up the paper to wrap up the chicken completely. Put the parcels into a steamer, cover and steam for 35 to 40 minutes.",
-      "Check that the chicken is properly cooked by inserting a sharp knife into the thickest part \u2014 the juices should run clear.",
+      "Check that the chicken is properly cooked by inserting a sharp knife into the thickest part — the juices should run clear.",
       "Serve the chicken in the parcels, along with vegetables and noodles, rice or potatoes."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/7.-Chicken-veg-parcels.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/7.-Chicken-veg-parcels.width-320.jpg",
+    "ingredientNames": [
+      "chicken",
+      "spring onion",
+      "carrots",
+      "courgette",
+      "chinese 5-spice powder",
+      "ground ginger",
+      "soy sauce",
+      "black pepper"
+    ]
   },
   {
     "title": "Chicken and Tomato Jacket Potato",
@@ -312,12 +405,21 @@
     ],
     "steps": [
       "Scrub the potatoes, then dry and prick each one several times with a sharp knife.",
-      "Oven method: Rub a few drops of olive oil into the potato skin and bake at 200\u00b0C (fan 180\u00b0C, gas mark 6) for 1 hour 15 minutes, or until tender.",
+      "Oven method: Rub a few drops of olive oil into the potato skin and bake at 200°C (fan 180°C, gas mark 6) for 1 hour 15 minutes, or until tender.",
       "When the potatoes are almost ready, cut the chicken breasts into bite-size chunks and pan fry for about 6 to 8 minutes until cooked through. Add a pinch of dried oregano.",
       "Chop the tomatoes into chunks, discarding the seeds. Mix together the chicken, tomatoes, spring onions and yoghurt. Add pesto if you wish.",
       "Serve the jacket potatoes with a portion of the chicken mixture."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken__tomato_jacket_potato.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken__tomato_jacket_potato.width-320.png",
+    "ingredientNames": [
+      "potatoes",
+      "chicken",
+      "oregano",
+      "tomatoes",
+      "greek yoghurt",
+      "spring onion",
+      "red pesto"
+    ]
   },
   {
     "title": "Chicken Jalfrezi",
@@ -356,7 +458,24 @@
       "Add the chicken pieces back to the pan, stir well and cook for a couple of minutes. Add the green chillies and pour in the water. Cover and simmer on low heat for 10 to 15 minutes.",
       "Once the chicken is tender and the sauce has thickened, turn off the heat and scatter over the chopped coriander."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/28.-Chicken-Jalfrezi.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/28.-Chicken-Jalfrezi.width-320.jpg",
+    "ingredientNames": [
+      "rapeseed oil",
+      "chicken",
+      "onion",
+      "pepper",
+      "green chillies",
+      "garlic",
+      "ginger",
+      "chopped tomatoes",
+      "turmeric powder",
+      "cumin seeds",
+      "chilli powder",
+      "garam masala",
+      "coriander powder",
+      "water",
+      "coriander"
+    ]
   },
   {
     "title": "Chicken Pizza Naan",
@@ -374,7 +493,7 @@
     "ingredients": [
       "4 spring onions, chopped",
       "400g chopped tomatoes",
-      "2 tablespoons tomato pur\u00e9e",
+      "2 tablespoons tomato purée",
       "2 teaspoons dried mixed herbs",
       "4 reduced-fat mini naan breads",
       "150g skinless, boneless roast chicken breast, sliced",
@@ -385,12 +504,25 @@
       "1 tablespoon fresh coriander, chopped"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C (180\u00b0C fan, gas mark 6).",
-      "Put the spring onions, tomatoes, tomato pur\u00e9e and mixed herbs into a saucepan over a medium heat. Cook for 5 to 8 minutes, until reduced and thickened.",
+      "Preheat the oven to 200°C (180°C fan, gas mark 6).",
+      "Put the spring onions, tomatoes, tomato purée and mixed herbs into a saucepan over a medium heat. Cook for 5 to 8 minutes, until reduced and thickened.",
       "Arrange the naan on a baking sheet, divide the tomato mixture between them. Add the chicken, then sprinkle over the cheese. Bake for 5 to 6 minutes.",
       "Meanwhile, mix together the salad ingredients, and serve with the naan once ready."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pizza_naan_gTs3oNh.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pizza_naan_gTs3oNh.width-320.png",
+    "ingredientNames": [
+      "spring onion",
+      "chopped tomatoes",
+      "tomato purée",
+      "mixed herbs",
+      "mini naan breads",
+      "chicken",
+      "hard cheese",
+      "cherry tomatoes",
+      "cucumber",
+      "red onion",
+      "coriander"
+    ]
   },
   {
     "title": "Chilli Con Carne",
@@ -410,7 +542,7 @@
       "1 large onion, finely chopped",
       "2 garlic cloves, finely chopped",
       "400g chopped tomatoes",
-      "2 tablespoons tomato pur\u00e9e",
+      "2 tablespoons tomato purée",
       "2 teaspoons chilli powder",
       "1 teaspoon ground cumin",
       "1 red pepper, deseeded and chopped",
@@ -422,11 +554,25 @@
     "steps": [
       "Heat a large saucepan and add the minced beef, a handful at a time, cooking until browned.",
       "Add the onion and garlic, then cook for another 2 to 3 minutes.",
-      "Add the chopped tomatoes, tomato pur\u00e9e, spices, red pepper, mushrooms, kidney beans and stock. Stir well, bring to the boil, then simmer gently for 15 to 20 minutes.",
+      "Add the chopped tomatoes, tomato purée, spices, red pepper, mushrooms, kidney beans and stock. Stir well, bring to the boil, then simmer gently for 15 to 20 minutes.",
       "Meanwhile, cook the rice according to pack instructions.",
       "Season the chilli with pepper and serve with the boiled rice."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chilli-con-carne_x7m8d91.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chilli-con-carne_x7m8d91.width-320.jpg",
+    "ingredientNames": [
+      "minced beef",
+      "onion",
+      "garlic",
+      "chopped tomatoes",
+      "tomato purée",
+      "chilli powder",
+      "ground cumin",
+      "red pepper",
+      "mushrooms",
+      "kidney beans",
+      "vegetable stock",
+      "rice"
+    ]
   },
   {
     "title": "Chicken and Sweetcorn Soup",
@@ -458,7 +604,18 @@
       "Add the sweetcorn (drained if tinned), milk and chicken, and cook gently for 3 or 4 minutes.",
       "Add the cornflour mixture and stir until thickened. Add the parsley and cook for another few moments. Ladle into bowls and serve."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chunky_chicken_and_sweetcorn_soup_9FhxNXq.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chunky_chicken_and_sweetcorn_soup_9FhxNXq.width-320.png",
+    "ingredientNames": [
+      "spread",
+      "onion",
+      "potatoes",
+      "vegetable stock",
+      "sweetcorn",
+      "chicken",
+      "milk",
+      "cornflour",
+      "parsley"
+    ]
   },
   {
     "title": "Classic Cottage Pie",
@@ -493,7 +650,19 @@
       "Add the sweetcorn to the mince, sprinkle in the gravy granules and stir until thickened. Tip into the baking dish. Spoon the mash on top and pop under the grill.",
       "Once the top has browned, remove from the grill and leave to cool for a couple of minutes before serving."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_cottage_pie_PbLklZn.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_cottage_pie_PbLklZn.width-320.png",
+    "ingredientNames": [
+      "potatoes",
+      "minced beef",
+      "onion",
+      "carrots",
+      "courgette",
+      "green beans",
+      "mixed herbs",
+      "water",
+      "gravy granules",
+      "sweetcorn"
+    ]
   },
   {
     "title": "Easy Vegetable Soup",
@@ -516,7 +685,7 @@
       "2 celery sticks, sliced",
       "1 tin chopped tomatoes",
       "1L reduced-salt vegetable stock",
-      "1 tablespoon tomato pur\u00e9e",
+      "1 tablespoon tomato purée",
       "50g sugar snap peas or green beans, sliced",
       "50g frozen peas",
       "40g dried pasta shapes",
@@ -524,11 +693,25 @@
     ],
     "steps": [
       "Heat the oil in a large saucepan. Add the onion, carrots, leek and celery, and fry gently for 3 or 4 minutes.",
-      "Add the tomatoes, tomato pur\u00e9e, beans, frozen peas and stock. Bring to the boil and add the pasta, herbs and pepper.",
+      "Add the tomatoes, tomato purée, beans, frozen peas and stock. Bring to the boil and add the pasta, herbs and pepper.",
       "Lower the heat and simmer for 15 minutes or until the pasta is cooked, stirring frequently.",
       "Turn off the heat and leave to cool for a few minutes. Ladle into bowls and serve with a slice of wholemeal bread."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_vegetable_soup.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_vegetable_soup.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "onion",
+      "carrots",
+      "leek",
+      "celery",
+      "chopped tomatoes",
+      "vegetable stock",
+      "tomato purée",
+      "sugar snap peas",
+      "peas",
+      "pasta shapes",
+      "mixed herbs"
+    ]
   },
   {
     "title": "Couscous with Chicken and Peas",
@@ -554,7 +737,14 @@
       "Put the couscous in a large bowl and cover with boiling water. Leave for 10 to 15 minutes to swell and cool, then stir with a fork to fluff up the grains.",
       "Add the chicken and tomatoes, squeeze over the lemon juice, stir to combine."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/4.-Couscous-with-chicken-and-peas.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/4.-Couscous-with-chicken-and-peas.width-320.jpg",
+    "ingredientNames": [
+      "couscous",
+      "chicken",
+      "peas",
+      "cherry tomatoes",
+      "lemon"
+    ]
   },
   {
     "title": "Banana and Raspberry Porridge",
@@ -582,7 +772,15 @@
       "Meanwhile, mash the bananas in a bowl. Stir half into the porridge. Add the raspberries to the rest of the banana and squash them a little.",
       "Share the porridge between 6 warm bowls and top each portion with the yoghurt and the raspberry mixture."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Creamy_banana_porridge.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Creamy_banana_porridge.width-320.jpg",
+    "ingredientNames": [
+      "porridge oats",
+      "milk",
+      "water",
+      "bananas",
+      "raspberries",
+      "greek yoghurt"
+    ]
   },
   {
     "title": "Crispy Potato and Courgette Fritters with Salsa",
@@ -609,13 +807,24 @@
       "1 teaspoon red or white wine vinegar"
     ],
     "steps": [
-      "Preheat the oven to 220\u00b0C (200\u00b0C fan, gas mark 7) and find a medium-sized baking sheet.",
+      "Preheat the oven to 220°C (200°C fan, gas mark 7) and find a medium-sized baking sheet.",
       "Put the grated potato and courgette onto kitchen paper and press out as much water as possible. Add to a bowl with the onion and egg, and mix well.",
       "Take a large spoonful of the mixture, shape into a rough ball, then put on the baking sheet. Repeat to make 12 fritters. Bake for about 20 minutes, until crisp.",
       "Meanwhile, make the salsa by mixing the tomatoes, sweetcorn, red onion, oil and vinegar.",
       "Once the fritters are cooked, serve immediately with the salsa and a simple green salad."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crispy_potato_fritters_with_salsa_jmVZj2V.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crispy_potato_fritters_with_salsa_jmVZj2V.width-320.png",
+    "ingredientNames": [
+      "potatoes",
+      "onion",
+      "courgette",
+      "eggs",
+      "tomatoes",
+      "sweetcorn",
+      "red onion",
+      "olive oil",
+      "wine vinegar"
+    ]
   },
   {
     "title": "Homemade Fish Fingers with Sweet Potato Wedges",
@@ -640,13 +849,22 @@
       "200g frozen peas or mixed veg"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C (180\u00b0C fan, gas mark 6). Put the wedges into a roasting tin, add 2 tablespoons of vegetable oil, toss to coat, and bake for 45 minutes.",
+      "Preheat the oven to 200°C (180°C fan, gas mark 6). Put the wedges into a roasting tin, add 2 tablespoons of vegetable oil, toss to coat, and bake for 45 minutes.",
       "Grease a baking tray. Beat the egg in a shallow dish. Sprinkle the breadcrumbs onto a plate.",
       "Cut the fish into fingers, season with pepper. Dip in egg, roll in breadcrumbs and arrange on the baking tray.",
       "When the potatoes have been in the oven for 25 minutes, turn them over. At the same time, put the fish fingers in the oven. Cook for 20 minutes, until crisp and golden.",
       "Cook the vegetables in boiling water 5 minutes before ready. Drain and serve everything together."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crunchy_fish_fingers_with_wedges_rZnY29b.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crunchy_fish_fingers_with_wedges_rZnY29b.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "sweet potatoes",
+      "black pepper",
+      "white fish",
+      "eggs",
+      "breadcrumbs",
+      "peas"
+    ]
   },
   {
     "title": "Easy Overnight Oats",
@@ -676,7 +894,17 @@
       "In the morning, share the soaked mixture between 4 cereal bowls.",
       "Spoon 2 tablespoons of natural yoghurt onto each portion, and share the berries between the bowls."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Easy_overnight_oats_BS4xSKi.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Easy_overnight_oats_BS4xSKi.width-320.png",
+    "ingredientNames": [
+      "porridge oats",
+      "cranberries",
+      "apricots",
+      "sultanas",
+      "apple juice",
+      "natural yoghurt",
+      "blueberries",
+      "raspberries"
+    ]
   },
   {
     "title": "Easy Carrot Soup",
@@ -702,10 +930,18 @@
     "steps": [
       "Put the onion and carrots into a large saucepan with the stock, and bring to a boil.",
       "Reduce the heat and simmer, partially covered, for 20 to 25 minutes, or until the vegetables are tender.",
-      "Blend the soup to a pur\u00e9e using a handheld stick blender. Add most of the soft cheese and blend again.",
+      "Blend the soup to a purée using a handheld stick blender. Add most of the soft cheese and blend again.",
       "Reheat gently, then serve garnished with the remaining cheese, a little black pepper and coriander. Enjoy with wholemeal bread."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/1-2-3_carrot_soup.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/1-2-3_carrot_soup.width-320.png",
+    "ingredientNames": [
+      "onion",
+      "carrots",
+      "vegetable stock",
+      "soft cheese",
+      "black pepper",
+      "coriander"
+    ]
   },
   {
     "title": "Easy Frozen Banana Ice Cream",
@@ -724,11 +960,14 @@
       "4 very ripe bananas"
     ],
     "steps": [
-      "Peel and slice the bananas \u2013 use 1 banana per person.",
+      "Peel and slice the bananas – use 1 banana per person.",
       "Freeze for at least 2 hours, or overnight.",
       "Add to a food processor and blend until smooth and creamy. Scoop into bowls and serve!"
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/easy-banana-ice-cream.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/easy-banana-ice-cream.width-320.jpg",
+    "ingredientNames": [
+      "bananas"
+    ]
   },
   {
     "title": "English Breakfast Muffins",
@@ -757,7 +996,16 @@
       "Meanwhile, beat the eggs and milk together. Heat the vegetable oil in a non-stick saucepan and add the eggs. Cook and stir to scramble them.",
       "Spread half the toasted muffins with reduced-fat soft cheese and top with a slice of ham. Share the scrambled egg between the muffins, season with black pepper, then top with the remaining muffin halves."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/English_breakfast_muffins.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/English_breakfast_muffins.width-320.png",
+    "ingredientNames": [
+      "english muffins",
+      "eggs",
+      "milk",
+      "vegetable oil",
+      "soft cheese",
+      "roast ham",
+      "black pepper"
+    ]
   },
   {
     "title": "Eggs Paprika",
@@ -786,7 +1034,15 @@
       "Add the tomatoes and paprika to the onions, and cook for another 5 to 8 minutes.",
       "Shell the eggs and cut each into 4. Toast the bread, then top each slice with a quarter of the tomato mixture and 4 egg quarters. Sprinkle with extra paprika."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Eggs_paprika_p4dOu1V.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Eggs_paprika_p4dOu1V.width-320.png",
+    "ingredientNames": [
+      "eggs",
+      "wholemeal bread",
+      "onion",
+      "vegetable oil",
+      "tomatoes",
+      "mild paprika"
+    ]
   },
   {
     "title": "Eyeball Halloween Meatballs",
@@ -821,7 +1077,19 @@
       "Meanwhile, cook the tagliatelle for 10 to 12 minutes in gently boiling water.",
       "Share the tagliatelle between 4 serving plates. Serve with the meatballs and sauce, topping each meatball with a mozzarella ball and cherry tomato half."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes_-_Main_image_-_Eyeball_meatballs.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes_-_Main_image_-_Eyeball_meatballs.width-320.png",
+    "ingredientNames": [
+      "turkey mince",
+      "onion",
+      "carrots",
+      "mixed herbs",
+      "vegetable oil",
+      "chopped tomatoes",
+      "stock cube",
+      "pasta",
+      "mozzarella",
+      "cherry tomatoes"
+    ]
   },
   {
     "title": "Falafels",
@@ -855,10 +1123,25 @@
       "Put the onion and garlic in a food processor and chop finely.",
       "Add the chickpeas, breadcrumbs, cumin, coriander, parsley and olive oil, and mix.",
       "Shape into 16 balls and place on a greased or lined baking tray. Chill for 30 minutes.",
-      "Place tray into a preheated 200\u00b0C oven (180\u00b0C fan, gas mark 6) and bake for about 25 minutes, turning the falafel to prevent sticking.",
+      "Place tray into a preheated 200°C oven (180°C fan, gas mark 6) and bake for about 25 minutes, turning the falafel to prevent sticking.",
       "To assemble, fill each pitta with lettuce, sliced tomatoes and cucumber, falafel and some yoghurt."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Falafels_xs1TXeg.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Falafels_xs1TXeg.width-320.jpg",
+    "ingredientNames": [
+      "chickpeas",
+      "onion",
+      "garlic",
+      "breadcrumbs",
+      "ground cumin",
+      "ground coriander",
+      "parsley",
+      "olive oil",
+      "pitta bread",
+      "lettuce",
+      "tomatoes",
+      "cucumber",
+      "greek yoghurt"
+    ]
   },
   {
     "title": "Fast Chicken Noodle Soup",
@@ -887,7 +1170,14 @@
       "Heat for 1 to 2 minutes, then ladle into bowls.",
       "Serve each portion sprinkled with a few drops of soy sauce."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/fast-chicken-noodle-soup.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/fast-chicken-noodle-soup.width-320.png",
+    "ingredientNames": [
+      "noodles",
+      "vegetable stock",
+      "stir-fry vegetables",
+      "chicken",
+      "soy sauce"
+    ]
   },
   {
     "title": "Finger Licking Chicken Pittas",
@@ -904,7 +1194,7 @@
     "time": "25 min",
     "ingredients": [
       "2 tablespoons low-fat natural yoghurt",
-      "2 teaspoons tomato pur\u00e9e",
+      "2 teaspoons tomato purée",
       "2 teaspoons tikka masala curry paste",
       "150g skinless uncooked chicken (thigh or breast), cut into strips",
       "1 teaspoon vegetable oil",
@@ -913,12 +1203,22 @@
       "2 handfuls cherry tomatoes, halved"
     ],
     "steps": [
-      "Mix together the yoghurt, tomato pur\u00e9e and curry paste. Add the chicken and toss to coat. Cover and refrigerate for 15 minutes.",
+      "Mix together the yoghurt, tomato purée and curry paste. Add the chicken and toss to coat. Cover and refrigerate for 15 minutes.",
       "Preheat a non-stick frying pan over a medium heat. Add the teaspoon of vegetable oil.",
       "Put the marinated chicken pieces into the heated pan and stir-fry over a medium heat until cooked but still juicy (about 5 to 8 minutes).",
       "Warm and split open the pitta breads and fill them with shredded lettuce. Add the cooked chicken, then serve with cherry tomatoes."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pittas_9F2k6G8.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pittas_9F2k6G8.width-320.png",
+    "ingredientNames": [
+      "natural yoghurt",
+      "tomato purée",
+      "curry paste",
+      "chicken",
+      "vegetable oil",
+      "pitta bread",
+      "lettuce",
+      "cherry tomatoes"
+    ]
   },
   {
     "title": "Four Seasons Pizza",
@@ -935,7 +1235,7 @@
     "time": "25 min",
     "ingredients": [
       "One 23cm pizza base",
-      "1 tablespoon tomato pur\u00e9e",
+      "1 tablespoon tomato purée",
       "2 tomatoes, sliced",
       "50g ready-grated mozzarella",
       "1 teaspoon dried Italian mixed herbs",
@@ -945,13 +1245,24 @@
       "25g cooked chicken (or turkey), chopped"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C (fan 180\u00b0C, gas mark 6). Place the pizza base on a large baking sheet.",
-      "Spoon the tomato pur\u00e9e on top and spread evenly. Arrange the tomatoes on top.",
+      "Preheat the oven to 200°C (fan 180°C, gas mark 6). Place the pizza base on a large baking sheet.",
+      "Spoon the tomato purée on top and spread evenly. Arrange the tomatoes on top.",
       "Scatter with half the mozzarella, then sprinkle with the herbs.",
       "Arrange the ham over a quarter of the pizza with the pineapple. Arrange the mushrooms over a second quarter. Put the cooked chicken over a third quarter. Leave the last quarter plain.",
       "Sprinkle the rest of the mozzarella over the whole pizza, then bake for 12 to 15 minutes until the cheese is bubbling."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/9.-Four-seasons-pizza.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/9.-Four-seasons-pizza.width-320.jpg",
+    "ingredientNames": [
+      "pizza base",
+      "tomato purée",
+      "tomatoes",
+      "mozzarella",
+      "mixed herbs",
+      "ham",
+      "pineapple",
+      "mushrooms",
+      "chicken"
+    ]
   },
   {
     "title": "Greek Yoghurt and Raspberry Chill",
@@ -978,7 +1289,12 @@
       "Divide the whole raspberries between 4 serving glasses, saving 4 for decoration.",
       "Add the yoghurt and cooled oats to the bowl of crushed raspberries and stir gently. Spoon into the serving glasses and top each with a whole raspberry. Chill until ready to serve."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Raspberry_toasted_oat_treat.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Raspberry_toasted_oat_treat.width-320.png",
+    "ingredientNames": [
+      "porridge oats",
+      "raspberries",
+      "greek yoghurt"
+    ]
   },
   {
     "title": "Homemade Fish and Chips",
@@ -1002,13 +1318,21 @@
       "300g mushy peas"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C (fan 180\u00b0C, gas mark 6). Lightly grease a baking sheet with vegetable oil.",
+      "Preheat the oven to 200°C (fan 180°C, gas mark 6). Lightly grease a baking sheet with vegetable oil.",
       "Put the potato wedges into a roasting tin. Add the remaining vegetable oil and toss to coat.",
       "Transfer to the oven to bake for 35 to 40 minutes, turning them over after 20 minutes.",
       "Sprinkle the breadcrumbs onto a large plate. Dip each fish fillet in the beaten egg, then coat in the breadcrumbs. Place on the baking sheet, then transfer to the oven when you turn the potatoes, for 15 to 20 minutes.",
       "Heat the mushy peas in a saucepan, then serve with the fish and chips."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-healthy-fish-and-chips.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-healthy-fish-and-chips.width-320.jpg",
+    "ingredientNames": [
+      "potatoes",
+      "vegetable oil",
+      "breadcrumbs",
+      "eggs",
+      "white fish",
+      "mushy peas"
+    ]
   },
   {
     "title": "Greek Salad",
@@ -1039,7 +1363,18 @@
       "Combine the salad vegetables, olives and dressing, mix well and put in a serving bowl.",
       "Crumble the cheese over the top."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/6.-Greek-style-salad.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/6.-Greek-style-salad.width-320.jpg",
+    "ingredientNames": [
+      "lemon",
+      "olive oil",
+      "oregano",
+      "black pepper",
+      "cherry tomatoes",
+      "red onion",
+      "cucumber",
+      "olives",
+      "feta cheese"
+    ]
   },
   {
     "title": "Healthier Full English Breakfast",
@@ -1071,7 +1406,16 @@
       "Heat the vegetable oil in a non-stick frying pan and crack in the eggs. Cook over a medium heat for about 2 minutes, then transfer to the grill to set the surface.",
       "Share the bacon and tomatoes between 4 warm serving plates. Share out the baked beans and mushrooms, then place 1 egg on each plate."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Food_Smart_full_English_MHJ9FBq.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Food_Smart_full_English_MHJ9FBq.width-320.png",
+    "ingredientNames": [
+      "bacon",
+      "tomatoes",
+      "mushrooms",
+      "water",
+      "baked beans",
+      "vegetable oil",
+      "eggs"
+    ]
   },
   {
     "title": "Vegetable and Lentil Soup",
@@ -1102,7 +1446,17 @@
       "Blend the soup using a hand-held stick blender. Season to taste with pepper.",
       "Ladle the soup into 4 bowls and swirl the yoghurt on top. Serve with wholemeal rolls if you like."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Hearty_homemade_soup_p4BKS6s.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Hearty_homemade_soup_p4BKS6s.width-320.png",
+    "ingredientNames": [
+      "onion",
+      "carrots",
+      "red pepper",
+      "vegetable stock",
+      "red lentils",
+      "ground ginger",
+      "natural yoghurt",
+      "bread rolls"
+    ]
   },
   {
     "title": "Jerk-Style Chicken Skewers",
@@ -1134,7 +1488,17 @@
       "Cook on the barbecue for 8 to 10 minutes, turning frequently. Alternatively, cook under a preheated grill.",
       "Meanwhile cook the sweetcorn cobettes in boiling water, or on the barbecue for 6 to 8 minutes."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jerk-style-chicken-skewers_5ZjGZMv.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jerk-style-chicken-skewers_5ZjGZMv.width-320.jpg",
+    "ingredientNames": [
+      "garlic",
+      "lemon",
+      "olive oil",
+      "jerk seasoning",
+      "chicken",
+      "red pepper",
+      "onion",
+      "sweetcorn"
+    ]
   },
   {
     "title": "Jollof Rice",
@@ -1153,7 +1517,7 @@
       "400g plum tomatoes (fresh or tinned)",
       "1 medium onion, roughly chopped",
       "1 red pepper, deseeded and chopped",
-      "100g tomato pur\u00e9e",
+      "100g tomato purée",
       "1 bay leaf",
       "2 garlic cloves, crushed",
       "0.5 teaspoon curry powder",
@@ -1163,12 +1527,24 @@
     ],
     "steps": [
       "Liquidise the tomatoes, onion and pepper in a blender. Tip into a large saucepan, cover and cook over medium-high heat for 6 to 8 minutes.",
-      "Add the tomato pur\u00e9e, bay leaf, garlic, curry powder and thyme. Simmer for a further couple of minutes, then add the stock and bring to boil.",
+      "Add the tomato purée, bay leaf, garlic, curry powder and thyme. Simmer for a further couple of minutes, then add the stock and bring to boil.",
       "Once boiling, add the rice and stir well, then turn down the heat and cover with a lid.",
       "Allow to simmer over a low heat for 15 to 20 minutes, or until the rice is tender. Check and stir occasionally, adding a little extra water if needed.",
       "Once the rice is cooked, turn off the heat and leave to cool for a minute or two before serving."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jollof_rice_70Ex6Iz.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jollof_rice_70Ex6Iz.width-320.png",
+    "ingredientNames": [
+      "tomatoes",
+      "onion",
+      "red pepper",
+      "tomato purée",
+      "bay leaf",
+      "garlic",
+      "curry powder",
+      "thyme",
+      "vegetable stock",
+      "rice"
+    ]
   },
   {
     "title": "Macaroni Cheese with Tomatoes",
@@ -1195,7 +1571,7 @@
       "2 large tomatoes, sliced"
     ],
     "steps": [
-      "Preheat the oven to 190\u00b0C (fan 170\u00b0C, gas mark 5).",
+      "Preheat the oven to 190°C (fan 170°C, gas mark 5).",
       "Cook the macaroni in a large saucepan of boiling water for 8 to 10 minutes until tender. Drain well and return to the saucepan.",
       "Melt the low-fat spread in a large saucepan and cook the onion for 3 or 4 minutes until softened.",
       "Remove from the heat and stir in the flour. Return to the heat and cook gently for about 1 minute. Remove from the heat again and add in the milk a little at a time, stirring well.",
@@ -1203,7 +1579,18 @@
       "Add the hot cheese sauce to the pan with the cooked pasta and mix well. Tip into a baking dish, top with the tomato slices and sprinkle the remaining cheese on top.",
       "Bake for 15 to 20 minutes until piping hot and the cheese on top is starting to brown."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-macaroni-tomatoes.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-macaroni-tomatoes.width-320.jpg",
+    "ingredientNames": [
+      "macaroni",
+      "spread",
+      "onion",
+      "flour",
+      "milk",
+      "cheddar cheese",
+      "english mustard",
+      "black pepper",
+      "tomatoes"
+    ]
   },
   {
     "title": "Mediterranean Potato Bake",
@@ -1229,12 +1616,22 @@
       "1 tablespoon red pesto (optional)"
     ],
     "steps": [
-      "Preheat the oven to 200\u00b0C (180\u00b0C fan, gas mark 6).",
+      "Preheat the oven to 200°C (180°C fan, gas mark 6).",
       "Put the potatoes, chopped vegetables and pine nuts in a large roasting tin.",
       "Drizzle with the oil and toss to coat. Bake for 20 minutes, or until tender.",
       "Add the pesto, if using, and bake for another 5 minutes. Serve immediately."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/15.-Mediterranean-potato-bake.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/15.-Mediterranean-potato-bake.width-320.jpg",
+    "ingredientNames": [
+      "potatoes",
+      "pine nuts",
+      "olive oil",
+      "courgette",
+      "aubergine",
+      "red pepper",
+      "yellow pepper",
+      "red pesto"
+    ]
   },
   {
     "title": "Meatballs and Sauce",
@@ -1259,16 +1656,28 @@
       "200g mushrooms, sliced",
       "1 pepper, any colour, chopped",
       "2 teaspoons dried mixed herbs",
-      "2 tablespoons tomato pur\u00e9e (optional)"
+      "2 tablespoons tomato purée (optional)"
     ],
     "steps": [
       "Mix some of the chopped onion and garlic with the mince. Shape the mince into small balls about half the size of a golf ball.",
       "Heat the oil in a non-stick frying pan and brown the meatballs on all sides. Remove and put onto a plate.",
       "Add the remaining onion to the frying pan and cook for 2 to 3 minutes until soft. Add the remaining garlic and cook for another minute.",
-      "Add the tomatoes, tomato pur\u00e9e, herbs, mushrooms and peppers to the pan with 150ml water. Bring to the boil, then add the meatballs. Reduce the heat, cover and simmer for 30 minutes.",
+      "Add the tomatoes, tomato purée, herbs, mushrooms and peppers to the pan with 150ml water. Bring to the boil, then add the meatballs. Reduce the heat, cover and simmer for 30 minutes.",
       "About 10 minutes before serving, put the pasta on to cook. Serve with the meatballs and tomato sauce."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/14.-Meatballs-n-sauce.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/14.-Meatballs-n-sauce.width-320.jpg",
+    "ingredientNames": [
+      "onion",
+      "garlic",
+      "mince",
+      "olive oil",
+      "chopped tomatoes",
+      "pasta",
+      "mushrooms",
+      "pepper",
+      "mixed herbs",
+      "tomato purée"
+    ]
   },
   {
     "title": "Mexican Bean and Tomato Soup",
@@ -1290,7 +1699,7 @@
       "Half a teaspoon chilli powder or chilli flakes (optional)",
       "1 tin chopped tomatoes",
       "850ml reduced-salt vegetable stock",
-      "1 tablespoon tomato pur\u00e9e",
+      "1 tablespoon tomato purée",
       "1 tin mixed beans",
       "1 tin or 1 medium-sized cob of sweetcorn",
       "1 tablespoon parsley or fresh coriander, chopped (optional)"
@@ -1298,11 +1707,23 @@
     "steps": [
       "Heat the oil in a large saucepan and gently cook the garlic and onion for about 3 minutes, until softened.",
       "Add the chilli and the tomatoes, and cook for a couple of minutes.",
-      "Pour in the stock and add the tomato pur\u00e9e, mixed beans and sweetcorn. Stir everything to mix well.",
+      "Pour in the stock and add the tomato purée, mixed beans and sweetcorn. Stir everything to mix well.",
       "Bring to the boil then turn the heat down and simmer, uncovered, for 15 to 20 minutes.",
       "Add the coriander or parsley (if using) and season with some pepper. Ladle into warm bowls and serve with a wholemeal roll."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mexican_bean_and_tomato_soup_hkYx8B4.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mexican_bean_and_tomato_soup_hkYx8B4.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "garlic",
+      "onion",
+      "chilli powder",
+      "chopped tomatoes",
+      "vegetable stock",
+      "tomato purée",
+      "mixed beans",
+      "sweetcorn",
+      "coriander"
+    ]
   },
   {
     "title": "Mushroom Risotto",
@@ -1333,7 +1754,16 @@
       "Pour in about half the hot stock and stir well. Cook over a medium heat for 20 to 25 minutes, stirring often and slowly adding the remaining stock a little at a time.",
       "Add the peas, stirring gently. Cook for another couple of minutes to allow them to warm through. Check the seasoning and serve."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mushroom_risotto_JWslYeN.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mushroom_risotto_JWslYeN.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "spring onion",
+      "risotto rice",
+      "garlic",
+      "mushrooms",
+      "vegetable stock",
+      "peas"
+    ]
   },
   {
     "title": "Sausage and Mash",
@@ -1366,7 +1796,18 @@
       "Pour in the stock and water, add the herbs, then simmer for 4 to 5 minutes. Add the blended cornflour and stir until thickened. Keep hot over a low heat.",
       "Drain and mash the vegetables, seasoning with black pepper. Serve 2 sausages per person with the red onion gravy."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Old-school-sausage-n-mash_x4Qkqw9.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Old-school-sausage-n-mash_x4Qkqw9.width-320.jpg",
+    "ingredientNames": [
+      "carrots",
+      "swede",
+      "potatoes",
+      "sausages",
+      "vegetable oil",
+      "red onion",
+      "vegetable stock",
+      "water",
+      "cornflour"
+    ]
   },
   {
     "title": "Pasta Ratatouille Bake",
@@ -1395,13 +1836,26 @@
       "25g vegetarian hard cheese, grated"
     ],
     "steps": [
-      "Preheat the oven to 180\u00b0C (160\u00b0C fan, gas mark 4).",
+      "Preheat the oven to 180°C (160°C fan, gas mark 4).",
       "Cook the macaroni according to pack instructions, then drain. Meanwhile, heat the oil in a large saucepan, then cook the onion and garlic slowly until tender and golden.",
       "Stir in the herbs, tomatoes, courgettes, beans and stock. Simmer for 5 minutes.",
       "Combine the pasta and vegetables, and season with black pepper. Transfer to a baking dish and sprinkle the cheese on top.",
       "Bake for 30 to 35 minutes."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/19.-Pasta-Ratatouille-Bake.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/19.-Pasta-Ratatouille-Bake.width-320.jpg",
+    "ingredientNames": [
+      "macaroni",
+      "olive oil",
+      "onion",
+      "garlic",
+      "oregano",
+      "basil",
+      "tomatoes",
+      "courgette",
+      "green beans",
+      "vegetable stock",
+      "hard cheese"
+    ]
   },
   {
     "title": "Spicy Turkey Stuffed Peppers",
@@ -1429,13 +1883,25 @@
       "1 teaspoon dried mixed herbs"
     ],
     "steps": [
-      "Preheat the oven to 190\u00b0C (fan 170\u00b0C, gas mark 5). Arrange the peppers in a roasting pan, cut side up.",
+      "Preheat the oven to 190°C (fan 170°C, gas mark 5). Arrange the peppers in a roasting pan, cut side up.",
       "Bring a large saucepan of water to a simmer, add the rice and cook for 12 to 15 minutes until tender.",
       "While the rice is cooking, heat the vegetable oil in a large frying pan and stir-fry the onion and garlic for about 3 minutes. Add the turkey and stir-fry for about 5 minutes. Add the tomatoes, peas, paprika and herbs, then remove from the heat.",
       "Drain the rice, stir it into the tomato mixture and season. Spoon the filling into the pepper halves.",
       "Cover with foil, bake for 20 to 25 minutes and then serve."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/20.-Peppers-with-spicey-turkey-stuffing.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/20.-Peppers-with-spicey-turkey-stuffing.width-320.jpg",
+    "ingredientNames": [
+      "pepper",
+      "rice",
+      "vegetable oil",
+      "onion",
+      "garlic",
+      "turkey",
+      "tomatoes",
+      "peas",
+      "mild paprika",
+      "mixed herbs"
+    ]
   },
   {
     "title": "Pesto and Parmesan Salmon",
@@ -1463,12 +1929,24 @@
       "600g new potatoes"
     ],
     "steps": [
-      "Preheat oven to 200\u00b0C (180\u00b0C fan, gas mark 6). Add all the vegetables (except the potatoes) to a roasting tray. Drizzle over the oil, season with black pepper and mix well. Cook in the oven for 30 minutes.",
+      "Preheat oven to 200°C (180°C fan, gas mark 6). Add all the vegetables (except the potatoes) to a roasting tray. Drizzle over the oil, season with black pepper and mix well. Cook in the oven for 30 minutes.",
       "While the vegetables are roasting, line a baking tray with non-stick baking parchment, and arrange the salmon fillets on it. In a bowl, combine the breadcrumbs, pesto, cheese and lower-fat spread. Spoon the mixture evenly over the salmon pieces.",
       "Once the vegetables have been cooking for 15 minutes, stir to prevent sticking. Return to the oven, along with the salmon, and bake for another 15 to 20 minutes.",
       "When the fish goes in the oven, cook the potatoes in boiling water for 15 minutes or until soft. Serve with the salmon and oven-roasted mixed vegetables."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pesto__parmesan_salmon_2zD3yEn.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pesto__parmesan_salmon_2zD3yEn.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "salmon",
+      "breadcrumbs",
+      "green pesto",
+      "parmesan",
+      "spread",
+      "courgette",
+      "red onion",
+      "carrots",
+      "potatoes"
+    ]
   },
   {
     "title": "Pork and Bean Casserole",
@@ -1493,18 +1971,33 @@
       "400g chopped tomatoes",
       "2 tins haricot or cannellini beans in water, rinsed and drained",
       "300ml reduced-salt vegetable or chicken stock",
-      "2 tablespoons tomato pur\u00e9e",
+      "2 tablespoons tomato purée",
       "1 tablespoon Worcestershire sauce",
       "2 teaspoons dried mixed herbs",
       "2 tablespoons chopped fresh parsley"
     ],
     "steps": [
-      "Preheat the oven to 180\u00b0C (160\u00b0C fan, gas mark 4). Heat the vegetable oil in a large flameproof casserole dish. Add the chunks of pork and cook over a high heat for 3 to 4 minutes, until seared and browned.",
+      "Preheat the oven to 180°C (160°C fan, gas mark 4). Heat the vegetable oil in a large flameproof casserole dish. Add the chunks of pork and cook over a high heat for 3 to 4 minutes, until seared and browned.",
       "Add the onion, garlic, carrots and apple. Cook, stirring, for 2 more minutes.",
-      "Add the tomatoes, beans, tomato pur\u00e9e, Worcestershire sauce, mixed herbs and stock. Season with some pepper and stir well.",
+      "Add the tomatoes, beans, tomato purée, Worcestershire sauce, mixed herbs and stock. Season with some pepper and stir well.",
       "Put the lid on and transfer to the oven to cook for 90 minutes. Serve, sprinkled with the chopped parsley."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pork_and_bean_casserole_pD00hWj.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pork_and_bean_casserole_pD00hWj.width-320.png",
+    "ingredientNames": [
+      "vegetable oil",
+      "pork shoulder",
+      "onion",
+      "garlic",
+      "carrots",
+      "apple",
+      "chopped tomatoes",
+      "cannellini beans",
+      "vegetable stock",
+      "tomato purée",
+      "worcestershire sauce",
+      "mixed herbs",
+      "parsley"
+    ]
   },
   {
     "title": "Quick Chicken Couscous",
@@ -1532,7 +2025,16 @@
       "Put the couscous into a large mixing bowl and cover with the hot stock. Leave for 10 to 15 minutes to swell and cool, then stir to fluff up the grains.",
       "Add the chicken, sweetcorn, tomatoes, cucumber, lemon juice and black pepper. Stir well to mix and divide between 4 bowls."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Quick_chicken_couscous_1IZBGkV.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Quick_chicken_couscous_1IZBGkV.width-320.png",
+    "ingredientNames": [
+      "couscous",
+      "vegetable stock",
+      "chicken",
+      "sweetcorn",
+      "tomatoes",
+      "cucumber",
+      "lemon juice"
+    ]
   },
   {
     "title": "Roast Chicken Breast with Peppers",
@@ -1561,13 +2063,26 @@
       "500g broccoli, broken into florets"
     ],
     "steps": [
-      "Preheat the oven to 190\u00b0C (fan 170\u00b0C, gas mark 5). Put the potatoes onto the top shelf of the oven to bake.",
+      "Preheat the oven to 190°C (fan 170°C, gas mark 5). Put the potatoes onto the top shelf of the oven to bake.",
       "Heat the vegetable oil in a flameproof casserole dish and stir-fry the onion and peppers over a high heat until softened, about 3 minutes.",
       "Put the paprika, herbs and flour into a shallow dish and season with pepper. Dip each chicken breast into the mixture, coating them on both sides. Transfer to the casserole dish, on top of the onions and peppers.",
       "Pour in the stock, then cover the dish. Put in the oven when the potatoes have been baking for 30 minutes. Bake for 35 minutes.",
       "Around 10 minutes before the chicken and potatoes are ready, cook the broccoli in boiling water for 8 to 10 minutes. Drain and serve with the rest of the meal."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Roast_chicken_breasts_with_peppers.width-320.png"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Roast_chicken_breasts_with_peppers.width-320.png",
+    "ingredientNames": [
+      "potatoes",
+      "vegetable oil",
+      "onion",
+      "red pepper",
+      "yellow pepper",
+      "mild paprika",
+      "mixed herbs",
+      "flour",
+      "chicken",
+      "vegetable stock",
+      "broccoli"
+    ]
   },
   {
     "title": "Salmon with Spring Onion Mash",
@@ -1598,7 +2113,16 @@
       "Drain the potatoes and spring onions and mash thoroughly. Beat in the milk and parsley. Reheat on the hob for 1 minute.",
       "Share the mash between 4 warmed plates and arrange the salmon fillets on top. Serve with the broccoli."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/21.-Salmon-With-Spring-Onion-Mash.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/21.-Salmon-With-Spring-Onion-Mash.width-320.jpg",
+    "ingredientNames": [
+      "potatoes",
+      "spring onion",
+      "vegetable oil",
+      "salmon",
+      "milk",
+      "parsley",
+      "broccoli"
+    ]
   },
   {
     "title": "Shakshuka",
@@ -1621,7 +2145,7 @@
       "6 garlic cloves, chopped",
       "1 aubergine, chopped",
       "800g tinned chopped tomatoes",
-      "2 tablespoons tomato pur\u00e9e",
+      "2 tablespoons tomato purée",
       "2 teaspoons ground cumin",
       "400g tinned chickpeas, drained",
       "0.5 teaspoon cayenne pepper",
@@ -1631,11 +2155,27 @@
     ],
     "steps": [
       "Heat the oil in a large non-stick frying pan on medium heat. Add the onion, peppers and garlic, and cook for about 5 minutes, until the vegetables soften.",
-      "Stir in the aubergine and cook for another 5 minutes until golden-brown. Add the tomatoes, tomato pur\u00e9e, cumin and cayenne, and stir well. Bring to a boil, then lower the heat and cook for about 10 minutes.",
+      "Stir in the aubergine and cook for another 5 minutes until golden-brown. Add the tomatoes, tomato purée, cumin and cayenne, and stir well. Bring to a boil, then lower the heat and cook for about 10 minutes.",
       "Stir in the chickpeas, cover and cook for further 5 to 8 minutes. Once the chickpeas have softened, stir in the chopped spinach and lower the heat.",
       "Using a wooden spoon, create 6 wells in the mixture and crack 1 egg into each. Cover the pan and cook for about 6 to 8 minutes on low, until the egg whites set.",
       "Take the mixture off the heat and leave to cool for a few minutes. Scatter with chopped coriander and serve."
     ],
-    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/23.-Shakshuka-.width-320.jpg"
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/23.-Shakshuka-.width-320.jpg",
+    "ingredientNames": [
+      "vegetable oil",
+      "yellow onion",
+      "red pepper",
+      "yellow pepper",
+      "garlic",
+      "aubergine",
+      "chopped tomatoes",
+      "tomato purée",
+      "ground cumin",
+      "chickpeas",
+      "cayenne pepper",
+      "spinach",
+      "eggs",
+      "coriander"
+    ]
   }
 ]

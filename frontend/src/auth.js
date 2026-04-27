@@ -1,24 +1,24 @@
 import { ref } from 'vue'
 
-let _accessToken = null
+let accessToken = null
 
 export const isAuthenticated = ref(false)
-export const currentUser     = ref({ name: '', email: '', userId: null, role: null })
-export const authError       = ref('')
+export const currentUser = ref({ name: '', email: '', userId: null, role: null })
+export const authError = ref('')
 
 function setSession(token) {
-  _accessToken          = token
+  accessToken = token
   isAuthenticated.value = true
-  authError.value       = ''
+  authError.value = ''
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
     const email = payload.email ?? ''
     currentUser.value = {
-      name:   email.split('@')[0] ?? '',
+      name: email.split('@')[0] ?? '',
       email,
       userId: payload.userId ?? null,
-      role:   payload.role   ?? null,
+      role: payload.role ?? null,
     }
   } catch {
     currentUser.value = { name: '', email: '', userId: null, role: null }
@@ -26,18 +26,18 @@ function setSession(token) {
 }
 
 function clearSession() {
-  _accessToken          = null
+  accessToken = null
   isAuthenticated.value = false
-  currentUser.value     = { name: '', email: '', userId: null, role: null }
+  currentUser.value = { name: '', email: '', userId: null, role: null }
 }
 
 export async function login(email, password) {
   authError.value = ''
   const res = await fetch('/api/auth/login', {
-    method:      'POST',
-    headers:     { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body:        JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password }),
   })
 
   const data = await res.json()
@@ -54,9 +54,9 @@ export async function login(email, password) {
 export async function register(email, username, password, isProfessional = false) {
   authError.value = ''
   const res = await fetch('/api/auth/register', {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ email, username, password }),
+    body: JSON.stringify({ email, username, password }),
   })
 
   const data = await res.json()
@@ -85,14 +85,15 @@ export async function register(email, username, password, isProfessional = false
 export async function logout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-  } catch { /* ignore network errors */ }
+  } catch {
+  }
   clearSession()
 }
 
 export async function tryRefresh() {
   try {
     const res = await fetch('/api/auth/refresh', {
-      method:      'GET',
+      method: 'GET',
       credentials: 'include',
     })
 
@@ -117,7 +118,7 @@ export async function apiFetch(path, options = {}) {
     },
   })
 
-  let res = await makeRequest(_accessToken)
+  let res = await makeRequest(accessToken)
 
   if (res.status !== 401) return res
 
@@ -127,7 +128,7 @@ export async function apiFetch(path, options = {}) {
     return res
   }
 
-  res = await makeRequest(_accessToken)
+  res = await makeRequest(accessToken)
 
   if (res.status === 401) clearSession()
 
