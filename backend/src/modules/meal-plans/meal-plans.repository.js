@@ -1,3 +1,24 @@
+import { prisma } from "../../db/prisma.js";
+
+const PLAN_SELECT = {
+  planId: true,
+  subscriberId: true,
+  planType: true,
+  startDate: true,
+  endDate: true,
+  createdAt: true,
+  planItems: {
+    select: {
+      planItemId: true,
+      planId: true,
+      plannedDate: true,
+      mealType: true,
+      recipeId: true,
+      servings: true,
+    },
+  },
+};
+
 async function createMealPlan({
   subscriberId,
   startDate,
