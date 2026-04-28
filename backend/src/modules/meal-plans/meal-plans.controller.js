@@ -20,7 +20,12 @@ async function createMealPlan(req, res, next) {
 async function listMealPlans(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
-    
+    const mealPlans = await listMealPlansService({
+      subscriberId,
+      startDate: req.query?.startDate,
+      endDate: req.query?.endDate,
+    });
+    return res.status(200).json(mealPlans);
   } catch (error) {
     return next(error);
   }

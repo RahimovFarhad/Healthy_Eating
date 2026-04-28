@@ -58,6 +58,31 @@ function validateCreateMealPlanInput({ subscriberId, startDate, endDate, planTyp
         
 }
 
+function validateListMealPlansInput({ subscriberId, startDate, endDate }) {
+    const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
+    if (!normalizedSubscriberId) {
+      throw new MealPlanError("Subscriber ID must be a positive integer");
+    }
+
+    const validatedStartDate = startDate ? validateDate(startDate) : null;
+    if (startDate && !validatedStartDate) {
+      throw new MealPlanError("Invalid start date");
+    }
+    const validatedEndDate = endDate ? validateDate(endDate) : null;
+    if (endDate && !validatedEndDate) {
+      throw new MealPlanError("Invalid end date");
+    }
+    if (validatedStartDate && validatedEndDate && validatedEndDate < validatedStartDate) {
+      throw new MealPlanError("End date cannot be before start date");
+    }
+
+    return {
+        subscriberId: normalizedSubscriberId,
+        startDate: validatedStartDate,
+        endDate: validatedEndDate,
+    };
+}
+
 function normalizePositiveInteger(value) {
   const parsed = typeof value === "string" ? Number(value) : value;
   if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -113,3 +138,5 @@ function validatePlanItem({ planId, plannedDate, mealType, recipeId, servings })
     };
 
 }
+
+export { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput };

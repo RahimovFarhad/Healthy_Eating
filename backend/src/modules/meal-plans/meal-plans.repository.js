@@ -16,6 +16,7 @@ const PLAN_SELECT = {
       recipeId: true,
       servings: true,
     },
+    orderBy: [{ plannedDate: "asc" }, { planItemId: "asc" }],
   },
 };
 
@@ -45,4 +46,16 @@ async function createMealPlan({
   });
 }
 
-export { createMealPlan };
+async function listMealPlans({ subscriberId, startDate, endDate }) {
+  return prisma.plan.findMany({
+    where: {
+      subscriberId,
+      ...(startDate && { startDate: { gte: startDate } }),
+      ...(endDate && { endDate: { lte: endDate } }),
+    },
+    select: PLAN_SELECT,
+
+  });
+}
+
+export { createMealPlan, listMealPlans };

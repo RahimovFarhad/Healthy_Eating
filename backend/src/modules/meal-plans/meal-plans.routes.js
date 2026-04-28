@@ -14,7 +14,7 @@ const mealPlansRouter = Router();
 mealPlansRouter.post("/", ); // plantype will be hardcoded to manual for now
 mealPlansRouter.get("/", );
 mealPlansRouter.get("/:planId", );
-mealPlansRouter.patch("/:planId", );
+mealPlansRouter.patch("/:planId", ); // adding new items
 mealPlansRouter.delete("/:planId", );
 
 export default mealPlansRouter;
