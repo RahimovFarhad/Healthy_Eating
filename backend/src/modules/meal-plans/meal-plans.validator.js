@@ -5,7 +5,15 @@ class MealPlanError extends Error {
   }
 }
 
-
+function getMealErrorStatusCode(error) {
+  if (error instanceof MealPlanError) {
+    if (error.message.includes("not found")) {
+      return 404;
+    }
+    return 400;
+  }
+  return 500;
+}
 
 function validateCreateMealPlanInput({ subscriberId, startDate, endDate, planType, items }) {
   const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
@@ -114,12 +122,7 @@ function validateDate(value) {
   return date;
 }
 
-function validatePlanItem({ planId, plannedDate, mealType, recipeId, servings }) {
-    const normalizedPlanId = normalizePositiveInteger(planId);
-    if (!normalizedPlanId) {
-      throw new MealPlanError("Plan ID must be a positive integer");
-    }
-
+function validatePlanItem({plannedDate, mealType, recipeId, servings }) {
     const validatedPlannedDate = validateDate(plannedDate);
     if (!validatedPlannedDate) {
       throw new MealPlanError("Invalid planned date");
@@ -139,13 +142,12 @@ function validatePlanItem({ planId, plannedDate, mealType, recipeId, servings })
       throw new MealPlanError("Recipe ID must be a positive integer");
     }
 
-    const normalizedServings = normalizePositiveInteger(servings);
-    if (!normalizedServings) {
+    const normalizedServings = normalizePositiveInteger(servings) ?? null; 
+    if (servings != null && !normalizedServings) {
       throw new MealPlanError("Servings must be a positive integer");
     }
 
     return {
-      planId: normalizedPlanId,
       plannedDate: validatedPlannedDate,
       mealType: normalizedMealType,
       recipeId: normalizedRecipeId,
@@ -154,4 +156,4 @@ function validatePlanItem({ planId, plannedDate, mealType, recipeId, servings })
 
 }
 
-export { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem };
+export { MealPlanError, getMealErrorStatusCode, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem };

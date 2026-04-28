@@ -3,7 +3,7 @@ import {
   createMealPlan,
   listMealPlans,
   getMealPlanById,
-  updateMealPlan,
+  addPlanItem,
   deleteMealPlan,
 } from "./meal-plans.controller.js";
 
@@ -16,6 +16,6 @@ mealPlansRouter.get("/", listMealPlans);
 mealPlansRouter.get("/:planId", getMealPlanById);
 mealPlansRouter.delete("/:planId", deleteMealPlan);
 
-mealPlansRouter.post("/:planId/addItem", updateMealPlan); // adding new items
+mealPlansRouter.post("/:planId/addItem", addPlanItem); // adding new items
 
 export default mealPlansRouter;

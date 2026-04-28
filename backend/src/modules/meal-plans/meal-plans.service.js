@@ -19,8 +19,8 @@ async function getMealPlanByIdService({ planId, subscriberId }) {
 
 async function addPlanItemService({ planId, subscriberId, item }) { 
   const data = validateGetMealPlanByIdInput({ planId, subscriberId }); // no need to do separate validation, because they have the exact same input
-  const validatedItem = validatePlanItem(item);
-  const mealPlan = getMealPlanById(data);
+  const validatedItem = validatePlanItem(item); 
+  const mealPlan = await getMealPlanById(data);
 
   if (!mealPlan) {
     throw new MealPlanError("Meal plan not found or you don't have permission to add items to it");
@@ -33,9 +33,9 @@ async function addPlanItemService({ planId, subscriberId, item }) {
 
 } 
 
-async function deleteMealPlanService() {
+async function deleteMealPlanService({ planId, subscriberId }) {
   const data = validateGetMealPlanByIdInput({ planId, subscriberId }); // no need to do separate validation, because they have the exact same input
-  const deletedPlan = deleteMealPlan(data);
+  const deletedPlan = await deleteMealPlan(data);
 
   return deletedPlan;
 
