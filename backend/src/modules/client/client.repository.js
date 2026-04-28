@@ -39,11 +39,11 @@ async function rejectProfessionalInvitation({ professionalId, clientId }) {
     });
 }
 
-async function listClientProfessionals({ clientId }) {
+async function listClientProfessionals({ clientId, status }) {
     return prisma.professionalClient.findMany({
         where: {
             subscriberId: clientId,
-            status: "active",
+            status: status,
         },
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {
