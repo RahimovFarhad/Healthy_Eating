@@ -83,6 +83,21 @@ function validateListMealPlansInput({ subscriberId, startDate, endDate }) {
     };
 }
 
+function validateGetMealPlanByIdInput({ planId, subscriberId }) {
+    const normalizedPlanId = normalizePositiveInteger(planId);
+    if (!normalizedPlanId) {
+      throw new MealPlanError("Plan ID must be a positive integer");
+    }
+    const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
+    if (!normalizedSubscriberId) {
+      throw new MealPlanError("Subscriber ID must be a positive integer");
+    }
+    return {
+        planId: normalizedPlanId,
+        subscriberId: normalizedSubscriberId,
+    };
+}
+
 function normalizePositiveInteger(value) {
   const parsed = typeof value === "string" ? Number(value) : value;
   if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -139,4 +154,4 @@ function validatePlanItem({ planId, plannedDate, mealType, recipeId, servings })
 
 }
 
-export { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput };
+export { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem };

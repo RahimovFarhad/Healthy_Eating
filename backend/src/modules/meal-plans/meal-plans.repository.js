@@ -58,4 +58,36 @@ async function listMealPlans({ subscriberId, startDate, endDate }) {
   });
 }
 
-export { createMealPlan, listMealPlans };
+async function getMealPlanById({ planId, subscriberId }) {
+  return prisma.plan.findFirst({
+    where: {
+      planId,
+      subscriberId,
+    },
+    select: PLAN_SELECT,
+  });
+}
+
+async function deleteMealPlan({ planId, subscriberId }) {
+  return prisma.plan.deleteMany({
+    where: {
+      planId,
+      subscriberId,
+    },
+  });
+}
+
+async function addPlanItem({ planId, item }) {
+  return prisma.planItem.create({
+    data: { 
+      planId,
+      plannedDate: item.plannedDate,
+      mealType: item.mealType,
+      recipeId: item.recipeId,
+      servings: item.servings,
+    },
+  });
+
+}
+
+export { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem };

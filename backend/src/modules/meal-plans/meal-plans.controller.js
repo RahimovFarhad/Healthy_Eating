@@ -1,4 +1,5 @@
-import {createMealPlanService} from "./meal-plans.service.js";
+import { createMealPlanService, listMealPlansService, getMealPlanByIdService, addPlanItemService, deleteMealPlanService} from "./meal-plans.service.js";
+import { MealPlanError } from "./meal-plans.validator.js";
 
 async function createMealPlan(req, res, next) {
   try {
@@ -13,6 +14,9 @@ async function createMealPlan(req, res, next) {
     });
     return res.status(201).json(mealPlan);
   } catch (error) {
+    if (error instanceof MealPlanError) {
+      return res.status(400).json({ error: error.message });
+    }
     return next(error);
   }
 }
@@ -27,6 +31,9 @@ async function listMealPlans(req, res, next) {
     });
     return res.status(200).json(mealPlans);
   } catch (error) {
+    if (error instanceof MealPlanError) {
+      return res.status(400).json({ error: error.message });
+    }
     return next(error);
   }
 }
@@ -35,18 +42,31 @@ async function getMealPlanById(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
     const planId = req.params?.planId;
+    const mealPlan = await getMealPlanByIdService({ planId, subscriberId });
+    if (!mealPlan) {
+      return res.status(404).json({ message: "Meal plan not found" });
+    }
+    return res.status(200).json(mealPlan);
     
   } catch (error) {
+    if (error instanceof MealPlanError) {
+      return res.status(400).json({ error: error.message });
+    }
     return next(error);
   }
 }
 
-async function updateMealPlan(req, res, next) {
+async function addPlanItem(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
     const planId = req.params?.planId;
-   
+    const item = req.body;
+    const addedItem = await addPlanItemService({ planId, subscriberId, item });
+    return res.status(201).json(addedItem);
   } catch (error) {
+    if (error instanceof MealPlanError) {
+      return res.status(400).json({ error: error.message });
+    }
     return next(error);
   }
 }
@@ -55,8 +75,15 @@ async function deleteMealPlan(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
     const planId = req.params?.planId;
-    
+    const deletedPlan = await deleteMealPlanService({ planId, subscriberId });
+    if (deletedPlan.count === 0) {
+      return res.status(404).json({ message: "Meal plan not found or you don't have permission to delete it" });
+    }
+    return res.status(200).json(deletedPlan);
   } catch (error) {
+    if (error instanceof MealPlanError) {
+      return res.status(400).json({ error: error.message });
+    }
     return next(error);
   }
 }
@@ -65,6 +92,6 @@ export {
   createMealPlan,
   listMealPlans,
   getMealPlanById,
-  updateMealPlan,
   deleteMealPlan,
+  addPlanItem,
 };

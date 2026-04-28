@@ -1,5 +1,5 @@
-import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput } from "./meal-plans.validator.js";
-import { createMealPlan, listMealPlans } from "./meal-plans.repository.js";
+import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem } from "./meal-plans.validator.js";
+import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem } from "./meal-plans.repository.js";
 
 async function createMealPlanService({ subscriberId, startDate, endDate, planType, items }) {
   const data = validateCreateMealPlanInput({ subscriberId, startDate, endDate, planType, items });
@@ -7,23 +7,44 @@ async function createMealPlanService({ subscriberId, startDate, endDate, planTyp
 
 }
 
-async function listMealPlansService() {
+async function listMealPlansService({ subscriberId, startDate, endDate }) {
   const data = validateListMealPlansInput({ subscriberId, startDate, endDate });
   return listMealPlans(data);
 }
 
-async function getMealPlanByIdService() {}
+async function getMealPlanByIdService({ planId, subscriberId }) {
+  const data = validateGetMealPlanByIdInput({ planId, subscriberId }); 
+  return getMealPlanById(data); // no need to security check here; On the repo layer, only return if both subscriberid and planid
+}
 
-async function updateMealPlanService() { // for now, only adding new items, no updating or deleting existing items
+async function addPlanItemService({ planId, subscriberId, item }) { 
+  const data = validateGetMealPlanByIdInput({ planId, subscriberId }); // no need to do separate validation, because they have the exact same input
+  const validatedItem = validatePlanItem(item);
+  const mealPlan = getMealPlanById(data);
+
+  if (!mealPlan) {
+    throw new MealPlanError("Meal plan not found or you don't have permission to add items to it");
+  }
+  if (mealPlan.startDate > validatedItem.plannedDate || mealPlan.endDate < validatedItem.plannedDate) {
+    throw new MealPlanError("Planned date of the item must be within the start and end date of the meal plan");
+  }
+
+  return addPlanItem({ planId, item: validatedItem });
 
 } 
 
-async function deleteMealPlanService() {}
+async function deleteMealPlanService() {
+  const data = validateGetMealPlanByIdInput({ planId, subscriberId }); // no need to do separate validation, because they have the exact same input
+  const deletedPlan = deleteMealPlan(data);
+
+  return deletedPlan;
+
+}
 
 export {
   createMealPlanService,
   listMealPlansService,
   getMealPlanByIdService,
-  updateMealPlanService,
+  addPlanItemService,
   deleteMealPlanService,
 };

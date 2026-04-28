@@ -11,11 +11,11 @@ const mealPlansRouter = Router();
 
 // These roues can only be accessed by either client or professional, so we will check the role in the next layers
 
-mealPlansRouter.post("/", ); // plantype will be hardcoded to manual for now
-mealPlansRouter.get("/", );
-mealPlansRouter.get("/:planId", );
-mealPlansRouter.patch("/:planId", ); // adding new items
-mealPlansRouter.delete("/:planId", );
+mealPlansRouter.post("/", createMealPlan); // plantype will be hardcoded to manual for now
+mealPlansRouter.get("/", listMealPlans);
+mealPlansRouter.get("/:planId", getMealPlanById);
+mealPlansRouter.delete("/:planId", deleteMealPlan);
+
+mealPlansRouter.post("/:planId/addItem", updateMealPlan); // adding new items
 
 export default mealPlansRouter;
-
