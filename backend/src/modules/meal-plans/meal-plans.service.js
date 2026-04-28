@@ -1,4 +1,9 @@
-async function createMealPlanService() {}
+import { MealPlanError } from "./meal-plans.errors.js";
+
+async function createMealPlanService({ subscriberId, startDate, endDate, planType, items }) {
+  const data = validateCreateMealPlanInput({ subscriberId, startDate, endDate, planType, items });
+  
+}
 
 async function listMealPlansService() {}
 

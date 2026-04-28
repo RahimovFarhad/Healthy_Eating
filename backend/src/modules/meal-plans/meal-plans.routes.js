@@ -11,7 +11,7 @@ const mealPlansRouter = Router();
 
 // These roues can only be accessed by either client or professional, so we will check the role in the next layers
 
-mealPlansRouter.post("/", );
+mealPlansRouter.post("/", ); // plantype will be hardcoded to manual for now
 mealPlansRouter.get("/", );
 mealPlansRouter.get("/:planId", );
 mealPlansRouter.patch("/:planId", );

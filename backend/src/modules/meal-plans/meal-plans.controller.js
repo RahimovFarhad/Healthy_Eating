@@ -1,7 +1,17 @@
+import {createMealPlanService} from "./meal-plans.service.js";
+
 async function createMealPlan(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
-    
+    const { startDate, endDate, planType, items } = req.body;
+    const mealPlan = await createMealPlanService({
+      subscriberId,
+      startDate,
+      endDate,
+      planType: "manual",
+      items,
+    });
+    return res.status(201).json(mealPlan);
   } catch (error) {
     return next(error);
   }
