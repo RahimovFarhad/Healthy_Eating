@@ -40,11 +40,14 @@ function validateListRecipesInput({ category, cuisine, ingredients }) {
 }
 
 function validatePositiveInteger({ value }){
+  if (value == null) {
+    throw new RecipeError("Value is required");
+  }
   const normalized = normalizePositiveInteger(value);
-    if (!value) {
-      throw new GoalError("Value is required");
-    }
-    return normalized;
+  if (!normalized) {
+    throw new RecipeError("Value must be a positive integer");
+  }
+  return normalized;
 }
 
 function validateReviewInput({ rating, comment }) {
@@ -59,4 +62,4 @@ function validateReviewInput({ rating, comment }) {
   return { rating: normalizedRating, comment: normalizedComment };
 }
 
-export { RecipeError, validateListRecipesInput, validatePositiveInteger };
+export { RecipeError, validateListRecipesInput, validatePositiveInteger, validateReviewInput };

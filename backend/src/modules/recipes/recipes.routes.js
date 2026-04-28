@@ -4,17 +4,18 @@ import {
   listRecipes,
   getRecipeById,
   submitRecipeReview,
-  toggleRecipeFavourite,
-  getFavouriteRecipes
+  toggleRecipeFavorite,
+  getFavoriteRecipes
 } from "./recipes.controller.js";
 
 const recipesRouter = Router();
 
 recipesRouter.get("/", listRecipes);
+recipesRouter.get("/favorites", requireAuth, getFavoriteRecipes);
+
 recipesRouter.get("/:id", getRecipeById);
 recipesRouter.post("/:id/reviews", requireAuth, submitRecipeReview);
-recipesRouter.post("/:id/favourites", requireAuth, toggleRecipeFavourite);
+recipesRouter.post("/:id/favorites", requireAuth, toggleRecipeFavorite);
 
-recipesRouter.get("/favourites", requireAuth, getFavouriteRecipes);
 
 export default recipesRouter;
