@@ -42,11 +42,11 @@ async function createProfessionalClientLink({ professionalId, subscriberId }) {
     }
 }
 
-async function listProfessionalClients({ professionalId, includeDetails }) {
+async function listProfessionalClients({ professionalId, includeDetails, status }) {
     return prisma.professionalClient.findMany({
         where: { 
             professionalId,
-            status: "active",
+            status: status || "active",
         },
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {

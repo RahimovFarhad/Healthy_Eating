@@ -182,4 +182,22 @@ async function listGoals(req, res, next) {
     }
 }
 
-export { setAsProfessional, inviteClient, listClients, removeClient, getClientSummary, getClientDashboard, sendMessage, listMessages, setGoal, listGoals };
+async function listInvitations(req, res, next) {
+    try {
+        const professionalId = req.user?.userId ?? null;
+        const invitations = await getProfessionalClients({
+            professionalId,
+            status: "invited",
+        });
+
+        return res.status(200).json({ invitations });
+    } catch (error) {
+        if (error instanceof ProfessionalError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+export { setAsProfessional, inviteClient, listClients, removeClient, getClientSummary, getClientDashboard, sendMessage, listMessages, setGoal, listGoals, listInvitations };

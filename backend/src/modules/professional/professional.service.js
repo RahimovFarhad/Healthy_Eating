@@ -29,12 +29,19 @@ async function inviteClientToProfessional({ professionalId, subscriberId }) {
     return result;
 }
 
-async function getProfessionalClients({ professionalId, include }) {
+async function getProfessionalClients({ professionalId, include, status = "active" }) {
     const validated = validateListClientsInput({ professionalId, include });
+    if (status) {
+        if (!["invited", "active", "disabled"].includes(status)) {
+            throw new ProfessionalError("Invalid status value");
+        }
+        validated.status = status;
+    }
 
     return listProfessionalClients({
         professionalId: validated.professionalId,
         includeDetails: validated.includeDetails,
+        status: validated.status,
     });
 }
 
