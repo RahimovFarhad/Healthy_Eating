@@ -7,68 +7,72 @@
       <small class="text-secondary">Communicate with your nutrition professional</small>
     </div>
 
-    <div class="row g-3">
+    <div v-if="loadingPro" class="text-muted small text-center py-4">Loading...</div>
+    <div v-else-if="proError" class="alert alert-danger small">{{ proError }}</div>
+
+    <div v-else-if="!professional" class="text-center text-muted py-5 border rounded"
+         style="border-style:dashed!important;">
+      <p class="mb-1">No professional assigned yet.</p>
+      <small>A nutritionist will appear here once they invite you and you accept.</small>
+    </div>
+
+    <div v-else class="row g-3">
 
       <div class="col-md-4">
-
         <div class="card card-gf p-3 mb-3">
           <div class="d-flex align-items-center gap-3">
-            <div class="avatar-circle" style="width:52px;height:52px;font-size:1rem;">?</div>
+            <div class="avatar-circle" style="width:52px;height:52px;font-size:1rem;">
+              {{ initialsFor(professional.professional.fullName) }}
+            </div>
             <div>
-              <div class="fw-bold text-muted">No professional assigned</div>
-              <div class="text-muted small">A nutritionist will be linked to your account</div>
+              <div class="fw-bold">{{ professional.professional.fullName }}</div>
+              <div class="text-muted small">{{ professional.professional.email }}</div>
             </div>
           </div>
-          <hr>
-          <div class="small text-muted">
-            <div class="mb-1">Next check-in: —</div>
-            <div>Last report shared: —</div>
-          </div>
         </div>
-
-        <div class="card border p-3">
-          <h6 class="fw-bold mb-2" style="color:#5a9e56;">Shared Goals</h6>
-          <div class="small text-muted">
-            <div>No shared goals yet.</div>
-          </div>
-        </div>
-
       </div>
 
       <div class="col-md-8">
         <div class="card border" style="height:420px;display:flex;flex-direction:column;">
           <div class="card-header fw-bold small" style="background:#e8f4e6;">
-            Conversation
+            Conversation with {{ professional.professional.fullName }}
           </div>
 
           <div class="card-body overflow-auto flex-grow-1 p-3" ref="chatBody">
-            <div v-if="messages.length === 0" class="text-center text-muted py-4">
-              <small>No messages yet. Your conversation with your nutritionist will appear here.</small>
+            <div v-if="loadingMessages" class="text-muted small text-center py-4">Loading messages...</div>
+            <div v-else-if="messagesError" class="alert alert-danger small">{{ messagesError }}</div>
+            <div v-else-if="messages.length === 0" class="text-center text-muted py-4">
+              <small>No messages yet. Start the conversation below.</small>
             </div>
-            <div v-for="msg in messages" :key="msg.id" class="mb-2">
-
-              <div v-if="msg.from === 'pro'" class="chat-pro" style="max-width:80%;">
-                <div class="fw-semibold small mb-1" style="color:#5a9e56;">Your Nutritionist</div>
-                <div class="small">{{ msg.text }}</div>
-                <div class="text-muted mt-1" style="font-size:0.7rem;">{{ msg.time }}</div>
+            <template v-else>
+              <div v-for="msg in messages" :key="msg.id" class="mb-2">
+                <div v-if="msg.sentBy === 'professional'" class="chat-pro" style="max-width:80%;">
+                  <div class="fw-semibold small mb-1" style="color:#5a9e56;">
+                    {{ professional.professional.fullName }}
+                  </div>
+                  <div class="small">{{ msg.message }}</div>
+                  <div class="text-muted mt-1" style="font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                </div>
+                <div v-else class="chat-mine ms-auto" style="max-width:80%;">
+                  <div class="small">{{ msg.message }}</div>
+                  <div class="text-muted mt-1" style="font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                </div>
               </div>
-
-              <div v-else class="chat-mine ms-auto" style="max-width:80%;">
-                <div class="small">{{ msg.text }}</div>
-                <div class="text-muted mt-1" style="font-size:0.7rem;">{{ msg.time }}</div>
-              </div>
-
-            </div>
+            </template>
           </div>
 
           <div class="card-footer p-2" style="background:#f9f9f9;">
+            <div v-if="sendError" class="alert alert-danger py-1 small mb-2">{{ sendError }}</div>
             <div class="d-flex gap-2">
               <input type="text"
                      class="form-control form-control-sm"
                      placeholder="Type a message..."
                      v-model="newMessage"
+                     :disabled="sending"
                      @keyup.enter="sendMessage">
-              <button class="btn btn-gf btn-sm px-3" @click="sendMessage">Send</button>
+              <button class="btn btn-gf btn-sm px-3" @click="sendMessage" :disabled="sending || !newMessage.trim()">
+                {{ sending ? '...' : 'Send' }}
+              </button>
             </div>
           </div>
 
@@ -81,23 +85,109 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
+import { apiFetch } from '../auth.js'
+
+const professional = ref(null)
+const loadingPro = ref(true)
+const proError = ref('')
+
+const messages = ref([])
+const loadingMessages = ref(false)
+const messagesError = ref('')
 
 const newMessage = ref('')
+const sending = ref(false)
+const sendError = ref('')
 
-// To do: load existing messages from /api/ and POST new ones
-const messages = ref([])
+const chatBody = ref(null)
 
-function sendMessage() {
-  if (!newMessage.value.trim()) return
+onMounted(async () => {
+  await loadProfessional()
+})
 
-  messages.value.push({
-    id: Date.now(),
-    from: 'me',
-    text: newMessage.value,
-    time: 'Just now',
-  })
+async function loadProfessional() {
+  loadingPro.value = true
+  proError.value = ''
+  try {
+    const res = await apiFetch('/api/client/professionals')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      proError.value = data.error || 'Failed to load professional'
+      return
+    }
+    const list = data.professionals ?? []
+    professional.value = list[0] ?? null
+    if (professional.value) {
+      await loadMessages()
+    }
+  } catch {
+    proError.value = 'Network error - could not load professional'
+  } finally {
+    loadingPro.value = false
+  }
+}
 
-  newMessage.value = ''
+async function loadMessages() {
+  loadingMessages.value = true
+  messagesError.value = ''
+  try {
+    const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}/messages`)
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      messagesError.value = data.error || 'Failed to load messages'
+      return
+    }
+    // API returns newest first, reverse for chronological display
+    messages.value = (data.messages ?? []).slice().reverse()
+    await scrollToBottom()
+  } catch {
+    messagesError.value = 'Network error - could not load messages'
+  } finally {
+    loadingMessages.value = false
+  }
+}
+
+async function sendMessage() {
+  const text = newMessage.value.trim()
+  if (!text || sending.value) return
+  sendError.value = ''
+  sending.value = true
+  try {
+    const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message: text }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      sendError.value = data.error || 'Failed to send message'
+      return
+    }
+    newMessage.value = ''
+    await loadMessages()
+  } catch {
+    sendError.value = 'Network error - could not send message'
+  } finally {
+    sending.value = false
+  }
+}
+
+async function scrollToBottom() {
+  await nextTick()
+  if (chatBody.value) {
+    chatBody.value.scrollTop = chatBody.value.scrollHeight
+  }
+}
+
+function initialsFor(name) {
+  if (!name) return '?'
+  return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?'
+}
+
+function formatDateTime(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 </script>
