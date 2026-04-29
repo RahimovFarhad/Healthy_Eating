@@ -159,6 +159,48 @@ async function listMessages({ professionalId, clientId }) {
     });
 }
 
+async function createSharedRecipe({ professionalId, clientId, recipeId }) {
+    return prisma.sharedRecipe.create({
+        data: {
+            professionalId,
+            subscriberId: clientId,
+            recipeId,
+        },
+        select: {
+            sharedRecipeId: true,
+            professionalId: true,
+            subscriberId: true,
+            recipeId: true,
+            createdAt: true,
+        },  
+    });
+}
+
+async function listSharedRecipes({ professionalId, clientId }) {
+    return prisma.sharedRecipe.findMany({
+        where: {
+            professionalId,
+            subscriberId: clientId,
+        },
+        orderBy: [{ createdAt: "desc" }, { sharedRecipeId: "desc" }],
+        select: {
+            sharedRecipeId: true,
+            professionalId: true,
+            subscriberId: true,
+            recipeId: true,
+            createdAt: true,
+            recipe: {
+                select: {
+                    recipeId: true,
+                    name: true,
+                    description: true,
+                    imageUrl: true,
+                },
+            },
+        },
+    });
+}
+
 export {
     updateRoleToProfessional,
     findProfessionalClientLink,
@@ -167,4 +209,6 @@ export {
     deleteProfessionalClientLink,
     insertMessage,
     listMessages,
+    createSharedRecipe,
+    listSharedRecipes
 };

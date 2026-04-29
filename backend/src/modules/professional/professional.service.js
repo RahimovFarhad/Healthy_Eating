@@ -1,7 +1,7 @@
 import { getDashboardDataForSubscriber, getNutritionSummary } from "../diary/diary.service.js";
 import { createGoalForSubscriber, getGoalsService } from "../goals/goals.service.js";
-import { createProfessionalClientLink, deleteProfessionalClientLink, findProfessionalClientLink, insertMessage, listMessages, listProfessionalClients, updateRoleToProfessional } from "./professional.repository.js";
-import { ProfessionalError, validateInviteClientInput, validateListClientsInput, validateMessageInput, validateProfessionalId, validateRelationshipInput, validateSetGoalInput, validateSummaryInput } from "./professional.validator.js";
+import { createProfessionalClientLink, deleteProfessionalClientLink, findProfessionalClientLink, insertMessage, listMessages, listProfessionalClients, updateRoleToProfessional, createSharedRecipe, listSharedRecipes } from "./professional.repository.js";
+import { ProfessionalError, validateInviteClientInput, validateListClientsInput, validateMessageInput, validateProfessionalId, validateRelationshipInput, validateSetGoalInput, validateSummaryInput, validateRecipeId } from "./professional.validator.js";
 
 async function setUserAsProfessional({ professionalId }) {
     const validated = validateProfessionalId({ professionalId });
@@ -138,6 +138,31 @@ async function getClientGoalsForProfessional({ professionalId, clientId }) {
     return getGoalsService({ subscriberId: validated.clientId, effective: true });
 }
 
+async function shareRecipeWithClient({ professionalId, clientId, recipeId }) {
+    const validated = validateRelationshipInput({ professionalId, clientId });
+    const validatedRecipeId = validateRecipeId({ recipeId }); 
+    validated.recipeId = validatedRecipeId;
+
+    await ensureProfessionalClientRelation(validated);
+
+    return createSharedRecipe({
+        professionalId: validated.professionalId,
+        clientId: validated.clientId,
+        recipeId: validated.recipeId,
+    });
+}
+
+async function getSharedRecipes({ professionalId, clientId }) {
+    const validated = validateRelationshipInput({ professionalId, clientId });
+
+    await ensureProfessionalClientRelation(validated);
+
+    return listSharedRecipes({
+        professionalId: validated.professionalId,
+        clientId: validated.clientId,
+    });
+}
+
 export {
     setUserAsProfessional,
     inviteClientToProfessional,
@@ -149,5 +174,7 @@ export {
     getMessagesWithClient,
     setGoalForClient,
     getClientGoalsForProfessional,
-    ensureProfessionalClientRelation
+    ensureProfessionalClientRelation,
+    shareRecipeWithClient,
+    getSharedRecipes
 };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getClientDashboard, getClientSummary, inviteClient, listClients, listGoals, listMessages, removeClient, sendMessage, setAsProfessional, setGoal, listInvitations } from "./professional.controller.js";
+import { getClientDashboard, getClientSummary, inviteClient, listClients, listGoals, listMessages, removeClient, sendMessage, setAsProfessional, setGoal, listInvitations, shareRecipe, listSharedRecipes } from "./professional.controller.js";
 import { requireProfessional } from "../../middleware/requireAuth.js";
 const professionalRouter = Router();
 
@@ -17,8 +17,8 @@ professionalRouter.get("/clients/:clientId/dashboard", requireProfessional, getC
 professionalRouter.post("/clients/:clientId/messages", requireProfessional, sendMessage);
 professionalRouter.get("/clients/:clientId/messages", requireProfessional, listMessages);
 
-// professionalRouter.post("/clients/:clientId/shared-recipes", shareRecipe);
-// professionalRouter.get("/clients/:clientId/shared-recipes", listSharedRecipes);
+professionalRouter.post("/clients/:clientId/shared-recipes", requireProfessional, shareRecipe);
+professionalRouter.get("/clients/:clientId/shared-recipes", requireProfessional, listSharedRecipes);
 
 professionalRouter.post("/clients/:clientId/goals", requireProfessional, setGoal);
 professionalRouter.get("/clients/:clientId/goals", requireProfessional, listGoals);

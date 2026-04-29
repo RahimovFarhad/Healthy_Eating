@@ -1,4 +1,4 @@
-import { getClientDashboardForProfessional, getClientGoalsForProfessional, getClientSummaryForProfessional, getMessagesWithClient, getProfessionalClients, inviteClientToProfessional, removeProfessionalClient, sendMessageToClient, setGoalForClient, setUserAsProfessional } from "./professional.service.js";
+import { getClientDashboardForProfessional, getClientGoalsForProfessional, getClientSummaryForProfessional, getMessagesWithClient, getProfessionalClients, inviteClientToProfessional, removeProfessionalClient, sendMessageToClient, setGoalForClient, setUserAsProfessional, shareRecipeWithClient, getSharedRecipes } from "./professional.service.js";
 import { ProfessionalError } from "./professional.validator.js";
 
 async function setAsProfessional(req, res, next) {
@@ -200,4 +200,46 @@ async function listInvitations(req, res, next) {
     }
 }
 
-export { setAsProfessional, inviteClient, listClients, removeClient, getClientSummary, getClientDashboard, sendMessage, listMessages, setGoal, listGoals, listInvitations };
+async function shareRecipe(req, res, next) {
+    try {
+        const professionalId = req.user?.userId ?? null;
+        const { clientId } = req.params;
+        const { recipeId } = req.body;
+
+        const result = await shareRecipeWithClient({
+            professionalId,
+            clientId: Number(clientId),
+            recipeId: Number(recipeId),
+        });
+
+        return res.status(200).json({ sharedRecipe: result });
+    } catch (error) {
+        if (error instanceof ProfessionalError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+async function listSharedRecipes(req, res, next) {
+    try {
+        const professionalId = req.user?.userId ?? null;
+        const { clientId } = req.params;
+
+        const sharedRecipes = await getSharedRecipes({
+            professionalId,
+            clientId: Number(clientId),
+        });
+
+        return res.status(200).json({ sharedRecipes });
+    } catch (error) {
+        if (error instanceof ProfessionalError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+export { setAsProfessional, inviteClient, listClients, removeClient, getClientSummary, getClientDashboard, sendMessage, listMessages, setGoal, listGoals, listInvitations, shareRecipe, listSharedRecipes };
