@@ -5,6 +5,7 @@ import {
     rejectInvitationService,
     removeProfessionalService,
     sendMessageToProfessional,
+    listSharedRecipesService
 } from "./client.service.js";
 import { ClientError } from "./client.validator.js";
 
@@ -129,5 +130,21 @@ async function listInvitations(req, res, next) {
     }
 }
 
+async function listSharedRecipes(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const sharedRecipes = await listSharedRecipesService({ professionalId, clientId });
 
-export { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations };
+        return res.status(200).json({ sharedRecipes });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+
+export { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations, listSharedRecipes };

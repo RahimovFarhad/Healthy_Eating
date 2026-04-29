@@ -6,6 +6,7 @@ import {
     listClientProfessionals,
     listMessages,
     rejectProfessionalInvitation,
+    listSharedRecipes
 } from "./client.repository.js";
 import {
     ClientError,
@@ -90,6 +91,16 @@ async function ensureProfessionalClientRelation({ professionalId, clientId }) {
     return validated;
 }
 
+async function listSharedRecipesService({ professionalId, clientId }) {
+    const validated = validateClientProfessionalInput({ professionalId, clientId });
+
+    await ensureProfessionalClientRelation(validated);
+
+    return listSharedRecipes(validated);
+
+
+}
+
 export {
     acceptInvitationService,
     rejectInvitationService,
@@ -97,4 +108,5 @@ export {
     removeProfessionalService,
     sendMessageToProfessional,
     listMessagesService,
+    listSharedRecipesService
 };

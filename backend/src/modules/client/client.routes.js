@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations } from "./client.controller.js";
+import { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations, listSharedRecipes } from "./client.controller.js";
 const clientRouter = Router();
 
 // needs to do: instead of doing accept/decline by professionalId, we can do it by invitationId, 
@@ -10,6 +10,8 @@ clientRouter.get("/client-invitations", listInvitations) //list of invitations f
 
 clientRouter.get("/professionals", listProfessionals); //list of professionals for the currently authenticated client
 clientRouter.delete("/professionals/:professionalId", removeProfessional); //client removes professional from their list
+
+clientRouter.get("/professionals/:professionalId/shared-recipes", listSharedRecipes); //list of recipes shared by the professional to the client
 
 clientRouter.post("/professionals/:professionalId/messages", sendMessage);
 clientRouter.get("/professionals/:professionalId/messages", listMessages);
