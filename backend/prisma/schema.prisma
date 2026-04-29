@@ -254,8 +254,23 @@ model NutritionGoal {
   subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
   setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
   nutrient          Nutrient?     @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
+  checkIns          GoalCheckIn[]
 
   @@map("nutrition_goal")
+}
+
+model GoalCheckIn {
+  checkInId  Int      @id @default(autoincrement()) @map("check_in_id")
+  goalId     Int      @map("goal_id")
+  date       DateTime @db.Date
+  isDone     Boolean  @default(true) @map("is_done")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  goal NutritionGoal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([goalId, date])
+  @@map("goal_check_in")
 }
 
 model Guideline {

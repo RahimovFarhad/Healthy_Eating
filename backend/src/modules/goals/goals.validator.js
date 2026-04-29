@@ -7,6 +7,7 @@ class GoalError extends Error {
 
 const GOAL_SOURCES = new Set(["system_default", "user_defined", "professional_defined"]);
 const GOAL_STATUSES = new Set(["active", "archived"]);
+const GOAL_INCLUDE_OPTIONS = new Set(["today", "all"]);
 
 function normalizePositiveInteger(value) {
   const parsed = typeof value === "string" ? Number(value) : value;
@@ -74,6 +75,19 @@ function normalizeBooleanQuery(value, defaultValue = true) {
   }
 
   throw new GoalError("effective must be a boolean");
+}
+
+function normalizeGoalIncludeQuery(value, defaultValue = "none") {
+  if (value === undefined || value === null || value === "") {
+    return defaultValue;
+  }
+
+  const normalized = String(value).toLowerCase();
+  if (!GOAL_INCLUDE_OPTIONS.has(normalized)) {
+    throw new GoalError("include must be one of: today, all");
+  }
+
+  return normalized;
 }
 
 function validateUpdateGoalInput(goal) {
@@ -217,6 +231,7 @@ export {
   normalizeSubscriberId,
   normalizeGoalId,
   normalizeBooleanQuery,
+  normalizeGoalIncludeQuery,
   validateUpdateGoalInput,
   validateCreateGoalInput,
 };
