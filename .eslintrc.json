@@ -5,16 +5,18 @@
   },
   "parserOptions": {
     "sourceType": "module",
-    "ecmaVersion": 2021
+    "ecmaVersion": 2022
   },
   "extends": "eslint:recommended",
   // custom linting rules within the code
+  // NOTE (to automatically correct the highlighted fixable linted issues in the terminal + make sure ESLINT is installed): npm run lint:fix 
   "rules": {
     "no-unused-vars": "warn", // warning for unused variables in the code
     "no-console": "warn", // warning if any console methods used for debugging
     "no-undef": "warn", // warning for any function names unclear
     "quotes": ["warn","double",{"avoidEscape": true}], // warning for inconsistent use of double quotations
-    "no-case-declarations": "off" // turned off, as it doesn't affect code logic
+    "no-case-declarations": "off", // turned off, as it doesn't affect code logic
+    "no-irregular-whitespace": ["warn",{"skipComments":true}] // warning for inconsistent whitespace tabs, ignores comments
   },
   "overrides": [
     {
@@ -28,7 +30,7 @@
     "rules": {
       "no-console": "off"
     }
-  }
+    }
   ]
   
 }

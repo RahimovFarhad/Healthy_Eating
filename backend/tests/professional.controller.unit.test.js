@@ -175,7 +175,7 @@ describe("Professional Controller", () => {
   });
 
   describe("removeClient", () => {
-    test("Returns status code 200 and removes the client on sucess", async () => {;
+    test("Returns status code 200 and removes the client on sucess", async () => {
       const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
       const res = createRes();
       const next = jest.fn();

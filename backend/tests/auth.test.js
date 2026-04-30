@@ -24,7 +24,7 @@ const expiredRefreshToken = sign(
 );
 
 let createdUserId = null;
-// let refreshCookie = null; // commented out unused variable
+let refreshCookie = null;
 
 describe("Auth API", () => {
   afterAll(async () => {

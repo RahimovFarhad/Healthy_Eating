@@ -7,6 +7,17 @@ class ClientError extends Error {
     }
 }
 
+// function client error status codes
+function getClientErrorStatus(message) {
+    if (message.toLowerCase().includes("not in invited status")) {
+        return 403; // forbidden access
+    }
+    if (message.toLowerCase().includes("not found") || message.toLowerCase().includes("not assigned")) {
+        return 404; // not found
+    }
+    return 400; // bad request - for otherwise
+}
+
 function normalizePositiveInteger(value) {
     const parsedValue = typeof value === "string" ? Number(value) : value;
 
@@ -67,4 +78,5 @@ export {
     validateClientProfessionalInput,
     validateMessageInput,
     ClientError,
+    getClientErrorStatus
 };

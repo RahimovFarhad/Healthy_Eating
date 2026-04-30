@@ -6,14 +6,14 @@ class mockAuthError extends Error {
         super(message);
         this.name = "AuthError";
     }
-};
+}
 
 class mockUserNotFoundError extends AuthError {
     constructor() {
         super("User not found");
         this.name = "UserNotFoundError";
     }
-};
+}
 
 const TEST_ID = Date.now();
 const TEST_USER = {

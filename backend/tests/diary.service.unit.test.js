@@ -3,13 +3,13 @@ import { expect, jest } from "@jest/globals";
 import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
 
 // Mock the module(s) that the diary service depends on
-const TEST_ID = 1;
+// const TEST_ID = 1;
 const TEST_USERID = 2;
 const TEST_ENTRYID = 3;
 const TEST_ENTRYITEMID = 4;
 
 const mockCheckDiaryEntryItemOwnership = jest.fn();
-const mockValidateUpdatedEntryItem = jest.fn();
+  const mockValidateUpdatedEntryItem = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
 const mockValidateDeletedDiaryEntry = jest.fn();
 const mockDeleteDiaryEntry = jest.fn();
