@@ -15,6 +15,7 @@ const mockGetNutritionSummary = jest.fn();
 const mockListDiaryEntries = jest.fn();
 const mockGetDiaryEntryById = jest.fn();
 const mockCreateDiaryEntryItem = jest.fn();
+const mockCreateRecipeAsDiaryEntryItemService = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
 const mockDeleteExistingDiaryEntry = jest.fn();
 const mockDeleteExistingDiaryEntryItem = jest.fn();
@@ -28,6 +29,7 @@ jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
   listDiaryEntries: mockListDiaryEntries,
   getDiaryEntryById: mockGetDiaryEntryById,
   createDiaryEntryItem: mockCreateDiaryEntryItem,
+  createRecipeAsDiaryEntryItemService: mockCreateRecipeAsDiaryEntryItemService,
   updateDiaryEntryItem: mockUpdateDiaryEntryItem,
   deleteExistingDiaryEntry: mockDeleteExistingDiaryEntry,
   deleteExistingDiaryEntryItem: mockDeleteExistingDiaryEntryItem,
@@ -989,12 +991,145 @@ describe("Diary Controller", () => {
   });
 
   describe("updateDiaryEntryItem", () => {
+    test("Returns status code 200 and updates diary entry item", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: { itemId: TEST_ENTRYITEMID },
+        body: {
+          portionId: TEST_ID,
+          quantity: 30,
+        },
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const updatedItem = { diaryEntryItemId: TEST_ENTRYITEMID };
+
+      mockUpdateDiaryEntryItem.mockResolvedValue(updatedItem);
+
+      await updateDiaryEntryItem(req, res, next);
+
+      expect(mockUpdateDiaryEntryItem).toHaveBeenCalledWith({
+        userId: TEST_USERID,
+        diaryEntryItemId: TEST_ENTRYITEMID,
+        portionId: TEST_ID,
+        quantity: 30,
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ updatedEntry: updatedItem });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("Returns status code 400 when service throws DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: { itemId: TEST_ENTRYITEMID },
+        body: {},
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockUpdateDiaryEntryItem.mockRejectedValue(
+        new DiaryEntryError("Diary Entry Item ID is required")
+      );
+
+      await updateDiaryEntryItem(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Diary Entry Item ID is required",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 
   describe("deleteEntry", () => {
+    test("Returns status code 200 and deletes diary entry", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: { id: TEST_ENTRYID },
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const deletedEntry = { diaryEntryId: TEST_ENTRYID };
+
+      mockDeleteExistingDiaryEntry.mockResolvedValue(deletedEntry);
+
+      await deleteEntry(req, res, next);
+
+      expect(mockDeleteExistingDiaryEntry).toHaveBeenCalledWith({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ deleteEntry: deletedEntry });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("Returns status code 400 when service throws DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {},
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockDeleteExistingDiaryEntry.mockRejectedValue(
+        new DiaryEntryError("Diary Entry ID is required")
+      );
+
+      await deleteEntry(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Diary Entry ID is required",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 
   describe("deleteEntryItem", () => {
+    test("Returns status code 200 and deletes diary entry item", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: { itemId: TEST_ENTRYITEMID },
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const deletedItem = { diaryEntryItemId: TEST_ENTRYITEMID };
+
+      mockDeleteExistingDiaryEntryItem.mockResolvedValue(deletedItem);
+
+      await deleteEntryItem(req, res, next);
+
+      expect(mockDeleteExistingDiaryEntryItem).toHaveBeenCalledWith({
+        userId: TEST_USERID,
+        diaryEntryItemId: TEST_ENTRYITEMID,
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ deleteItem: deletedItem });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("Returns status code 400 when service throws DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {},
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockDeleteExistingDiaryEntryItem.mockRejectedValue(
+        new DiaryEntryError("Diary Entry Item ID is required")
+      );
+
+      await deleteEntryItem(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Diary Entry Item ID is required",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 
   describe("getDashboard", () => {

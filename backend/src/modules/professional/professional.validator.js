@@ -131,6 +131,17 @@ function validateSetGoalInput({ professionalId, clientId, goal }) {
     };
 }
 
+function validateRecipeId({ recipeId }) {
+    const normalizedRecipeId = normalizePositiveInteger(recipeId);
+    if (!normalizedRecipeId) {
+        throw new ProfessionalError("Recipe ID is required");
+    }
+
+    return {
+        recipeId: normalizedRecipeId,
+    };
+}
+
 export {
     ProfessionalError,
     validateProfessionalId,
@@ -141,4 +152,5 @@ export {
     validateSummaryInput,
     validateMessageInput,
     validateSetGoalInput,
+    validateRecipeId
 };

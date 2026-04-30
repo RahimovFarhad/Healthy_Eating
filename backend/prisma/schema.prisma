@@ -115,6 +115,9 @@ model User {
   recipeFavorites                   RecipeFavorite[]
   recipeAssignmentsAsProfessional   RecipeAssignment[]   @relation("RecipeAssignmentProfessional")
   recipeAssignmentsAsSubscriber     RecipeAssignment[]   @relation("RecipeAssignmentSubscriber")
+  recipeSharesAsProfessional        RecipeShare[]        @relation("RecipeShareProfessional")
+  recipeSharesAsSubscriber          RecipeShare[]        @relation("RecipeShareSubscriber")
+  recipeUsages                      RecipeUsage[]
   recipeReviews                     RecipeReview[]
   plans                             Plan[]
   createdFoodItems                  FoodItem[]           @relation("FoodItemCreatedByUser")
@@ -251,8 +254,23 @@ model NutritionGoal {
   subscriber        User          @relation("NutritionGoalSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
   setByProfessional User?         @relation("NutritionGoalSetter", fields: [setByProfessionalId], references: [userId], onDelete: SetNull)
   nutrient          Nutrient?     @relation(fields: [nutrientId], references: [nutrientId], onDelete: Cascade)
+  checkIns          GoalCheckIn[]
 
   @@map("nutrition_goal")
+}
+
+model GoalCheckIn {
+  checkInId  Int      @id @default(autoincrement()) @map("check_in_id")
+  goalId     Int      @map("goal_id")
+  date       DateTime @db.Date
+  isDone     Boolean  @default(true) @map("is_done")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  goal NutritionGoal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([goalId, date])
+  @@map("goal_check_in")
 }
 
 model Guideline {
@@ -325,6 +343,8 @@ model Recipe {
   recipeIngredients RecipeIngredient[]
   favorites         RecipeFavorite[]
   assignments       RecipeAssignment[]
+  shares            RecipeShare[]
+  usages            RecipeUsage[]
   reviews           RecipeReview[]
   planItems         PlanItem[]
 
@@ -395,6 +415,34 @@ model RecipeReview {
 
   @@unique([subscriberId, recipeId])
   @@map("recipe_review")
+}
+
+model RecipeShare {
+  id             Int          @id @default(autoincrement())
+  professionalId Int          @map("professional_id")
+  subscriberId   Int          @map("subscriber_id")
+  recipeId       Int          @map("recipe_id")
+  comment        String?      @db.Text
+  status         RecipeStatus @default(assigned)
+  sharedAt       DateTime     @default(now()) @map("shared_at")
+
+  professional User   @relation("RecipeShareProfessional", fields: [professionalId], references: [userId], onDelete: Cascade)
+  subscriber   User   @relation("RecipeShareSubscriber", fields: [subscriberId], references: [userId], onDelete: Cascade)
+  recipe       Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
+
+  @@map("recipe_share")
+}
+
+model RecipeUsage {
+  id           Int      @id @default(autoincrement())
+  subscriberId Int      @map("subscriber_id")
+  recipeId     Int      @map("recipe_id")
+
+  subscriber User   @relation(fields: [subscriberId], references: [userId], onDelete: Cascade)
+  recipe     Recipe @relation(fields: [recipeId], references: [recipeId], onDelete: Cascade)
+
+  @@unique([subscriberId, recipeId])
+  @@map("recipe_usage")
 }
 
 // ==================== MEAL PLANNING ====================

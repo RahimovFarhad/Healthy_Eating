@@ -1,0 +1,21 @@
+import { Router } from "express";
+import {
+  createMealPlan,
+  listMealPlans,
+  getMealPlanById,
+  addPlanItem,
+  deleteMealPlan,
+} from "./meal-plans.controller.js";
+
+const mealPlansRouter = Router();
+
+// These roues can only be accessed by either client or professional, so we will check the role in the next layers
+
+mealPlansRouter.post("/", createMealPlan); // plantype will be hardcoded to manual for now
+mealPlansRouter.get("/", listMealPlans);
+mealPlansRouter.get("/:planId", getMealPlanById);
+mealPlansRouter.delete("/:planId", deleteMealPlan);
+
+mealPlansRouter.post("/:planId/addItem", addPlanItem); // adding new items
+
+export default mealPlansRouter;

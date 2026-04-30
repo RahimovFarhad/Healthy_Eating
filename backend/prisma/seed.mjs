@@ -104,6 +104,80 @@ async function readJSON(fileName) {
   return JSON.parse(data);
 }
 
+async function upsertRecipeAsSystemFood({ recipe, nutrientMap }) {
+  const externalId = `recipe:${recipe.recipeId}`;
+  
+  // I will use upsert instead of create to avoid issues when seed is run multiple times
+  // PS externalId logic is first added for foods fetched from external APIs, so it may introduce some bugs (highly unlikely, but this comment is here for future reference)
+  const foodItem = await prisma.foodItem.upsert({
+    where: {
+      source_externalId: {
+        source: "system",
+        externalId
+      }
+    },
+    update: {
+      name: recipe.title
+    },
+    create: {
+      name: recipe.title,
+      source: "system",
+      externalId
+    }
+  });
+
+  let portion = await prisma.foodPortion.findFirst({
+    where: {
+      foodItemId: foodItem.foodItemId,
+      description: "1 serving"
+    }
+  });
+
+  if (!portion) {
+    portion = await prisma.foodPortion.create({
+      data: {
+        foodItemId: foodItem.foodItemId,
+        description: "1 serving",
+        weightG: null
+      }
+    });
+  }
+
+  const nutrientValues = [
+    { code: "calories", amount: recipe.kcal ?? 0 },
+    { code: "protein", amount: recipe.protein ?? 0 },
+    { code: "carbohydrates", amount: recipe.carbs ?? 0 },
+    { code: "fat", amount: recipe.fat ?? 0 },
+    { code: "sugar", amount: recipe.sugars ?? 0 },
+    { code: "sodium", amount: (recipe.salt ?? 0) * 400 }
+  ];
+
+  for (const n of nutrientValues) {
+    const nutrientId = nutrientMap[n.code];
+    if (!nutrientId) continue;
+
+    await prisma.foodPortionNutrient.upsert({
+      where: {
+        portionId_nutrientId: {
+          portionId: portion.portionId,
+          nutrientId
+        }
+      },
+      update: {
+        amount: n.amount
+      },
+      create: {
+        portionId: portion.portionId,
+        nutrientId,
+        amount: n.amount
+      }
+    });
+  }
+
+  return { foodItemId: foodItem.foodItemId, portionId: portion.portionId };
+}
+
+
 async function main() {
   for (const nutrient of nutrients) {
     await prisma.nutrient.upsert({
@@ -198,6 +272,8 @@ async function main() {
         }
       })
     }
+
+    await upsertRecipeAsSystemFood({ recipe, nutrientMap }); // I do this so that recipes can be logged as foods for easy of use
 
   }
 

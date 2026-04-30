@@ -24,7 +24,11 @@ const GOAL_SELECT = {
   },
 };
 
-async function fetchGoals({ subscriberId, effective }) {
+function toDateOnly(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+async function fetchGoals({ subscriberId, effective, include = "none" }) {
   const today = new Date();
   const where = {
     subscriberId,
@@ -39,8 +43,21 @@ async function fetchGoals({ subscriberId, effective }) {
 
   return prisma.nutritionGoal.findMany({
     where,
-    orderBy: [{ createdAt: "desc" }, { goalId: "desc" }],
-    select: GOAL_SELECT,
+    orderBy: [{ createdAt: "desc" }, { goalId: "desc" }], // for select, if include = "today" or "all" have checkin(s)
+    select: { ...GOAL_SELECT,
+      ...(include != "none"
+        ? {
+            checkIns: {
+              ...(include === "today" && { where: { date: toDateOnly() } }),
+              select: {
+                checkInId: true,
+                date: true,
+                isDone: true,
+              },
+            },
+          }
+        : {}),
+     },
   });
 }
 
@@ -66,7 +83,9 @@ async function findGoalByIdForSubscriber({ subscriberId, goalId }) {
     },
     select: { 
       goalId: true, 
-      status: true, 
+      status: true,
+      startDate: true,
+      endDate: true,
       subscriber: {
         select: {
           userId: true,
@@ -145,6 +164,58 @@ async function createManyGoals(rows, tx) {
   return client.nutritionGoal.createMany({ data: rows });
 }
 
+async function findGoalCheckInByDate({ goalId, date }) {
+  return prisma.goalCheckIn.findUnique({
+    where: {
+      goalId_date: {
+        goalId,
+        date,
+      },
+    },
+    select: {
+      checkInId: true,
+      goalId: true,
+      date: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
+async function createGoalCheckIn({ goalId, date, isDone = true }) {
+  return prisma.goalCheckIn.create({
+    data: {
+      goalId,
+      date,
+      isDone,
+    },
+    select: {
+      checkInId: true,
+      goalId: true,
+      date: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
+async function updateGoalCheckIn({ checkInId, isDone }) {
+  return prisma.goalCheckIn.update({
+    where: { checkInId },
+    data: { isDone },
+    select: {
+      checkInId: true,
+      goalId: true,
+      date: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
 export {
   fetchGoals,
   findNutrientById,
@@ -155,4 +226,7 @@ export {
   insertGoal,
   findGuidelinesByDemographic,
   createManyGoals,
+  findGoalCheckInByDate,
+  createGoalCheckIn,
+  updateGoalCheckIn,
 };

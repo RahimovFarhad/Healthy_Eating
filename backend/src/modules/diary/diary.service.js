@@ -1,7 +1,8 @@
-import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId } from "./diary.repository.js";
-import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput } from "./diary.validator.js";
+import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId, findRecipePortionForDiary } from "./diary.repository.js";
+import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
+import { get } from "http";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
@@ -180,7 +181,6 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
         const foodDetails = await searchFoodById(fatSecret.externalId);
         parsed = parseFoodResponse(foodDetails);
     }
-
     
     const foodItem = await createFoodItem({
         name: fatSecret == null ? customFood.name : parsed.name,
@@ -329,4 +329,17 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
 
 }
 
-export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber };
+async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recipeId, servings }) {
+    const entryCheck = validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings }); 
+
+    const portion = await findRecipePortionForDiary({ recipeId: entryCheck.recipeId });
+    const portionId = portion?.portions?.[0]?.portionId; 
+    if (!portionId) {
+        throw new DiaryEntryError("Recipe portion not found for diary entry item");
+    }
+
+    return createDiaryEntryItem({ userId: entryCheck.userId, diaryEntryId: entryCheck.diaryEntryId, portionId, quantity: entryCheck.servings, customFood: null, fatSecret: null });
+
+}
+
+export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService };

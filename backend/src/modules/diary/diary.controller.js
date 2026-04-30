@@ -1,4 +1,4 @@
-import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber } from "./diary.service.js";
+import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService } from "./diary.service.js";
 import { DiaryEntryError, getDiaryErrorStatus } from "./diary.validator.js";
 
 async function createEntry(req, res, next) {
@@ -181,4 +181,51 @@ async function getDashboard(req, res, next) {
     }
 }
 
-export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard };
+async function createEntryWithRecipe(req, res, next) {
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const newEntry = await createDiaryEntry({
+            subscriberId,
+            consumedAt: req.body?.consumedAt,
+            mealType: req.body?.mealType,
+            notes: req.body?.notes,
+            items: [], // start with empty items, will add the recipe item next
+        });
+
+        const updatedEntry = await createRecipeAsDiaryEntryItemService({
+            userId: subscriberId,
+            diaryEntryId: newEntry.diaryEntryId,
+            recipeId: Number(req.params?.recipeId),
+            servings: req.body?.servings,
+        });
+
+        return res.status(201).json({ entry: updatedEntry });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+async function createRecipeAsDiaryEntryItem(req, res, next) {
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const newItem = await createRecipeAsDiaryEntryItemService({
+            userId: subscriberId,
+            diaryEntryId: Number(req.params?.id),
+            recipeId: Number(req.params?.recipeId),
+            servings: req.body?.servings,
+        });
+
+        return res.status(201).json({ newItem });
+    } catch (error) {
+        if (error instanceof DiaryEntryError) {
+            return res.status(getDiaryErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+export { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard, createEntryWithRecipe, createRecipeAsDiaryEntryItem };

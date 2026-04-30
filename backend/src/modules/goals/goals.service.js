@@ -1,10 +1,15 @@
-import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals } from "./goals.repository.js";
-import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
+import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn } from "./goals.repository.js";
+import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, normalizeGoalIncludeQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
-async function getGoalsService({ subscriberId, effective }) {
+async function getGoalsService({ subscriberId, effective, include }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const normalizedEffective = normalizeBooleanQuery(effective, true);
-  return fetchGoals({ subscriberId: normalizedSubscriberId, effective: normalizedEffective });
+  const normalizedInclude = normalizeGoalIncludeQuery(include, "none");
+  return fetchGoals({
+    subscriberId: normalizedSubscriberId,
+    effective: normalizedEffective,
+    include: normalizedInclude,
+  });
 }
 
 async function updateUserGoal({ subscriberId, goal }) {
@@ -96,5 +101,52 @@ async function ensureDefaultGoalsForUser({ userId, demographic = "adult", tx }) 
   return createManyGoals(rows, tx);
 }
 
+function toDateOnly(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
 
-export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser };
+async function toggleGoalDoneForToday({ subscriberId, goalId }) {
+  const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
+  const normalizedGoalId = normalizeGoalId(goalId);
+
+  const existingGoal = await findGoalByIdForSubscriber({
+    subscriberId: normalizedSubscriberId,
+    goalId: normalizedGoalId,
+  });
+
+  if (!existingGoal) {
+    throw new GoalError("Goal not found");
+  }
+
+  if (existingGoal.status === "archived") {
+    throw new GoalError("Goal is archived");
+  }
+
+  const today = toDateOnly();
+  if (existingGoal.startDate && today < toDateOnly(existingGoal.startDate)) {
+    throw new GoalError("Goal has not started yet");
+  }
+  if (existingGoal.endDate && toDateOnly(existingGoal.endDate) < today) {
+    throw new GoalError("Goal end date has passed");
+  }
+
+  const existingCheckIn = await findGoalCheckInByDate({
+    goalId: normalizedGoalId,
+    date: today,
+  });
+
+  if (!existingCheckIn) {
+    return createGoalCheckIn({
+      goalId: normalizedGoalId,
+      date: today,
+      isDone: true,
+    });
+  }
+
+  return updateGoalCheckIn({
+    checkInId: existingCheckIn.checkInId,
+    isDone: !existingCheckIn.isDone,
+  });
+}
+
+export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser, toggleGoalDoneForToday };

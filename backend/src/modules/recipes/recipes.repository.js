@@ -24,7 +24,7 @@ const RECIPE_SELECT = {
     reviews: true 
 }
 
-async function listRecipes({ category, cuisine, ingredients, favouritedBySubscriberId }) {
+async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId }) {
     return prisma.recipe.findMany({
         where: {
             ...(category && { category }),
@@ -43,15 +43,15 @@ async function listRecipes({ category, cuisine, ingredients, favouritedBySubscri
                     }
                 }))
             }),
-            ...(favouritedBySubscriberId && {
+            ...(favoritedBySubscriberId && {
                 recipeFavorites: {
                     some: {
-                        subscriberId: favouritedBySubscriberId,
+                        subscriberId: favoritedBySubscriberId,
                     }
                 }
             })
         },
-        select: { RECIPE_SELECT }
+        select: RECIPE_SELECT
     });
 }
 
@@ -60,7 +60,7 @@ async function findRecipeById({ recipeId }){
         where: {
             recipeId
         },
-        select: { RECIPE_SELECT }
+        select: RECIPE_SELECT
     })
 }
 
@@ -83,14 +83,14 @@ async function createRecipeReview({ recipeId, subscriberId, rating, comment }) {
     });
 }
 
-async function toggleRecipeFavourite({ recipeId, subscriberId }) {
-  const existingFavorite = await favouriteExists({ recipeId, subscriberId });
+async function toggleRecipeFavorite({ recipeId, subscriberId }) {
+  const existingFavorite = await favoriteExists({ recipeId, subscriberId });
 
   if (existingFavorite) {
     await prisma.recipeFavorite.delete({
-      where: { favouriteId: existingFavorite.favouriteId },
+      where: { favoriteId: existingFavorite.favoriteId },
     });
-    return { favourited: false };
+    return { favorited: false };
   }
 
   await prisma.recipeFavorite.create({
@@ -99,21 +99,21 @@ async function toggleRecipeFavourite({ recipeId, subscriberId }) {
       recipeId,
     },
   });
-  return { favourited: true };
+  return { favorited: true };
 }
 
-async function favouriteExists({ recipeId, subscriberId }) {
-  const existingFavorite = await prisma.recipeFavorite.findUnique({
-    where: {
-      subscriberId_recipeId: {
-        subscriberId,
-        recipeId,
-      },
-    },
-  });
-  return !!existingFavorite;
+async function favoriteExists({ recipeId, subscriberId }) {
+    return prisma.recipeFavorite.findUnique({
+        where: {
+            subscriberId_recipeId: { subscriberId, recipeId },
+        },
+        select: {
+            favoriteId: true,
+        },
+    });
+
 }
 
 
 
-export {listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavourite}
+export {listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite}

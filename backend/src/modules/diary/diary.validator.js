@@ -346,4 +346,33 @@ function validateUserIdForDashboard({ subscriberId }) {
      }; 
 }
 
-export { DiaryEntryError, getDiaryErrorStatus, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard };
+function validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings }) {
+    const normalizedUserId = normalizePositiveInteger(userId);
+    if (!normalizedUserId) {
+        throw new DiaryEntryError("User ID is required");
+    }
+
+    const normalizedDiaryEntryId = normalizePositiveInteger(diaryEntryId);
+    if (!normalizedDiaryEntryId) {
+        throw new DiaryEntryError("Diary Entry ID is required");
+    }
+
+    const normalizedRecipeId = normalizePositiveInteger(recipeId);
+    if (!normalizedRecipeId) {
+        throw new DiaryEntryError("Recipe ID is required");
+    }
+
+    const normalizedServings = normalizePositiveNumber(servings || 1); // default to 1 serving 
+    if (!normalizedServings) {
+        throw new DiaryEntryError("Servings must be a positive number");
+    }
+
+    return {
+        userId: normalizedUserId,
+        diaryEntryId: normalizedDiaryEntryId,
+        recipeId: normalizedRecipeId,
+        servings: normalizedServings
+    };
+}
+
+export { DiaryEntryError, getDiaryErrorStatus, validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateEntryDetails, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateDeletedDiaryEntryItem, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateUserIdForDashboard, validateCreateRecipeAsDiaryEntryItemInput };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard } from "./diary.controller.js";
+import { createEntry, getSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteEntry, deleteEntryItem, getDashboard, createEntryWithRecipe, createRecipeAsDiaryEntryItem } from "./diary.controller.js";
 const diaryRouter = Router();
 
 // Auth middleware will be added here later.
@@ -14,6 +14,9 @@ diaryRouter.delete("/entry-items/:itemId", deleteEntryItem); // check if user is
 
 // Returns all summary information required to render the user dashboard in a single request. The endpoint aggregates small preview data from several modules (food diary, nutrition tracking, goals, messaging, and recipes). It is designed only for the dashboard initial load and should not return full datasets.
 diaryRouter.get("/dashboard", getDashboard)
+
+diaryRouter.post("/entries/recipe/:recipeId", createEntryWithRecipe);
+diaryRouter.post("/entries/:id/recipe/:recipeId", createRecipeAsDiaryEntryItem); 
 
 
 export default diaryRouter;

@@ -369,4 +369,25 @@ async function checkExistingFoodItemByExternalId(externalId) {
     });
 }
 
-export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId };
+async function findRecipePortionForDiary({ recipeId }) {
+    return prisma.foodItem.findFirst({
+        where: {
+            source: "system",
+            externalId: `recipe:${recipeId}`,
+        },
+        select: {
+            foodItemId: true,
+            portions: {
+                where: {
+                    description: "1 serving",
+                },
+                select: {
+                    portionId: true,
+                },
+                take: 1,
+            },
+        },
+    });
+}
+
+export { insertDiaryEntry, fetchSummaryData, listDiaryEntries, findDiaryEntryById, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, createDiaryEntryItem, updateDiaryEntryItem, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId, findRecipePortionForDiary };
