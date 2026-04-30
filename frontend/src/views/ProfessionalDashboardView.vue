@@ -399,40 +399,6 @@
             </div>
           </div>
 
-          <div v-if="activeTab[client.id] === 'messages'">
-            <div v-if="client.messages.loading" class="text-muted small">Loading…</div>
-            <div v-else-if="client.messages.error" class="alert alert-danger small">{{ client.messages.error }}</div>
-            <div v-else>
-              <div class="border rounded p-2 mb-2"
-                   style="max-height:240px;overflow-y:auto;background:#fafafa;">
-                <div v-if="(client.messages.data ?? []).length === 0"
-                     class="text-muted small text-center py-3">No messages yet.</div>
-                <div v-for="msg in client.messages.data" :key="msg.id" class="mb-2">
-                  <div :class="msg.sentBy === 'professional' ? 'chat-mine ms-auto' : 'chat-pro'"
-                       style="max-width:80%;">
-                    <div class="small">{{ msg.message }}</div>
-                    <div class="text-muted mt-1" style="font-size:0.65rem;">
-                      {{ formatDateTime(msg.createdAt) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex gap-2">
-                <input type="text" class="form-control form-control-sm"
-                       placeholder="Type a message…"
-                       v-model="client.messageDraft.text"
-                       @keyup.enter="sendMessage(client)">
-                <button class="btn btn-gf btn-sm" @click="sendMessage(client)"
-                        :disabled="client.messageDraft.sending || !client.messageDraft.text.trim()">
-                  {{ client.messageDraft.sending ? '…' : 'Send' }}
-                </button>
-              </div>
-              <div v-if="client.messageDraft.error" class="alert alert-danger small mt-2 mb-0">
-                {{ client.messageDraft.error }}
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -452,7 +418,6 @@ const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'summary', label: 'Summary' },
   { id: 'goals', label: 'Goals' },
-  { id: 'messages', label: 'Messages' },
 ]
 
 const clients = ref([])
@@ -479,8 +444,6 @@ function blankClientState() {
       startDate: todayIso(), endDate: '', notes: '',
       saving: false, error: '',
     },
-    messages: { loading: false, error: '', data: null },
-    messageDraft: { text: '', sending: false, error: '' },
   }
 }
 
@@ -586,8 +549,6 @@ function loadTab(client, tabId) {
     loadDashboard(client)
   } else if (tabId === 'goals' && !client.goals.data && !client.goals.loading) {
     loadGoals(client)
-  } else if (tabId === 'messages' && !client.messages.data && !client.messages.loading) {
-    loadMessages(client)
   }
 }
 
@@ -620,15 +581,6 @@ function loadGoals(client) {
     `/api/professional/clients/${client.subscriberId}/goals`,
     d => d.goals ?? d,
     'Failed to load goals',
-  )
-}
-
-function loadMessages(client) {
-  return loadResource(
-    client.messages,
-    `/api/professional/clients/${client.subscriberId}/messages`,
-    d => (d.messages ?? d).slice().reverse(),
-    'Failed to load messages',
   )
 }
 
@@ -666,30 +618,6 @@ async function setGoal(client) {
   }
 }
 
-async function sendMessage(client) {
-  const text = client.messageDraft.text.trim()
-  if (!text) return
-  client.messageDraft.error = ''
-  client.messageDraft.sending = true
-  try {
-    const { ok, message } = await fetchJson(
-      `/api/professional/clients/${client.subscriberId}/messages`,
-      { method: 'POST', body: JSON.stringify({ message: text }) },
-    )
-    if (!ok) {
-      client.messageDraft.error = message || 'Failed to send message'
-      return
-    }
-    client.messageDraft.text = ''
-    client.messages.data = null
-    await loadMessages(client)
-  } catch {
-    client.messageDraft.error = 'Network error'
-  } finally {
-    client.messageDraft.sending = false
-  }
-}
-
 function initialsFor(name) {
   if (!name) return '?'
   return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?'
@@ -700,13 +628,6 @@ function formatDate(value) {
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-function formatDateTime(value) {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 function recentEntries(data) {

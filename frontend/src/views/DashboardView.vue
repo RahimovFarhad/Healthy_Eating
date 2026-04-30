@@ -68,114 +68,143 @@
 
     <div class="row g-3 mb-3">
       <div class="col-md-6">
-        <div class="card card-gf h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Food Diary</span>
-            <RouterLink to="/diary" class="btn btn-gf btn-sm">View All</RouterLink>
-          </div>
-          <div class="card-body p-0">
-            <div v-if="loading" class="p-3 text-center text-muted">
-              <small>Loading…</small>
+        <RouterLink to="/diary" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Food Diary</span>
+              <span class="btn btn-gf btn-sm">View All</span>
             </div>
+            <div class="card-body p-0">
+              <div v-if="loading" class="p-3 text-center text-muted">
+                <small>Loading…</small>
+              </div>
 
-            <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0 p-3">
-              <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
-                  class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
-                <span class="small">
-                  <span class="fw-semibold text-capitalize">{{ entry.mealType }}</span>
-                </span>
-                <span class="text-muted" style="font-size:0.75rem;">
-                  {{ entry.items?.length ?? 0 }}
-                  {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
-                </span>
-              </li>
-            </ul>
+              <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0 p-3">
+                <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
+                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
+                  <span class="small">
+                    <span class="fw-semibold text-capitalize">{{ entry.mealType }}</span>
+                  </span>
+                  <span class="text-muted" style="font-size:0.75rem;">
+                    {{ entry.items?.length ?? 0 }}
+                    {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
+                  </span>
+                </li>
+              </ul>
 
-            <div v-else class="p-3 text-center text-muted">
-              <small>No meals logged today yet.</small><br>
-              <RouterLink to="/diary" class="btn btn-gf btn-sm mt-2">Log your first meal</RouterLink>
+              <div v-else class="p-3 text-center text-muted">
+                <small>No meals logged today yet. Click to log your first meal.</small>
+              </div>
             </div>
           </div>
-
-          <div class="card-footer text-center border-0 bg-transparent">
-            <RouterLink to="/diary" class="text-success small fw-bold">Open Food Diary</RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
 
       <div class="col-md-6">
-        <div class="card card-gf h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Nutritional Overview</span>
-            <RouterLink to="/nutrition" class="btn btn-gf btn-sm">Details</RouterLink>
-          </div>
-          <div class="card-body">
-            <div v-if="loading" class="p-3 text-center text-muted">
-              <small>Loading…</small>
+        <RouterLink to="/nutrition" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Nutritional Overview</span>
+              <span class="btn btn-gf btn-sm">Details</span>
             </div>
+            <div class="card-body">
+              <div v-if="loading" class="p-3 text-center text-muted">
+                <small>Loading…</small>
+              </div>
 
-            <ul v-else-if="nutritionPreview.length > 0" class="list-unstyled mb-0">
-              <li v-for="n in nutritionPreview" :key="n.code"
-                  class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
-                <span class="small">{{ nutrientLabels[n.code] ?? n.name ?? n.code }}</span>
-                <span class="fw-semibold small">{{ formatAmount(n) }}</span>
-              </li>
-            </ul>
+              <ul v-else-if="nutritionPreview.length > 0" class="list-unstyled mb-0">
+                <li v-for="n in nutritionPreview" :key="n.code"
+                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
+                  <span class="small">{{ nutrientLabels[n.code] ?? n.name ?? n.code }}</span>
+                  <span class="fw-semibold small">{{ formatAmount(n) }}</span>
+                </li>
+              </ul>
 
-            <div v-else class="p-3 text-center text-muted">
-              <small>No data yet. Log meals in the Food Diary to see your nutrition breakdown.</small><br>
-              <RouterLink to="/diary" class="btn btn-gf-outline btn-sm mt-2">Go to Food Diary</RouterLink>
+              <div v-else class="p-3 text-center text-muted">
+                <small>No data yet. Log meals in the Food Diary to see your nutrition breakdown.</small>
+              </div>
             </div>
           </div>
-
-          <div class="card-footer text-center border-0 bg-transparent">
-            <RouterLink to="/nutrition" class="text-success small fw-bold">Open Nutrition Overview</RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
     </div>
 
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="card card-gf h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Recipes</span>
-            <RouterLink to="/recipes" class="btn btn-gf btn-sm">Browse</RouterLink>
+        <RouterLink to="/recipes" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Recipes</span>
+              <span class="btn btn-gf btn-sm">Browse</span>
+            </div>
+            <div class="card-body p-3 text-center text-muted">
+              <small>Browse the recipe library to save favourites.</small>
+            </div>
           </div>
-          <div class="card-body p-3 text-center text-muted">
-            <small>Browse the recipe library to save favourites.</small><br>
-            <RouterLink to="/recipes" class="btn btn-gf-outline btn-sm mt-2">Browse Recipes</RouterLink>
-          </div>
-          <div class="card-footer text-center border-0 bg-transparent">
-            <RouterLink to="/recipes" class="text-success small fw-bold">Open Recipes</RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
 
       <div class="col-md-4">
-        <div class="card card-gf h-100">
-          <div class="card-header">Professional Support</div>
-          <div class="card-body text-center text-muted p-3">
-            <small>No professional assigned yet. Messages will appear here once a nutritionist is linked to your account.</small><br>
-            <RouterLink to="/messages" class="btn btn-gf-outline btn-sm mt-2">Go to Messages</RouterLink>
+        <RouterLink to="/messages" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Professional Support</span>
+              <span class="btn btn-gf btn-sm">Messages</span>
+            </div>
+            <div class="card-body p-3">
+              <div v-if="loadingPro" class="text-center text-muted"><small>Loading…</small></div>
+              <div v-else-if="professional" class="d-flex align-items-center gap-2">
+                <div class="avatar-circle flex-shrink-0" style="width:36px;height:36px;font-size:0.8rem;">
+                  {{ initialsFor(professional.professional.fullName) }}
+                </div>
+                <div>
+                  <div class="fw-semibold small">{{ professional.professional.fullName }}</div>
+                  <div class="text-muted" style="font-size:0.75rem;">Your assigned nutritionist</div>
+                </div>
+              </div>
+              <div v-else class="text-center text-muted">
+                <small>No professional assigned yet. A nutritionist will appear here once linked to your account.</small>
+              </div>
+            </div>
           </div>
-          <div class="card-footer text-center border-0 bg-transparent">
-            <RouterLink to="/messages" class="text-success small fw-bold">Open Messages</RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
 
       <div class="col-md-4">
-        <div class="card card-gf h-100">
-          <div class="card-header">Goals & Progress</div>
-          <div class="card-body text-center text-muted p-3">
-            <small>No active goals yet.</small><br>
-            <RouterLink to="/goals" class="btn btn-gf-outline btn-sm mt-2">Set a Goal</RouterLink>
+        <RouterLink to="/goals" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Goals & Progress</span>
+              <span class="btn btn-gf btn-sm">View All</span>
+            </div>
+            <div class="card-body p-3">
+              <div v-if="loadingGoals" class="text-center text-muted"><small>Loading…</small></div>
+              <div v-else-if="goals.length === 0" class="text-center text-muted">
+                <small>No active goals yet.</small>
+              </div>
+              <ul v-else class="list-unstyled mb-0">
+                <li v-for="goal in goals.slice(0, 3)" :key="goal.goalId"
+                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
+                  <span class="small fw-semibold">{{ goal.nutrient?.name ?? 'Custom goal' }}</span>
+                  <span class="text-muted" style="font-size:0.75rem;">{{ goalRange(goal) }}</span>
+                </li>
+              </ul>
+              <div v-if="goals.length > 3" class="text-muted text-center mt-1" style="font-size:0.75rem;">
+                +{{ goals.length - 3 }} more
+              </div>
+            </div>
           </div>
-          <div class="card-footer text-center border-0 bg-transparent">
-            <RouterLink to="/goals" class="text-success small fw-bold">Open Goals</RouterLink>
-          </div>
-        </div>
+        </RouterLink>
       </div>
     </div>
 
@@ -201,7 +230,18 @@ const dashboard = ref(null)
 const loading = ref(true)
 const error = ref('')
 
+const professional = ref(null)
+const loadingPro = ref(true)
+
+const goals = ref([])
+const loadingGoals = ref(true)
+
 onMounted(async () => {
+  await Promise.all([loadDashboard(), loadProfessional(), loadGoals()])
+})
+
+async function loadDashboard() {
+  loading.value = true
   try {
     const res = await apiFetch('/api/diary/dashboard')
     const data = await res.json().catch(() => ({}))
@@ -215,7 +255,33 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+async function loadProfessional() {
+  loadingPro.value = true
+  try {
+    const res = await apiFetch('/api/client/professionals')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) professional.value = (data.professionals ?? [])[0] ?? null
+  } catch {
+    // non-critical, silently ignore
+  } finally {
+    loadingPro.value = false
+  }
+}
+
+async function loadGoals() {
+  loadingGoals.value = true
+  try {
+    const res = await apiFetch('/api/goals')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) goals.value = data.goals ?? []
+  } catch {
+    // non-critical, silently ignore
+  } finally {
+    loadingGoals.value = false
+  }
+}
 
 const quickStats = computed(() => dashboard.value?.quickStats ?? {})
 const foodDiaryPreview = computed(() => (dashboard.value?.foodDiaryPreview ?? []).filter(e => (e.items?.length ?? 0) > 0))
@@ -236,5 +302,20 @@ function formatAmount(n) {
   const value = Number(n.totalAmount ?? 0)
   const unit = n.unit ?? 'g'
   return `${Math.round(value)}${unit}`
+}
+
+function initialsFor(name) {
+  if (!name) return '?'
+  return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?'
+}
+
+function goalRange(goal) {
+  const min = goal.targetMin
+  const max = goal.targetMax
+  const unit = goal.nutrient?.unit ? ` ${goal.nutrient.unit}` : ''
+  if (min != null && max != null) return `${min}–${max}${unit}`
+  if (min != null) return `≥ ${min}${unit}`
+  if (max != null) return `≤ ${max}${unit}`
+  return ''
 }
 </script>

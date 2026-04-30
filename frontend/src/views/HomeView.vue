@@ -18,12 +18,6 @@
             <a href="#features" class="btn btn-gf-outline mt-3 ms-2 px-4">Learn More</a>
           </div>
 
-          <div class="col-md-6 mt-4 mt-md-0">
-            <div class="rounded"
-                 style="background:#e0e0e0;height:260px;display:flex;align-items:center;justify-content:center;color:#aaa;">
-              [ Image Placeholder ]
-            </div>
-          </div>
 
         </div>
       </div>

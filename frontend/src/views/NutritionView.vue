@@ -8,152 +8,359 @@
         <h4 style="color:#5a9e56;" class="mb-0">Nutritional Overview</h4>
         <small class="text-secondary">Detailed breakdown of your nutritional intake</small>
       </div>
-      <div class="d-flex gap-2">
-        <button v-for="p in periods" :key="p"
-                class="btn btn-sm"
-                :class="activePeriod === p ? 'btn-gf' : 'btn-outline-secondary'"
-                @click="activePeriod = p">
-          {{ p }}
-        </button>
+      <div class="d-flex align-items-end gap-2">
+        <div class="d-flex gap-1">
+          <button v-for="p in PERIOD_OPTIONS" :key="p.value"
+                  class="btn btn-sm"
+                  :class="period === p.value ? 'btn-gf' : 'btn-outline-secondary'"
+                  @click="period = p.value; load()">
+            {{ p.label }}
+          </button>
+        </div>
+        <input type="date" class="form-control form-control-sm" style="width:140px;"
+               v-model="endDate" @change="load()">
       </div>
     </div>
 
-    <div class="row g-4 mb-4">
+    <div v-if="loading" class="text-center text-muted py-5"><small>Loading…</small></div>
+    <div v-else-if="error" class="alert alert-danger small">{{ error }}</div>
 
-      <div class="col-md-4">
-        <div class="card border p-3 text-center h-100">
-          <h6 class="fw-bold mb-3" style="color:#5a9e56;">Calories</h6>
-          <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
-            <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"/>
-            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#5a9e56">No data</text>
-            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
-          </svg>
-          <div class="mt-2 text-start small text-muted">
-            <div>Eaten: -</div>
-            <div>Remaining: -</div>
-            <div>Goal: 2,000 kcal</div>
+    <template v-else>
+
+      <div class="row g-4 mb-4">
+
+        <div class="col-md-4">
+          <div class="card border p-3 text-center h-100">
+            <h6 class="fw-bold mb-2" style="color:#5a9e56;">Calories</h6>
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+              <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+              <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"
+                      stroke-dasharray="389.6"
+                      :stroke-dashoffset="calorieOffset"
+                      stroke-linecap="round"
+                      transform="rotate(-90 80 80)"/>
+              <text x="80" y="74" text-anchor="middle" font-size="18" font-weight="bold" fill="#5a9e56">
+                {{ nutrient('calories')?.totalAmount ?? 0 }}
+              </text>
+              <text x="80" y="90" text-anchor="middle" font-size="10" fill="#888">kcal</text>
+            </svg>
+            <div class="mt-2 text-start small text-muted">
+              <div>Eaten: <strong>{{ nutrient('calories')?.totalAmount ?? 0 }} kcal</strong></div>
+              <div>Reference: <strong>2,000 kcal</strong></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="col-md-4">
-        <div class="card border p-3 text-center h-100">
-          <h6 class="fw-bold mb-3" style="color:#5a9e56;">Macronutrients</h6>
-          <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
-            <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"/>
-            <text x="80" y="76" text-anchor="middle" font-size="13" fill="#5a9e56">No data</text>
-            <text x="80" y="92" text-anchor="middle" font-size="10" fill="#5a9e56">Log meals to begin</text>
-          </svg>
-          <div class="mt-2 text-start small text-muted">
-            <div>Carbs: -</div>
-            <div>Protein: -</div>
-            <div>Fat: -</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card border p-3 h-100">
-          <h6 class="fw-bold mb-3" style="color:#5a9e56;">Today's Insights</h6>
-          <div class="text-muted small p-2">
-            Insights will appear here once you have logged meals for the day.
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <h6 class="fw-bold mb-2" style="color:#5a9e56;">Full Nutrient Breakdown</h6>
-    <div class="table-responsive mb-4">
-      <table class="table table-sm table-striped border">
-        <thead style="background:#5a9e56;color:#fff;">
-          <tr>
-            <th>Nutrient</th>
-            <th>Eaten</th>
-            <th>Target</th>
-            <th>Status</th>
-            <th>Progress</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="n in nutrients" :key="n.name">
-            <td class="small">{{ n.name }}</td>
-            <td class="small">{{ n.eaten }}</td>
-            <td class="small">{{ n.target }}</td>
-            <td class="small" :class="statusClass(n.status)">{{ n.status }}</td>
-            <td style="width:100px;">
-              <div class="progress" style="height:8px;">
-                <div class="progress-bar"
-                     :style="`width:${n.pct}%;background-color:${statusColor(n.status)};`">
-                </div>
+        <div class="col-md-4">
+          <div class="card border p-3 text-center h-100" style="position:relative;">
+            <h6 class="fw-bold mb-2" style="color:#5a9e56;">Macronutrients</h6>
+            <div style="position:absolute;top:8px;right:8px;text-align:center;">
+              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+                <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                <template v-for="seg in IDEAL_MACRO_SEGS" :key="seg.code">
+                  <circle cx="80" cy="80" r="62" fill="none"
+                          :stroke="seg.color" stroke-width="18"
+                          :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                          :stroke-dashoffset="seg.offset"
+                          transform="rotate(-90 80 80)"/>
+                </template>
+              </svg>
+              <span style="font-size:0.6rem;color:#888;">Ideal</span>
+            </div>
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+              <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+              <template v-for="seg in macroSegs" :key="seg.code">
+                <circle cx="80" cy="80" r="62" fill="none"
+                        :stroke="seg.color" stroke-width="18"
+                        :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                        :stroke-dashoffset="seg.offset"
+                        transform="rotate(-90 80 80)"/>
+              </template>
+              <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Macros</text>
+            </svg>
+            <div class="mt-2 text-start small">
+              <div v-for="m in macroLegend" :key="m.code" class="d-flex align-items-center gap-1 mb-1">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
+                      :style="`background:${m.color};`"></span>
+                <span class="text-muted">{{ m.name }}:</span>
+                <strong>{{ m.amount }} {{ m.unit }}</strong>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
-    <div class="card border p-3 mb-4">
-      <div class="d-flex align-items-end gap-2 justify-content-center"
-           style="height:120px;position:relative;">
-        <div style="position:absolute;top:24%;left:0;right:0;border-top:1px dashed #e8a820;pointer-events:none;">
-          <small style="position:absolute;right:0;top:-14px;color:#e8a820;">Goal: 2,000</small>
-        </div>
-        <div v-for="bar in weekBars" :key="bar.day"
-             class="d-flex flex-column align-items-center" style="flex:1;max-width:80px;">
-          <small :style="`font-size:0.65rem;color:${bar.over ? '#d94f4f' : '#2a5a28'};`">{{ bar.val }}</small>
-          <div :style="`height:${bar.height}px;background:${bar.over ? '#e8b0a0' : '#d6e8d4'};border:1px solid ${bar.over ? '#d06050' : '#7aaa76'};width:100%;border-radius:2px 2px 0 0;margin-top:auto;`">
+            </div>
           </div>
-          <small style="font-size:0.65rem;color:#555;">{{ bar.day }}</small>
         </div>
+
+        <div class="col-md-4">
+          <div class="card border p-3 text-center h-100" style="position:relative;">
+            <h6 class="fw-bold mb-2" style="color:#5a9e56;">Micronutrients</h6>
+            <div style="position:absolute;top:8px;right:8px;text-align:center;">
+              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+                <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+                <template v-for="seg in IDEAL_MICRO_SEGS" :key="seg.code">
+                  <circle cx="80" cy="80" r="62" fill="none"
+                          :stroke="seg.color" stroke-width="18"
+                          :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                          :stroke-dashoffset="seg.offset"
+                          transform="rotate(-90 80 80)"/>
+                </template>
+              </svg>
+              <span style="font-size:0.6rem;color:#888;">Ideal</span>
+            </div>
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+              <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
+              <template v-for="seg in microSegs" :key="seg.code">
+                <circle cx="80" cy="80" r="62" fill="none"
+                        :stroke="seg.color" stroke-width="18"
+                        :stroke-dasharray="`${seg.dash} ${seg.gap}`"
+                        :stroke-dashoffset="seg.offset"
+                        transform="rotate(-90 80 80)"/>
+              </template>
+              <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Micros</text>
+            </svg>
+            <div class="mt-2 text-start small">
+              <div v-for="m in microLegend" :key="m.code" class="d-flex align-items-center gap-1 mb-1">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
+                      :style="`background:${m.color};`"></span>
+                <span class="text-muted">{{ m.name }}:</span>
+                <strong>{{ m.amount }} {{ m.unit }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <small class="text-muted mt-2 d-block">* Today's count is still in progress</small>
-    </div>
+
+      <h6 class="fw-bold mb-2" style="color:#5a9e56;">Full Nutrient Breakdown</h6>
+      <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped border">
+          <thead style="background:#5a9e56;color:#fff;">
+            <tr>
+              <th class="small">Nutrient</th>
+              <th class="small">Amount</th>
+              <th class="small">Unit</th>
+              <th class="small">Reference</th>
+              <th class="small">Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="breakdown.length === 0">
+              <td colspan="5" class="text-center text-muted small py-3">No data for this period. Log meals to see your breakdown.</td>
+            </tr>
+            <tr v-for="row in breakdown" :key="row.code">
+              <td class="small fw-semibold">{{ row.name }}</td>
+              <td class="small">{{ row.amount }}</td>
+              <td class="small text-muted">{{ row.unit }}</td>
+              <td class="small text-muted">{{ row.reference }}</td>
+              <td style="width:120px;">
+                <div class="progress" style="height:8px;">
+                  <div class="progress-bar" :style="`width:${row.pct}%;background-color:${row.color};`"></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
+      <div class="card border p-3 mb-4">
+        <div class="d-flex align-items-end gap-2 justify-content-center"
+             style="height:120px;position:relative;">
+          <div style="position:absolute;top:24%;left:0;right:0;border-top:1px dashed #e8a820;pointer-events:none;">
+            <small style="position:absolute;right:0;top:-14px;color:#e8a820;">Goal: 2,000</small>
+          </div>
+          <div v-for="bar in weekBars" :key="bar.day"
+               class="d-flex flex-column align-items-center" style="flex:1;max-width:80px;">
+            <small :style="`font-size:0.65rem;color:${bar.over ? '#d94f4f' : '#2a5a28'};`">{{ bar.val }}</small>
+            <div :style="`height:${bar.height}px;background:${bar.over ? '#e8b0a0' : '#d6e8d4'};border:1px solid ${bar.over ? '#d06050' : '#7aaa76'};width:100%;border-radius:2px 2px 0 0;margin-top:auto;`">
+            </div>
+            <small style="font-size:0.65rem;color:#555;">{{ bar.day }}</small>
+          </div>
+        </div>
+        <small class="text-muted mt-2 d-block">* Today's count is still in progress</small>
+      </div>
+
+    </template>
 
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { apiFetch } from '../auth.js'
 
-const periods = ['Today', 'Week', 'Month']
-const activePeriod = ref('Today')
-
-// targets follow NHS reference intakes. Eaten values come from the diary API once wired up.
-const blank = { eaten: '-', status: '-', pct: 0 }
-const nutrients = [
-  { name: 'Calories', target: '2,000', ...blank },
-  { name: 'Protein', target: '55g', ...blank },
-  { name: 'Carbohydrates', target: '260g', ...blank },
-  { name: 'Of which Sugars', target: '30g max', ...blank },
-  { name: 'Fat (total)', target: '70g', ...blank },
-  { name: 'Saturated Fat', target: '20g max', ...blank },
-  { name: 'Fibre', target: '30g', ...blank },
-  { name: 'Salt (Sodium)', target: '6g max', ...blank },
+const PERIOD_OPTIONS = [
+  { label: 'Today', value: 'daily' },
+  { label: 'Week', value: 'weekly' },
+  { label: 'Month', value: 'monthly' },
 ]
 
-const weekBars = [
-  { day: 'Mon', val: '-', height: 0, over: false },
-  { day: 'Tue', val: '-', height: 0, over: false },
-  { day: 'Wed', val: '-', height: 0, over: false },
-  { day: 'Thu', val: '-', height: 0, over: false },
-  { day: 'Fri', val: '-', height: 0, over: false },
-  { day: 'Sat', val: '-', height: 0, over: false },
-  { day: 'Today', val: '-', height: 0, over: false },
-]
+const todayIso = () => new Date().toISOString().slice(0, 10)
 
-function statusClass(s) {
-  if (s === 'OK' || s === 'Good') return 'status-ok'
-  if (s === 'Low' || s === 'Very Low') return 'status-low'
-  if (s === 'High') return 'status-high'
-  return ''
+const period = ref('daily')
+const endDate = ref(todayIso())
+const loading = ref(true)
+const error = ref('')
+const nutrients = ref([])
+const weekBars = ref([])
+
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    const params = new URLSearchParams({ period: period.value, endDate: endDate.value })
+    const [summaryRes, dashRes] = await Promise.all([
+      apiFetch(`/api/diary/summary?${params}`),
+      apiFetch('/api/diary/dashboard'),
+    ])
+
+    const summaryData = await summaryRes.json().catch(() => ({}))
+    if (!summaryRes.ok) {
+      error.value = summaryData.error || summaryData.message || 'Failed to load nutrition data'
+      return
+    }
+    nutrients.value = summaryData.summary?.nutrients ?? []
+
+    const dashData = await dashRes.json().catch(() => ({}))
+    if (dashRes.ok) {
+      const trend = dashData.dashboardData?.weeklyCaloryTrend ?? dashData.weeklyCaloryTrend ?? []
+      weekBars.value = buildWeekBars(trend)
+    }
+  } catch {
+    error.value = 'Network error - could not load nutrition data'
+  } finally {
+    loading.value = false
+  }
 }
 
-function statusColor(s) {
-  if (s === 'OK' || s === 'Good') return '#5a9e56'
-  if (s === 'Low' || s === 'Very Low') return '#e8a820'
-  if (s === 'High') return '#d94f4f'
-  return '#5a9e56'
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const MAX_BAR_H = 90
+const CALORIE_GOAL = 2000
+
+function buildWeekBars(trend) {
+  if (!trend.length) {
+    return DAY_LABELS.map(day => ({ day, val: '-', height: 0, over: false }))
+  }
+  const maxCal = Math.max(...trend.map(d => d.calories), CALORIE_GOAL)
+  const todayStr = todayIso()
+  return trend.map((d, i) => {
+    const cal = Math.round(d.calories)
+    const isToday = d.date === todayStr
+    return {
+      day: isToday ? 'Today' : DAY_LABELS[i] ?? d.date.slice(5),
+      val: cal > 0 ? String(cal) : '-',
+      height: cal > 0 ? Math.max(2, Math.round((cal / maxCal) * MAX_BAR_H)) : 0,
+      over: cal > CALORIE_GOAL,
+    }
+  })
 }
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+
+const REFERENCES = {
+  calories:      { ref: 2000, unit: 'kcal', label: '2,000 kcal' },
+  protein:       { ref: 50,   unit: 'g',    label: '50 g' },
+  carbohydrates: { ref: 260,  unit: 'g',    label: '260 g' },
+  fat:           { ref: 70,   unit: 'g',    label: '70 g' },
+  fibre:         { ref: 30,   unit: 'g',    label: '30 g' },
+  sugar:         { ref: 30,   unit: 'g',    label: '≤ 30 g' },
+  salt:          { ref: 6,    unit: 'g',    label: '≤ 6 g' },
+}
+
+const NUTRIENT_COLORS = {
+  carbohydrates: '#4e9af1',
+  protein:       '#5a9e56',
+  fat:           '#e8a820',
+  fibre:         '#a86cc1',
+  sugar:         '#d94f4f',
+  salt:          '#6ec6c2',
+}
+
+const MACRO_CODES = ['carbohydrates', 'protein', 'fat']
+const MICRO_CODES = ['fibre', 'sugar', 'salt']
+
+const SVG_CIRC = 2 * Math.PI * 62  // ≈ 389.6
+
+function nutrient(code) {
+  return nutrients.value.find(n => n.code === code)
+}
+
+const calorieOffset = computed(() => {
+  const eaten = nutrient('calories')?.totalAmount ?? 0
+  const pct = Math.min(eaten / REFERENCES.calories.ref, 1)
+  return SVG_CIRC * (1 - pct)
+})
+
+function buildSegments(codes) {
+  const amounts = codes.map(code => nutrient(code)?.totalAmount ?? 0)
+  const total = amounts.reduce((s, v) => s + v, 0) || 1
+  let cumulative = 0
+  return codes.map((code, i) => {
+    const dash = (amounts[i] / total) * SVG_CIRC
+    const gap = SVG_CIRC - dash
+    const offset = SVG_CIRC - cumulative
+    cumulative += dash
+    return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
+  })
+}
+
+function buildIdealSegments(codes) {
+  const amounts = codes.map(code => REFERENCES[code]?.ref ?? 0)
+  const total = amounts.reduce((s, v) => s + v, 0) || 1
+  let cumulative = 0
+  return codes.map((code, i) => {
+    const dash = (amounts[i] / total) * SVG_CIRC
+    const gap = SVG_CIRC - dash
+    const offset = SVG_CIRC - cumulative
+    cumulative += dash
+    return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
+  })
+}
+
+const macroSegs = computed(() => buildSegments(MACRO_CODES))
+const microSegs = computed(() => buildSegments(MICRO_CODES))
+
+const IDEAL_MACRO_SEGS = buildIdealSegments(MACRO_CODES)
+const IDEAL_MICRO_SEGS = buildIdealSegments(MICRO_CODES)
+
+function cap(str) {
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function buildLegend(codes) {
+  return codes.map(code => {
+    const n = nutrient(code)
+    return {
+      code,
+      name: cap(n?.name ?? code),
+      amount: n?.totalAmount ?? 0,
+      unit: n?.unit ?? 'g',
+      color: NUTRIENT_COLORS[code],
+    }
+  })
+}
+
+const macroLegend = computed(() => buildLegend(MACRO_CODES))
+const microLegend = computed(() => buildLegend(MICRO_CODES))
+
+const breakdown = computed(() => {
+  return nutrients.value.map(n => {
+    const ref = REFERENCES[n.code]
+    const pct = ref ? Math.min((n.totalAmount / ref.ref) * 100, 100) : null
+    const color = pct == null ? '#aaa'
+      : pct < 50 ? '#e8a820'
+      : pct <= 100 ? '#5a9e56'
+      : '#d94f4f'
+    return {
+      code: n.code,
+      name: cap(n.name),
+      amount: n.totalAmount,
+      unit: n.unit,
+      reference: ref?.label ?? '-',
+      pct: pct ?? 50,
+      color,
+    }
+  })
+})
+
+onMounted(load)
 </script>
