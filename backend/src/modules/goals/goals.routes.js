@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createGoal, deleteGoal, getGoals, updateGoal } from "./goals.controller.js";
+import { createGoal, deleteGoal, getGoals, updateGoal, toggleGoalDone } from "./goals.controller.js";
 
 const goalsRouter = Router();
 
@@ -10,7 +10,6 @@ goalsRouter.patch("/", updateGoal);
 goalsRouter.post("/", createGoal);
 goalsRouter.delete("/:goalId", deleteGoal);
 
-// goalsRouter.delete("/goals/:goalId/delete") // will archive the goal
-// goalsRouter.patch("/goals/:goalId/done") //set goal done for today
+goalsRouter.patch("/:goalId/toggle-done", toggleGoalDone) //toggle goal done
 
 export default goalsRouter;

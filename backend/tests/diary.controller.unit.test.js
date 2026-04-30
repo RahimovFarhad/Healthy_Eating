@@ -15,6 +15,7 @@ const mockGetNutritionSummary = jest.fn();
 const mockListDiaryEntries = jest.fn();
 const mockGetDiaryEntryById = jest.fn();
 const mockCreateDiaryEntryItem = jest.fn();
+const mockCreateRecipeAsDiaryEntryItemService = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
 const mockDeleteExistingDiaryEntry = jest.fn();
 const mockDeleteExistingDiaryEntryItem = jest.fn();
@@ -28,6 +29,7 @@ jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
   listDiaryEntries: mockListDiaryEntries,
   getDiaryEntryById: mockGetDiaryEntryById,
   createDiaryEntryItem: mockCreateDiaryEntryItem,
+  createRecipeAsDiaryEntryItemService: mockCreateRecipeAsDiaryEntryItemService,
   updateDiaryEntryItem: mockUpdateDiaryEntryItem,
   deleteExistingDiaryEntry: mockDeleteExistingDiaryEntry,
   deleteExistingDiaryEntryItem: mockDeleteExistingDiaryEntryItem,

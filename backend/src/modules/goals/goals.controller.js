@@ -1,10 +1,13 @@
-import { GoalError, normalizeBooleanQuery, normalizeGoalId, validateUpdateGoalInput } from "./goals.validator.js";
-import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal } from "./goals.service.js";
+import { GoalError, normalizeBooleanQuery, normalizeGoalId, normalizeGoalIncludeQuery, validateUpdateGoalInput } from "./goals.validator.js";
+import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, toggleGoalDoneForToday } from "./goals.service.js";
 
 function getGoalErrorStatus(errorMessage) {
   if (errorMessage === "Goal not found") return 404;
   if (errorMessage === "Unauthorized to archive this goal") return 403;
   if (errorMessage === "Goal is already archived") return 409;
+  if (errorMessage === "Goal is archived") return 409;
+  if (errorMessage === "Goal has not started yet") return 409;
+  if (errorMessage === "Goal end date has passed") return 409;
   return 400;
 }
 
@@ -12,7 +15,8 @@ async function getGoals(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
     const effective = normalizeBooleanQuery(req.query?.effective, true);
-    const goals = await getGoalsService({ subscriberId, effective });
+    const include = normalizeGoalIncludeQuery(req.query?.include, "none");
+    const goals = await getGoalsService({ subscriberId, effective, include });
 
     return res.status(200).json({ goals });
   } catch (error) {
@@ -74,4 +78,19 @@ async function createGoal(req, res, next) {
   }
 }
 
-export { getGoals, updateGoal, deleteGoal, createGoal };
+async function toggleGoalDone(req, res, next) {
+  try {
+    const subscriberId = req.user?.userId ?? null;
+    const goalId = normalizeGoalId(req.params?.goalId);
+    const checkIn = await toggleGoalDoneForToday({ subscriberId, goalId });
+
+    return res.status(200).json({ checkIn });
+  } catch (error) {
+    if (error instanceof GoalError) {
+      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+    }
+    return next(error);
+  }
+}
+
+export { getGoals, updateGoal, deleteGoal, createGoal, toggleGoalDone };

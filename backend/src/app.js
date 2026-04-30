@@ -10,6 +10,8 @@ import recipesRouter from "./modules/recipes/recipes.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
 
+import mealPlansRouter from "./modules/meal-plans/meal-plans.routes.js";
+
 const app = express();
 
 app.use(express.json({ limit: "1mb" }));
@@ -21,7 +23,7 @@ app.use("/goals", requireAuth, goalRouter);
 app.use("/professional", requireAuth, professionalRouter)
 app.use("/client", requireAuth, clientRouter)
 app.use("/api/recipes", recipesRouter)
-
+app.use("/api/meal-plans", requireAuth, mealPlansRouter)
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ ok: true, db: "ok" });

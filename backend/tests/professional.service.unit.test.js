@@ -17,6 +17,8 @@ const mockInsertMessage = jest.fn();
 const mockListMessages = jest.fn();
 const mockListProfessionalClients = jest.fn();
 const mockUpdateRoleToProfessional = jest.fn();
+const mockCreateSharedRecipe = jest.fn();
+const mockListSharedRecipes = jest.fn();
 
 const mockValidateInviteClientInput = jest.fn();
 const mockValidateListClientsInput = jest.fn();
@@ -25,6 +27,7 @@ const mockValidateProfessionalId = jest.fn();
 const mockValidateRelationshipInput = jest.fn();
 const mockValidateSetGoalInput = jest.fn();
 const mockValidateSummaryInput = jest.fn();
+const mockValidateRecipeId = jest.fn();
 
 jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
   getDashboardDataForSubscriber: mockgetDashboardDataForSubscriber,
@@ -44,6 +47,8 @@ jest.unstable_mockModule("../src/modules/professional/professional.repository.js
   listMessages: mockListMessages,
   listProfessionalClients: mockListProfessionalClients,
   updateRoleToProfessional: mockUpdateRoleToProfessional,
+  createSharedRecipe: mockCreateSharedRecipe,
+  listSharedRecipes: mockListSharedRecipes,
 }));
 
 jest.unstable_mockModule("../src/modules/professional/professional.validator.js", () => ({
@@ -55,6 +60,7 @@ jest.unstable_mockModule("../src/modules/professional/professional.validator.js"
   validateRelationshipInput: mockValidateRelationshipInput,
   validateSetGoalInput: mockValidateSetGoalInput,
   validateSummaryInput: mockValidateSummaryInput,
+  validateRecipeId: mockValidateRecipeId,
 }));
 
 const {
@@ -169,6 +175,7 @@ describe("Professional Service", () => {
             expect(mockListProfessionalClients).toHaveBeenCalledWith({
                 professionalId: PROFESSIONAL_ID,
                 includeDetails: true,
+                status: "active",
             });
             expect(result).toEqual(clients);
         });

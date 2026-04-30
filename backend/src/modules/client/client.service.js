@@ -6,6 +6,7 @@ import {
     listClientProfessionals,
     listMessages,
     rejectProfessionalInvitation,
+    listSharedRecipes
 } from "./client.repository.js";
 import {
     ClientError,
@@ -44,9 +45,15 @@ async function rejectInvitationService({ professionalId, clientId }) {
     return rejectProfessionalInvitation(validated);
 }
 
-async function listProfessionalsService({ clientId }) {
+async function listProfessionalsService({ clientId, status = "active" }) {
     const validated = validateClientId({ clientId });
-    return listClientProfessionals({ clientId: validated.clientId });
+    if (status) {
+        if (!["invited", "active", "disabled"].includes(status)) {
+            throw new ClientError("Invalid status value");
+        }
+        validated.status = status;
+    }
+    return listClientProfessionals({ clientId: validated.clientId, status: validated.status });
 }
 
 async function removeProfessionalService({ professionalId, clientId }) {
@@ -84,6 +91,16 @@ async function ensureProfessionalClientRelation({ professionalId, clientId }) {
     return validated;
 }
 
+async function listSharedRecipesService({ professionalId, clientId }) {
+    const validated = validateClientProfessionalInput({ professionalId, clientId });
+
+    await ensureProfessionalClientRelation(validated);
+
+    return listSharedRecipes(validated);
+
+
+}
+
 export {
     acceptInvitationService,
     rejectInvitationService,
@@ -91,4 +108,5 @@ export {
     removeProfessionalService,
     sendMessageToProfessional,
     listMessagesService,
+    listSharedRecipesService
 };

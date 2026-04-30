@@ -39,11 +39,11 @@ async function rejectProfessionalInvitation({ professionalId, clientId }) {
     });
 }
 
-async function listClientProfessionals({ clientId }) {
+async function listClientProfessionals({ clientId, status }) {
     return prisma.professionalClient.findMany({
         where: {
             subscriberId: clientId,
-            status: "active",
+            status: status,
         },
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {
@@ -98,6 +98,31 @@ async function listMessages({ professionalId, clientId }) {
     });
 }
 
+async function listSharedRecipes({ professionalId, clientId }) {
+    return prisma.sharedRecipe.findMany({
+        where: {
+            professionalId,
+            subscriberId: clientId,
+        },
+        orderBy: [{ createdAt: "desc" }, { sharedRecipeId: "desc" }], 
+        select: {
+            sharedRecipeId: true,
+            professionalId: true,
+            subscriberId: true,
+            recipeId: true,
+            createdAt: true,
+            recipe: {
+                select: {
+                    recipeId: true,
+                    name: true,
+                    description: true,
+                    imageUrl: true,
+                },
+            },
+        },
+    });
+}
+
 export {
     findProfessionalClientLink,
     acceptProfessionalInvitation,
@@ -106,4 +131,5 @@ export {
     disableProfessionalClientLink,
     insertMessage,
     listMessages,
+    listSharedRecipes
 };
