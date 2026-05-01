@@ -342,33 +342,58 @@
                    class="text-muted small mb-3">No goals set.</div>
               <ul v-else class="list-unstyled small mb-3">
                 <li v-for="goal in client.goals.data" :key="goal.goalId"
-                    class="mb-1 pb-1 border-bottom">
-                  <span class="fw-semibold">{{ goal.nutrient?.name ?? 'Custom goal' }}</span>
-                  <span class="text-muted ms-1">{{ goalRange(goal) }}</span>
-                  <span class="badge ms-1"
-                        :style="`background:${goalSourceColor(goal.source)};font-size:0.65rem;`">
-                    {{ goal.source }}
-                  </span>
+                    class="mb-1 pb-1 border-bottom d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="fw-semibold">{{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}</span>
+                    <span class="text-muted ms-1">{{ goalRange(goal) }}</span>
+                    <span class="badge ms-1"
+                          :style="`background:${goalSourceColor(goal.source)};font-size:0.65rem;`">
+                      {{ goalSourceLabel(goal.source) }}
+                    </span>
+                    <div v-if="goal.notes && goal.nutrient" class="text-muted" style="font-size:0.7rem;">
+                      {{ goal.notes }}
+                    </div>
+                  </div>
+                  <span class="text-muted" style="font-size:0.7rem;">{{ goalRangeDates(goal) }}</span>
                 </li>
               </ul>
 
               <div class="add-meal-panel">
                 <h6 class="fw-bold mb-2" style="color:#5a9e56;">Set a Goal</h6>
+
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                  <button v-for="preset in goalPresets" :key="preset.title"
+                          class="btn btn-gf-outline btn-sm py-0"
+                          @click="applyGoalPreset(client, preset)">
+                    {{ preset.title }}
+                  </button>
+                </div>
+
                 <div class="row g-2 mb-2">
                   <div class="col-md-4">
-                    <label class="form-label form-label-sm">Nutrient ID (optional)</label>
-                    <input type="number" class="form-control form-control-sm"
-                           v-model.number="client.goalDraft.nutrientId" min="1">
+                    <label class="form-label form-label-sm">Tracked Nutrient</label>
+                    <select class="form-select form-select-sm" v-model="client.goalDraft.nutrientId">
+                      <option :value="null">No specific nutrient</option>
+                      <option v-for="n in nutrients" :key="n.nutrientId" :value="n.nutrientId">
+                        {{ n.name }} ({{ n.unit }})
+                      </option>
+                    </select>
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label form-label-sm">Target Min</label>
-                    <input type="number" class="form-control form-control-sm"
-                           v-model.number="client.goalDraft.targetMin">
+                  <div class="col-md-4">
+                    <label class="form-label form-label-sm">
+                      Target Min{{ nutrientUnitFor(client.goalDraft.nutrientId) ? ` (${nutrientUnitFor(client.goalDraft.nutrientId)})` : '' }}
+                    </label>
+                    <input type="number" class="form-control form-control-sm" step="any" min="0"
+                           v-model.number="client.goalDraft.targetMin"
+                           :disabled="!client.goalDraft.nutrientId">
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label form-label-sm">Target Max</label>
-                    <input type="number" class="form-control form-control-sm"
-                           v-model.number="client.goalDraft.targetMax">
+                  <div class="col-md-4">
+                    <label class="form-label form-label-sm">
+                      Target Max{{ nutrientUnitFor(client.goalDraft.nutrientId) ? ` (${nutrientUnitFor(client.goalDraft.nutrientId)})` : '' }}
+                    </label>
+                    <input type="number" class="form-control form-control-sm" step="any" min="0"
+                           v-model.number="client.goalDraft.targetMax"
+                           :disabled="!client.goalDraft.nutrientId">
                   </div>
                 </div>
                 <div class="row g-2 mb-2">
@@ -425,6 +450,15 @@ const loading = ref(true)
 const error = ref('')
 const expandedId = ref(null)
 const activeTab = reactive({})
+const nutrients = ref([])
+
+const goalPresets = [
+  { title: 'Calories ≤ 2000', nutrientCode: 'calories', targetMax: 2000, durationDays: 30, notes: 'Stay within daily calorie target' },
+  { title: 'Protein ≥ 50g', nutrientCode: 'protein', targetMin: 50, durationDays: 30, notes: 'Hit daily protein target' },
+  { title: 'Fibre ≥ 30g', nutrientCode: 'fibre', targetMin: 30, durationDays: 21, notes: 'Reach NHS fibre recommendation' },
+  { title: 'Sugar ≤ 30g', nutrientCode: 'sugar', targetMax: 30, durationDays: 30, notes: 'Reduce added sugar' },
+  { title: 'Salt ≤ 6g', nutrientCode: 'salt', targetMax: 6, durationDays: 30, notes: 'Lower salt intake' },
+]
 
 const showInvite = ref(false)
 const inviteId = ref(null)
@@ -447,7 +481,54 @@ function blankClientState() {
   }
 }
 
-onMounted(loadClients)
+onMounted(() => {
+  loadClients()
+  loadNutrients()
+})
+
+async function loadNutrients() {
+  try {
+    const res = await apiFetch('/api/goals/nutrients')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) nutrients.value = data.nutrients ?? []
+  } catch {
+    // non-critical
+  }
+}
+
+function nutrientUnitFor(nutrientId) {
+  if (!nutrientId) return ''
+  return nutrients.value.find(n => n.nutrientId === nutrientId)?.unit ?? ''
+}
+
+function nutrientIdByCode(code) {
+  return nutrients.value.find(n => n.code === code)?.nutrientId ?? null
+}
+
+function applyGoalPreset(client, preset) {
+  const start = new Date()
+  const end = new Date()
+  end.setDate(end.getDate() + preset.durationDays)
+  client.goalDraft.nutrientId = nutrientIdByCode(preset.nutrientCode)
+  client.goalDraft.targetMin = preset.targetMin ?? null
+  client.goalDraft.targetMax = preset.targetMax ?? null
+  client.goalDraft.startDate = start.toISOString().slice(0, 10)
+  client.goalDraft.endDate = end.toISOString().slice(0, 10)
+  client.goalDraft.notes = preset.notes
+}
+
+function goalSourceLabel(source) {
+  if (source === 'professional_defined') return 'pro'
+  if (source === 'system_default') return 'system'
+  return 'personal'
+}
+
+function goalRangeDates(goal) {
+  const start = goal.startDate ? new Date(goal.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''
+  const end = goal.endDate ? new Date(goal.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'ongoing'
+  if (!start) return ''
+  return `${start} → ${end}`
+}
 
 async function fetchJson(url, options) {
   const res = await apiFetch(url, options)
