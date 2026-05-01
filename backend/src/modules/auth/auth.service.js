@@ -39,7 +39,7 @@ async function authenticateUser(email, password) {
         tokenType: "access"
     };
 
-    const token = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
+    const token = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
     return token;
 }
 
@@ -104,14 +104,14 @@ async function generateRefreshToken(email) {
         tokenType: "refresh"
     };
 
-    const refreshToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
+    const refreshToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
     // Optionally, you can store the refresh token in the database for later validation.
     return refreshToken;
 }
 
 async function refreshAccessToken(refreshToken) {
     try {
-        const decoded = verify(refreshToken, process.env.JWT_SECRET || "default-secret-key");
+        const decoded = verify(refreshToken, process.env.JWT_SECRET);
 
         if (decoded.tokenType !== "refresh") {
             throw new AuthError("Invalid refresh token");
@@ -134,7 +134,7 @@ async function refreshAccessToken(refreshToken) {
             tokenType: "access"
         };
 
-        const newAccessToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
+        const newAccessToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
         return newAccessToken;
     } catch (error) {
         throw new AuthError("Invalid refresh token");

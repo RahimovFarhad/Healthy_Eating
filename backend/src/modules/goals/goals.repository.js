@@ -75,6 +75,19 @@ async function findNutrientByCode({ nutrientCode }) {
   });
 }
 
+async function listNutrients() {
+  return prisma.nutrient.findMany({
+    orderBy: [{ type: "asc" }, { nutrientId: "asc" }],
+    select: {
+      nutrientId: true,
+      code: true,
+      name: true,
+      unit: true,
+      type: true,
+    },
+  });
+}
+
 async function findGoalByIdForSubscriber({ subscriberId, goalId }) {
   return prisma.nutritionGoal.findFirst({
     where: {
@@ -220,6 +233,7 @@ export {
   fetchGoals,
   findNutrientById,
   findNutrientByCode,
+  listNutrients,
   findGoalByIdForSubscriber,
   archiveGoal,
   updateGoal,

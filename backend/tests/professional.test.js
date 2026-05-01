@@ -102,13 +102,13 @@ describe("Professional API", () => {
 
   describe("PATCH /professional/setAsProfessional", () => {
     test("rejects unauthorized requests", async () => {
-      const res = await request(app).patch("/professional/setAsProfessional");
+      const res = await request(app).patch("/api/professional/setAsProfessional");
 
       expect(res.statusCode).toBe(401);
     });
     test("success on valid input", async () => {
       const res = await request(app)
-        .patch("/professional/setAsProfessional")
+        .patch("/api/professional/setAsProfessional")
         .set("Authorization", `Bearer ${validAccessToken}`)
 
       expect(res.statusCode).toBe(200);
@@ -127,7 +127,7 @@ describe("Professional API", () => {
   });
   describe("POST /professional/inviteClient", () => {
     test("rejects unauthorized requests", async () => {
-      const res = await request(app).post("/professional/client-invitations").send({
+      const res = await request(app).post("/api/professional/client-invitations").send({
         subscriberId: 1,
       });
 
@@ -135,7 +135,7 @@ describe("Professional API", () => {
     });
     test("rejects empty input", async () => {
       const res = await request(app)
-        .post("/professional/client-invitations")
+        .post("/api/professional/client-invitations")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({});
 
@@ -143,7 +143,7 @@ describe("Professional API", () => {
     });
     test("rejects invalid subscriberId", async () => {
       const res = await request(app)
-        .post("/professional/client-invitations")
+        .post("/api/professional/client-invitations")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           subscriberId: "invalid-id",
@@ -153,7 +153,7 @@ describe("Professional API", () => {
     });
     test("rejects non-existing subscriberId", async () => {
       const res = await request(app)
-        .post("/professional/client-invitations")
+        .post("/api/professional/client-invitations")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           subscriberId: 999999, // assuming this ID does not exist
@@ -175,7 +175,7 @@ describe("Professional API", () => {
             { expiresIn: "1h" }
         );
         const res = await request(app)
-          .post("/professional/client-invitations")
+          .post("/api/professional/client-invitations")
           .set("Authorization", `Bearer ${subscriberAccessToken}`)
           .send({
             subscriberId: 999999,
@@ -184,7 +184,7 @@ describe("Professional API", () => {
     });
     test("success on valid input", async () => {
       const res = await request(app)
-        .post("/professional/client-invitations")
+        .post("/api/professional/client-invitations")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           subscriberId: subscriber.userId,
@@ -212,14 +212,14 @@ describe("Professional API", () => {
       });
     });
     test("rejects unauthorized requests", async () => {
-      const res = await request(app).get("/professional/clients");
+      const res = await request(app).get("/api/professional/clients");
 
       expect(res.statusCode).toBe(401);
     });
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get("/professional/clients")
+        .get("/api/professional/clients")
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);
@@ -229,7 +229,7 @@ describe("Professional API", () => {
 
     test("rejects invalid include query", async () => {
       const res = await request(app)
-        .get("/professional/clients")
+        .get("/api/professional/clients")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .query({
           include: "invalid",
@@ -242,7 +242,7 @@ describe("Professional API", () => {
   describe("POST /professional/clients/:clientId/messages", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .post(`/api/professional/clients/${subscriber.userId}/messages`)
         .send({
           message: "Hello",
         });
@@ -252,7 +252,7 @@ describe("Professional API", () => {
 
     test("rejects empty message", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .post(`/api/professional/clients/${subscriber.userId}/messages`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({});
 
@@ -261,7 +261,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/messages`)
+        .post(`/api/professional/clients/${subscriber.userId}/messages`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           message: "Hello from professional",
@@ -277,14 +277,14 @@ describe("Professional API", () => {
   describe("GET /professional/clients/:clientId/messages", () => { 
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/messages`);
+        .get(`/api/professional/clients/${subscriber.userId}/messages`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("rejects invalid clientId", async () => {
       const res = await request(app)
-        .get("/professional/clients/invalid/messages")
+        .get("/api/professional/clients/invalid/messages")
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(400);
@@ -292,7 +292,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/messages`)
+        .get(`/api/professional/clients/${subscriber.userId}/messages`)
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);
@@ -304,14 +304,14 @@ describe("Professional API", () => {
   describe("GET /professional/clients/:clientId/summary", () => { 
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/summary`);
+        .get(`/api/professional/clients/${subscriber.userId}/summary`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("rejects missing period", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .get(`/api/professional/clients/${subscriber.userId}/summary`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .query({
           endDate: "2026-03-09",
@@ -322,7 +322,7 @@ describe("Professional API", () => {
 
     test("rejects invalid endDate", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .get(`/api/professional/clients/${subscriber.userId}/summary`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .query({
           period: "daily",
@@ -334,7 +334,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/summary`)
+        .get(`/api/professional/clients/${subscriber.userId}/summary`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .query({
           period: "daily",
@@ -352,14 +352,14 @@ describe("Professional API", () => {
   describe("GET /professional/clients/:clientId/dashboard", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/dashboard`);
+        .get(`/api/professional/clients/${subscriber.userId}/dashboard`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/dashboard`)
+        .get(`/api/professional/clients/${subscriber.userId}/dashboard`)
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect([200, 500]).toContain(res.statusCode);
@@ -373,7 +373,7 @@ describe("Professional API", () => {
   describe("POST /professional/clients/:clientId/goals", () => { 
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/goals`)
+        .post(`/api/professional/clients/${subscriber.userId}/goals`)
         .send({
           goal: {
             nutrientId: 1,
@@ -385,7 +385,7 @@ describe("Professional API", () => {
 
     test("rejects invalid clientId", async () => {
       const res = await request(app)
-        .post("/professional/clients/invalid/goals")
+        .post("/api/professional/clients/invalid/goals")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           goal: {
@@ -398,7 +398,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {  
         const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/goals`)
+        .post(`/api/professional/clients/${subscriber.userId}/goals`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           goal: {
@@ -419,14 +419,14 @@ describe("Professional API", () => {
   describe("GET /professional/clients/:clientId/goals", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/goals`);
+        .get(`/api/professional/clients/${subscriber.userId}/goals`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/goals`)
+        .get(`/api/professional/clients/${subscriber.userId}/goals`)
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);
@@ -438,14 +438,14 @@ describe("Professional API", () => {
   describe("DELETE /professional/clients/:clientId", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .delete(`/professional/clients/${subscriber.userId}`);
+        .delete(`/api/professional/clients/${subscriber.userId}`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("rejects if professional is not actually a professional", async () => {
       const res = await request(app)
-        .delete(`/professional/clients/${subscriber.userId}`)
+        .delete(`/api/professional/clients/${subscriber.userId}`)
         .set("Authorization", `Bearer ${subscriberAccessToken}`);
 
       expect(res.statusCode).toBe(403);
@@ -453,7 +453,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .delete(`/professional/clients/${subscriber.userId}`)
+        .delete(`/api/professional/clients/${subscriber.userId}`)
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);

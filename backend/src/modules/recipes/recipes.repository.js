@@ -88,7 +88,7 @@ async function toggleRecipeFavorite({ recipeId, subscriberId }) {
 
   if (existingFavorite) {
     await prisma.recipeFavorite.delete({
-      where: { favoriteId: existingFavorite.favoriteId },
+      where: { id: existingFavorite.id },
     });
     return { favorited: false };
   }
@@ -108,7 +108,7 @@ async function favoriteExists({ recipeId, subscriberId }) {
             subscriberId_recipeId: { subscriberId, recipeId },
         },
         select: {
-            favoriteId: true,
+            id: true,
         },
     });
 

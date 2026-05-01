@@ -262,6 +262,7 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
 
 }
@@ -284,6 +285,7 @@ async function deleteDiaryEntry({ diaryEntryId }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
 
 }
@@ -301,8 +303,9 @@ async function deleteDiaryEntryItem({ diaryEntryItemId }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
-    
+
 }
 
 async function getDaysLogged({ subscriberId }) {

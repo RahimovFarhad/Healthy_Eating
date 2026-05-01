@@ -143,7 +143,7 @@ async function getClientGoalsForProfessional({ professionalId, clientId }) {
 
 async function shareRecipeWithClient({ professionalId, clientId, recipeId }) {
     const validated = validateRelationshipInput({ professionalId, clientId });
-    const validatedRecipeId = validateRecipeId({ recipeId }); 
+    const { recipeId: validatedRecipeId } = validateRecipeId({ recipeId });
     validated.recipeId = validatedRecipeId;
 
     await ensureProfessionalClientRelation(validated);

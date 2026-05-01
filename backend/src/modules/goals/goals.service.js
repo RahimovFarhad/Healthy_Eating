@@ -1,4 +1,4 @@
-import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn } from "./goals.repository.js";
+import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn, listNutrients } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, normalizeGoalIncludeQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
 async function getGoalsService({ subscriberId, effective, include }) {
@@ -71,11 +71,11 @@ async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
 
   return insertGoal({
     subscriberId: normalizedSubscriberId,
-    nutrientId: null,
+    nutrientId: validatedGoal.nutrientId,
     source: validatedGoal.source,
     status: "active",
-    targetMin: null,
-    targetMax: null,
+    targetMin: validatedGoal.targetMin,
+    targetMax: validatedGoal.targetMax,
     setByProfessionalId: validatedGoal.setByProfessionalId,
     startDate: validatedGoal.startDate,
     endDate: validatedGoal.endDate,
@@ -149,4 +149,8 @@ async function toggleGoalDoneForToday({ subscriberId, goalId }) {
   });
 }
 
-export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser, toggleGoalDoneForToday };
+async function listNutrientsService() {
+  return listNutrients();
+}
+
+export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser, toggleGoalDoneForToday, listNutrientsService };
