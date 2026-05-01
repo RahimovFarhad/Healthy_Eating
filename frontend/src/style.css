@@ -25,13 +25,19 @@ body {
   flex: 1;
 }
 
-.navbar-gf { background-color: var(--gf-nav); }
+.navbar-gf { 
+  background-color: #ffffff; 
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
-.navbar-gf .nav-link { color: #fff !important; opacity: 0.8; }
+.navbar-gf .nav-link { color: #1a1a1a !important; opacity: 0.8; }
 .navbar-gf .nav-link.active,
-.navbar-gf .nav-link:hover { opacity: 1; font-weight: 600; }
+.navbar-gf .nav-link:hover { opacity: 1; font-weight: 600; color: #1a1a1a !important; }
 
-.navbar-brand-text { color: #fff !important; font-weight: 700; font-size: 1.2rem; }
+.navbar-brand-text { color: #4caf50 !important; font-weight: 700; font-size: 1.2rem; }
 
 .btn-gf {
   background-color: var(--gf-green);

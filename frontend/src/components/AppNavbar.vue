@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-gf px-4">
 
     <RouterLink class="navbar-brand d-flex align-items-center gap-2" to="/">
-      <div style="background:#5a9e56;border-radius:6px;padding:4px 8px;font-size:1.1rem;">🌿</div>
+      <div style="font-size:1.4rem;">🌿</div>
       <span class="navbar-brand-text">GoodFood</span>
     </RouterLink>
 
@@ -11,8 +11,9 @@
             data-bs-target="#navbarMain"
             aria-controls="navbarMain"
             aria-expanded="false"
-            aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+            aria-label="Toggle navigation"
+            style="border-color:#333333;">
+      <span class="navbar-toggler-icon" style="background-image:url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 30 30%27%3e%3cpath stroke=%27%23333333%27 stroke-linecap=%27round%27 stroke-miterlimit=%2710%27 stroke-width=%272%27 d=%27M4 7h22M4 15h22M4 23h22%27/%3e%3c/svg%3e');"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarMain">
@@ -22,10 +23,10 @@
         <li class="nav-item"><a class="nav-link" href="#">About</a></li>
         <li class="nav-item"><a class="nav-link" href="#">For Professionals</a></li>
         <li class="nav-item">
-          <a href="#auth-section" class="btn btn-gf-outline btn-sm">Log In</a>
+          <a href="#auth-section" class="btn btn-sm" style="background:transparent;color:#1a1a1a;border:1px solid #333333;border-radius:6px;padding:0.4rem 1rem;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">Log In</a>
         </li>
         <li class="nav-item">
-          <a href="#auth-section" class="btn btn-gf btn-sm">Sign Up</a>
+          <a href="#auth-section" class="btn btn-sm" style="background:#1a1a1a;color:#ffffff;border:1px solid #1a1a1a;border-radius:6px;padding:0.4rem 1rem;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#333333'" onmouseout="this.style.background='#1a1a1a'">Sign Up</a>
         </li>
       </ul>
 
@@ -63,7 +64,7 @@
           </RouterLink>
         </li>
         <li class="nav-item">
-          <button class="btn btn-outline-light btn-sm ms-1" @click="handleLogout">Log Out</button>
+          <button class="btn btn-sm ms-1" @click="handleLogout" style="background:transparent;color:#1a1a1a;border:1px solid #333333;border-radius:6px;padding:0.4rem 1rem;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">Log Out</button>
         </li>
       </ul>
 

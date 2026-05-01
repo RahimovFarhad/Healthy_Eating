@@ -18,6 +18,9 @@ async function inviteClientToProfessional({ professionalId, subscriberId }) {
     });
 
     if (existing && existing.status !== "disabled") {
+        if (existing.status === "invited") {
+            throw new ProfessionalError("Client has already been invited");
+        }
         throw new ProfessionalError("Client is already assigned to this professional");
     }
 
