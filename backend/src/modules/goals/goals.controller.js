@@ -1,15 +1,5 @@
-import { GoalError, normalizeBooleanQuery, normalizeGoalId, normalizeGoalIncludeQuery, validateUpdateGoalInput } from "./goals.validator.js";
+import { GoalError, getGoalErrorStatus, normalizeBooleanQuery, normalizeGoalId, normalizeGoalIncludeQuery, validateUpdateGoalInput } from "./goals.validator.js";
 import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, toggleGoalDoneForToday } from "./goals.service.js";
-
-function getGoalErrorStatus(errorMessage) {
-  if (errorMessage === "Goal not found") return 404;
-  if (errorMessage === "Unauthorized to archive this goal") return 403;
-  if (errorMessage === "Goal is already archived") return 409;
-  if (errorMessage === "Goal is archived") return 409;
-  if (errorMessage === "Goal has not started yet") return 409;
-  if (errorMessage === "Goal end date has passed") return 409;
-  return 400;
-}
 
 async function getGoals(req, res, next) {
   try {

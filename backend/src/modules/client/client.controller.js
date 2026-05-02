@@ -53,6 +53,7 @@ async function listProfessionals(req, res, next) {
     try {
         const clientId = req.user?.userId ?? null;
         const professionals = await listProfessionalsService({ clientId });
+
         return res.status(200).json({ professionals });
     } catch (error) {
         if (error instanceof ClientError) {
@@ -120,10 +121,11 @@ async function listInvitations(req, res, next) {
     try {
         const clientId = req.user?.userId ?? null;
         const invitations = await listProfessionalsService({ clientId, status: "invited" });
+
         return res.status(200).json({ invitations });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -139,7 +141,7 @@ async function listSharedRecipes(req, res, next) {
         return res.status(200).json({ sharedRecipes });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
