@@ -334,7 +334,15 @@ describe("Diary Service", () => {
       expect(mockListDiaryEntries).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entries);
     });
-    test.todo("throws DiaryEntryError when subscriberId is missing or invalid");
+    test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
+      mockValidateListDisplay.mockImplementationOnce(() => { throw new Error("Invalid subscriberId"); });
+
+      await expect(listDiaryEntries({
+        subscriberId: null,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid subscriberId",
+      }));
+    });
   });
 
   describe("getDiaryEntryById (unit)", () => {
@@ -360,8 +368,17 @@ describe("Diary Service", () => {
       expect(mockFindDiaryEntryById).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entry);
     });
-    test.todo("throws DiaryEntryError when subscriberId is missing or invalid");
-  });
+    test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
+      mockValidateEntryDetails.mockImplementationOnce(() => { throw new Error("Invalid subscriberId"); });
+
+      await expect(getDiaryEntryById({
+        subscriberId: null,
+        diaryEntryId: TEST_ENTRYID,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid subscriberId",
+        }));
+      });
+    });
 
   describe("createDiaryEntryItem (unit)", () => {
     test("creates entry item when valid", async () => {
