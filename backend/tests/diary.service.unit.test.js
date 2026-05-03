@@ -86,6 +86,7 @@ const {
   listDiaryEntries,
   getDiaryEntryById,
   createDiaryEntryItem,
+  createRecipeAsDiaryEntryItemService,
   updateDiaryEntryItem,
   deleteExistingDiaryEntry,
   deleteExistingDiaryEntryItem,
@@ -236,6 +237,79 @@ describe("Diary Service", () => {
       expect(mockFetchSummaryData).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
+    test("returns aggregated and sorted nutrients for daily period with mixed quantity types", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateSummaryInput.mockReturnValue(validatedInput);
+      mockFetchSummaryData.mockResolvedValue([{
+        items: [
+          {
+            quantity: 2,
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 1, code: "protein" }, amount: 10 }] },
+          },
+          {
+            quantity: "1.5",
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 2, code: "fat" }, amount: 5 }] },
+          },
+          {
+            quantity: { toNumber: () => 3 },
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 3, code: "fibre" }, amount: 2 }] },
+          },
+        ],
+      }]);
+
+
+      const result = await getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+
+      expect(result.period).toBe("daily");
+      expect(result.nutrients).toEqual([
+        expect.objectContaining({ code: "protein", totalAmount: 20 }),
+        expect.objectContaining({ code: "fat", totalAmount: 7.5 }),
+        expect.objectContaining({ code: "fibre", totalAmount: 6 }),
+      ]);
+    });
+    test("returns summary for monthly period", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "monthly",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateSummaryInput.mockReturnValue(validatedInput);
+      mockFetchSummaryData.mockResolvedValue([]);
+
+      const result = await getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "monthly",
+        endDate: "2026-04-18",
+      });
+
+      expect(result.period).toBe("monthly");
+      expect(result).toBeDefined();
+    });
+    test("throws error when period is unsupported", async () => {
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "yearly",
+        endDate: "2026-04-18",
+      });
+
+      await expect(getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "yearly",
+        endDate: "2026-04-18",
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Unsupported period: yearly",
+      }));
+    });
   });
 
   describe("listDiaryEntries (unit)", () => {
@@ -260,6 +334,7 @@ describe("Diary Service", () => {
       expect(mockListDiaryEntries).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entries);
     });
+    test.todo("throws DiaryEntryError when subscriberId is missing or invalid");
   });
 
   describe("getDiaryEntryById (unit)", () => {
@@ -285,6 +360,7 @@ describe("Diary Service", () => {
       expect(mockFindDiaryEntryById).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entry);
     });
+    test.todo("throws DiaryEntryError when subscriberId is missing or invalid");
   });
 
   describe("createDiaryEntryItem (unit)", () => {
@@ -483,37 +559,33 @@ describe("Diary Service", () => {
       expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
     });
   });
-  
+
   describe("Recipe to Diary Entry Item (unit)", () => {
     test("creates diary entry item from recipe portion when valid", async () => {
         const validatedInput = {
           userId: TEST_USERID,
           diaryEntryId: TEST_ENTRYID,
           recipeId: 123,
-          portionId: 1,
-          quantity: 2,
+          servings: 2,
         };
 
         mockValidateCreateRecipeAsDiaryEntryItemInput.mockReturnValue(validatedInput);
+        mockValidateNewEntryDetails.mockImplementation((data) => data);
         mockCheckDiaryEntryOwnership.mockResolvedValue(true);
         mockFindRecipePortionForDiary.mockResolvedValue({
-          portionId: 1,
-          recipeId: 123,
-          description: "1 serving",
-          nutrients: [{ nutrientId: 1, amount: 250 }],
+          portions: [{ portionId: 1 }],
         });
         mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
 
-        const result = await createDiaryEntryItem({
+        const result = await createRecipeAsDiaryEntryItemService({
           userId: TEST_USERID,
           diaryEntryId: TEST_ENTRYID,
           recipeId: 123,
-          portionId: 1,
-          quantity: 2,
+          servings: 2,
         });
 
         expect(mockValidateCreateRecipeAsDiaryEntryItemInput).toHaveBeenCalled();
-        expect(mockFindRecipePortionForDiary).toHaveBeenCalledWith(123, 1);
+        expect(mockFindRecipePortionForDiary).toHaveBeenCalledWith({ recipeId: 123 });
         expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
           userId: TEST_USERID,
           diaryEntryId: TEST_ENTRYID,
@@ -527,20 +599,18 @@ describe("Diary Service", () => {
           userId: TEST_USERID,
           diaryEntryId: TEST_ENTRYID,
           recipeId: 999,
-          portionId: 1,
-          quantity: 2,
+          servings: 2,
         });
         mockCheckDiaryEntryOwnership.mockResolvedValue(true);
         mockFindRecipePortionForDiary.mockResolvedValue(null);
         
-        await expect(createDiaryEntryItem({
+        await expect(createRecipeAsDiaryEntryItemService({
           userId: TEST_USERID,
           diaryEntryId: TEST_ENTRYID,
           recipeId: 999,
-          portionId: 1,
-          quantity: 2,
+          servings: 2,
         })).rejects.toEqual(expect.objectContaining({
-          message: "Recipe portion not found for diary entry"
+          message: "Recipe portion not found for diary entry item"
         }));
     });
   });
@@ -921,6 +991,11 @@ describe("Diary Service", () => {
       };
 
       mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
       mockGetDaysLogged.mockResolvedValue(5);
       mockFetchWeeklyCalorieTrend.mockResolvedValue([
         { date: "2026-04-13", calories: 100 },
@@ -936,6 +1011,60 @@ describe("Diary Service", () => {
 
       expect(mockValidateUserIdForDashboard).toHaveBeenCalled();
       expect(result).toBeDefined();
+    });
+    test("returns weekly trend with seven days and fills missing days with zero calories", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+      };
+
+      mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+      mockGetDaysLogged.mockResolvedValue(2);
+      mockFetchSummaryData.mockResolvedValue([
+        { items: [] },
+      ]);
+      mockListDiaryEntries.mockResolvedValue([{ diaryEntryId: 1 }]);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([
+        { date: "2026-04-14T00:00:00.000Z", calories: 200 },
+        { date: "2026-04-16T00:00:00.000Z", calories: 350 },
+      ]);
+
+      const result = await getDashboardDataForSubscriber({
+        subscriberId: TEST_USERID,
+      });
+
+      expect(result.weeklyCaloryTrend).toHaveLength(7);
+      expect(result.weeklyCaloryTrend.some((d) => d.calories === 0)).toBe(true);
+    });
+    test("throws error when weekly calorie trend contains invalid date values", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+      };
+
+      mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+      mockGetDaysLogged.mockResolvedValue(0);
+      mockFetchSummaryData.mockResolvedValue([
+        { items: [] },
+      ]);
+      mockListDiaryEntries.mockResolvedValue([]);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([
+        { date: 12345, calories: 150 },
+      ]);
+
+      await expect(getDashboardDataForSubscriber({
+        subscriberId: TEST_USERID,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid date value: 12345",
+      }));
     });
   });
 });
