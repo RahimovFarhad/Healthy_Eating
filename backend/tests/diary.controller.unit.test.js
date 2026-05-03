@@ -738,7 +738,7 @@ describe("Diary Controller", () => {
       await getDiaryEntryById(req,res,next);
 
       expect(mockGetDiaryEntryById).toHaveBeenCalledWith({
-        userId: TEST_USERID,
+        subscriberId: TEST_USERID,
         diaryEntryId: TEST_ENTRYID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
