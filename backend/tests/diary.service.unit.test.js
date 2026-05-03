@@ -9,7 +9,7 @@ const TEST_ENTRYID = 3;
 const TEST_ENTRYITEMID = 4;
 
 const mockCheckDiaryEntryItemOwnership = jest.fn();
-  const mockValidateUpdatedEntryItem = jest.fn();
+const mockValidateUpdatedEntryItem = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
 const mockValidateDeletedDiaryEntry = jest.fn();
 const mockDeleteDiaryEntry = jest.fn();
@@ -37,6 +37,8 @@ const mockInsertFoodPortion = jest.fn();
 const mockFetchWeeklyCalorieTrend = jest.fn();
 const mockCheckExistingFoodItemByExternalId = jest.fn();
 const mockFindRecipePortionForDiary = jest.fn();
+const mockSearchFoodById = jest.fn();
+const mockParseFoodResponse = jest.fn();
 
 jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
   DiaryEntryError: DiaryEntryError,
@@ -71,6 +73,11 @@ jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
   fetchWeeklyCalorieTrend: mockFetchWeeklyCalorieTrend,
   checkExistingFoodItemByExternalId: mockCheckExistingFoodItemByExternalId,
   findRecipePortionForDiary: mockFindRecipePortionForDiary,
+}));
+
+jest.unstable_mockModule("../src/utils/searchFood.js", () => ({
+  searchFoodById: mockSearchFoodById,
+  parseFoodResponse: mockParseFoodResponse,
 }));
 
 const {
@@ -212,6 +219,178 @@ describe("Diary Service", () => {
       expect(result).toEqual({
         diaryEntryItemId: TEST_ENTRYITEMID,
       });
+    });
+    test("throws DiaryEntryError when portionId is missing and neither customFood nor fatSecret was provided", async () => {
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+      });
+
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+
+      await expect(createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+        customFood: null,
+        fatSecret: null,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Must provide either portionId, customFood, or fatSecret",
+      }));
+    });
+    test("creates entry item when portionId is missing but customFood was provided", async () => {
+      const customFoodInput = {
+        name: "Greek yoghurt",
+        brand: "Test Brand",
+        portions: [{
+          description: "100g",
+          weight_g: 100,
+          nutrients: [{ nutrientId: 1, amount: 10 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockInsertFoodItem.mockResolvedValue({ foodItemId: 101 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 202 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: null,
+        customFood: customFoodInput,
+        fatSecret: null,
+      });
+
+      expect(mockValidateCreateFoodItemInput).toHaveBeenCalled();
+      expect(mockInsertFoodItem).toHaveBeenCalledWith(expect.objectContaining({
+        name: "Greek yoghurt",
+        source: "user",
+      }));
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 101,
+        description: "100g",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: 202,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("creates entry item when portionId is missing but fatSecret was provided and external food already exists", async () => {
+      const fatSecretInput = { externalId: "fs_123" };
+      const parsedFood = {
+        name: "Apple",
+        brand: "Generic",
+        portions: [{
+          description: "1 medium",
+          weight_g: 182,
+          nutrients: [{ nutrientId: 2, amount: 95 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockSearchFoodById.mockResolvedValue({ ok: true });
+      mockParseFoodResponse.mockReturnValue(parsedFood);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockCheckExistingFoodItemByExternalId.mockResolvedValue({ foodItemId: 303 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 404 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+        customFood: null,
+        fatSecret: fatSecretInput,
+      });
+
+      expect(mockSearchFoodById).toHaveBeenCalledWith("fs_123");
+      expect(mockParseFoodResponse).toHaveBeenCalled();
+      expect(mockCheckExistingFoodItemByExternalId).toHaveBeenCalledWith("fs_123");
+      expect(mockInsertFoodItem).not.toHaveBeenCalled();
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 303,
+        description: "1 medium",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        portionId: 404,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("creates entry item when portionId is missing but fatSecret was provided and external food does not exist", async () => {
+      const fatSecretInput = { externalId: "fs_999" };
+      const parsedFood = {
+        name: "Banana",
+        brand: "Generic",
+        portions: [{
+          description: "1 banana",
+          weight_g: 118,
+          nutrients: [{ nutrientId: 3, amount: 105 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 3,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockSearchFoodById.mockResolvedValue({ ok: true });
+      mockParseFoodResponse.mockReturnValue(parsedFood);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockCheckExistingFoodItemByExternalId.mockResolvedValue(null);
+      mockInsertFoodItem.mockResolvedValue({ foodItemId: 505 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 606 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 3,
+        portionId: null,
+        customFood: null,
+        fatSecret: fatSecretInput,
+      });
+
+      expect(mockCheckExistingFoodItemByExternalId).toHaveBeenCalledWith("fs_999");
+      expect(mockInsertFoodItem).toHaveBeenCalledWith(expect.objectContaining({
+        name: "Banana",
+        source: "fatsecret",
+        externalId: "fs_999",
+      }));
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 505,
+        description: "1 banana",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        portionId: 606,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
     });
   });
 
