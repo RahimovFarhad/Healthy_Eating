@@ -1,16 +1,22 @@
 import { prisma } from "../../db/prisma.js";
 
 const RECIPE_SELECT = {
-    recipeId: true,    
-    title: true,        
-    instructions: true, 
-    kcal: true,         
-    protein: true,     
-    carbs: true,     
-    sugars: true,     
-    fat: true,       
-    saturatedFat: true, 
+    recipeId: true,
+    title: true,
+    category: true,
+    cuisine: true,
+    servings: true,
+    cookTime: true,
+    image: true,
+    instructions: true,
+    kcal: true,
+    protein: true,
+    carbs: true,
+    sugars: true,
+    fat: true,
+    saturatedFat: true,
     salt: true,
+    fibre: true,
     recipeIngredients: {
         select: {
             quantity: true,
@@ -21,7 +27,20 @@ const RECIPE_SELECT = {
             }
         }
     },
-    reviews: true 
+    reviews: {
+        select: {
+            reviewId: true,
+            subscriberId: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
+        }
+    },
+    favorites: {
+        select: {
+            subscriberId: true,
+        }
+    },
 }
 
 async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId }) {
@@ -44,7 +63,7 @@ async function listRecipes({ category, cuisine, ingredients, favoritedBySubscrib
                 }))
             }),
             ...(favoritedBySubscriberId && {
-                recipeFavorites: {
+                favorites: {
                     some: {
                         subscriberId: favoritedBySubscriberId,
                     }

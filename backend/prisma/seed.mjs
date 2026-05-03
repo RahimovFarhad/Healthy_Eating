@@ -243,7 +243,12 @@ async function main() {
   for (const r of recipes) {
     const recipe = await prisma.recipe.create({
       data: {
-        title: r.title,
+        title:        r.title,
+        category:     r.category ?? null,
+        cuisine:      r.cuisine ?? null,
+        servings:     r.servings ?? null,
+        cookTime:     r.time ?? null,
+        image:        r.image ?? null,
         instructions: r.steps.join('\n\n'),
         kcal:         r.kcal,
         protein:      r.protein,
@@ -252,6 +257,7 @@ async function main() {
         fat:          r.fat,
         saturatedFat: r.saturatedFat,
         salt:         r.salt,
+        fibre:        r.fibre ?? null,
       }
     });
 

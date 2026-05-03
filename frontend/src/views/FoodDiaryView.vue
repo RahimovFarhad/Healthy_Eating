@@ -27,7 +27,9 @@
         </div>
         <div>
           <div class="stat-label">Remaining</div>
-          <div class="stat-value text-success">- kcal</div>
+          <div class="stat-value" :class="caloriesRemaining < 0 ? 'text-danger' : 'text-success'">
+            {{ caloriesRemaining }} kcal
+          </div>
         </div>
         <div><div class="stat-label">Protein</div><div class="stat-value">{{ headerTotals.protein }}g</div></div>
         <div><div class="stat-label">Carbs</div><div class="stat-value">{{ headerTotals.carbs }}g</div></div>
@@ -107,7 +109,7 @@
 
       <div class="mt-2">
         <button class="btn btn-gf-outline btn-sm"
-                @click="openPanel === meal.id ? openPanel = null : openPanel = meal.id">
+                @click="openPanel === meal.id ? openPanel = null : (openPanel = meal.id, activeTab[meal.id] === 'recipes' && loadDiaryRecipes())">
           {{ openPanel === meal.id ? 'Close' : 'Add to ' + meal.label }}
         </button>
       </div>
@@ -118,7 +120,7 @@
           <button v-for="tab in addTabs" :key="tab.id"
                   class="btn btn-sm"
                   :class="activeTab[meal.id] === tab.id ? 'btn-gf' : 'btn-gf-outline'"
-                  @click="activeTab[meal.id] = tab.id">
+                  @click="activeTab[meal.id] = tab.id; if (tab.id === 'recipes') loadDiaryRecipes()">
             {{ tab.label }}
           </button>
         </div>
@@ -189,23 +191,27 @@
           <input type="text" class="form-control form-control-sm mb-2"
                  placeholder="Search recipes..."
                  v-model="recipeSearch">
-          <div class="row g-2" style="max-height:340px;overflow-y:auto;">
-            <div class="col-md-4" v-for="r in filteredRecipes" :key="r.id">
+          <div v-if="recipesLoading" class="text-muted small text-center py-3">Loading recipes…</div>
+          <div v-else class="row g-2" style="max-height:340px;overflow-y:auto;">
+            <div class="col-md-4" v-for="r in filteredRecipes" :key="r.recipeId">
               <div class="card h-100">
-                <img :src="r.image" :alt="r.title"
+                <img :src="r.image || '/src/assets/hero.png'" :alt="r.title"
                      style="width:100%;height:90px;object-fit:cover;" />
                 <div class="p-2">
                   <div class="small fw-bold">{{ r.title }}</div>
                   <div style="font-size:0.72rem;color:#666;">{{ r.kcal }} kcal · P:{{ r.protein }}g · C:{{ r.carbs }}g · F:{{ r.fat }}g</div>
-                  <div style="font-size:0.72rem;color:#888;">{{ r.time }}</div>
+                  <div style="font-size:0.72rem;color:#888;">{{ r.cookTime }}</div>
                   <button class="btn btn-gf btn-sm w-100 mt-1"
                           style="font-size:0.72rem;"
-                          :disabled="recipeAdding[r.id + meal.id]"
+                          :disabled="recipeAdding[r.recipeId + meal.id]"
                           @click="handleAddRecipe(r, meal.id)">
-                    {{ recipeAdding[r.id + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
+                    {{ recipeAdding[r.recipeId + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
                   </button>
                 </div>
               </div>
+            </div>
+            <div v-if="filteredRecipes.length === 0" class="text-muted small text-center py-3 col-12">
+              No recipes match.
             </div>
           </div>
         </div>
@@ -310,12 +316,6 @@
       </div>
     </div>
 
-    <div class="card border p-3 mb-3">
-      <label class="form-label small fw-semibold">Daily Notes (optional)</label>
-      <textarea class="form-control form-control-sm" rows="2"
-                placeholder="How are you feeling today? Any notes about meals?"></textarea>
-    </div>
-
 
   </div>
 </template>
@@ -323,13 +323,14 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import {
-  meals, recipes, headerTotals,
+  meals, headerTotals,
   diaryLoading, diaryError,
   viewDate, prevDay, nextDay,
   loadDiary,
   addFatSecretItem, addCustomItem, addRecipeToDiary,
   updateItem, removeItem,
 } from '../diaryStore.js'
+import { apiFetch } from '../auth.js'
 
 const formattedDate = computed(() =>
   viewDate.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
@@ -338,7 +339,29 @@ const formattedDate = computed(() =>
 const snackMeal = computed(() => meals.value.find(m => m.id === 'snack'))
 const mainMeals = computed(() => meals.value.filter(m => m.id !== 'snack'))
 
-onMounted(loadDiary)
+const calorieBudget = ref(2000)
+
+async function loadCalorieGoal() {
+  try {
+    const res = await apiFetch('/api/goals')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) return
+    const goals = data.goals ?? []
+    const calorieGoal = goals.find(g =>
+      g.status === 'active' && g.nutrient?.code === 'calories' && g.targetMax != null
+    )
+    if (calorieGoal) calorieBudget.value = Number(calorieGoal.targetMax)
+  } catch {
+    // non-critical, keep default 2000
+  }
+}
+
+const caloriesRemaining = computed(() => calorieBudget.value - headerTotals.value.kcal)
+
+onMounted(() => {
+  loadDiary()
+  loadCalorieGoal()
+})
 watch(viewDate, loadDiary)
 
 function handlePrevDay() { prevDay() }
@@ -360,14 +383,31 @@ const activeTab = ref({
 
 const recipeSearch = ref('')
 const recipeAdding = ref({})
+const recipesLoading = ref(false)
+const diaryRecipes = ref([])
+
+async function loadDiaryRecipes() {
+  if (diaryRecipes.value.length > 0) return
+  recipesLoading.value = true
+  try {
+    const res = await apiFetch('/api/recipes')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) diaryRecipes.value = data.recipes ?? []
+  } catch {
+    // non-critical
+  } finally {
+    recipesLoading.value = false
+  }
+}
+
 const filteredRecipes = computed(() => {
-  if (!recipeSearch.value) return recipes.value
+  if (!recipeSearch.value) return diaryRecipes.value
   const q = recipeSearch.value.toLowerCase()
-  return recipes.value.filter(r => r.title.toLowerCase().includes(q))
+  return diaryRecipes.value.filter(r => r.title.toLowerCase().includes(q))
 })
 
 async function handleAddRecipe(recipe, mealId) {
-  const key = recipe.id + mealId
+  const key = recipe.recipeId + mealId
   recipeAdding.value[key] = true
   try {
     await addRecipeToDiary(recipe, mealId)
@@ -432,7 +472,7 @@ async function searchMealFood(mealId) {
   mealSearchError.value[mealId] = ''
   mealSearchResults.value[mealId] = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(q)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(q)}`)
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {
@@ -475,7 +515,7 @@ async function searchSnacks() {
   snackError.value = ''
   snackResults.value = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {

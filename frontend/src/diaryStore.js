@@ -1,9 +1,5 @@
 import { ref, computed } from 'vue'
 import { apiFetch } from './auth.js'
-import recipesData from './recipes.json'
-
-// static recipe data (recipes not yet wired to backend)
-export const recipes = ref(recipesData.map((r, i) => ({ id: i + 1, saved: false, ...r })))
 
 // which day the user is currently viewing
 export const viewDate = ref(new Date())
@@ -196,31 +192,12 @@ export async function addCustomItem({ mealType, name, kcal, protein, carbs, fat,
   await loadDiary()
 }
 
-// add a recipe to the diary as a custom food entry using its macro values
+// add a recipe to the diary using the dedicated backend recipe-diary endpoint
 export async function addRecipeToDiary(recipe, mealType) {
   const diaryEntryId = await ensureDiaryEntry(mealType)
-  const res = await apiFetch(`/api/diary/entries/${diaryEntryId}/items`, {
+  const res = await apiFetch(`/api/diary/entries/${diaryEntryId}/recipe/${recipe.recipeId}`, {
     method: 'POST',
-    body: JSON.stringify({
-      quantity: 1,
-      customFood: {
-        name: recipe.title,
-        brand: null,
-        portions: [{
-          description: '1 serving',
-          weight_g: null,
-          nutrients: [
-            { nutrientId: 1, amount: Number(recipe.kcal) || 0 },
-            { nutrientId: 2, amount: Number(recipe.protein) || 0 },
-            { nutrientId: 3, amount: Number(recipe.carbs) || 0 },
-            { nutrientId: 4, amount: Number(recipe.fat) || 0 },
-            { nutrientId: 5, amount: Number(recipe.fibre) || 0 },
-            { nutrientId: 6, amount: Number(recipe.sugars) || 0 },
-            { nutrientId: 7, amount: Number(recipe.salt) || 0 },
-          ],
-        }],
-      },
-    }),
+    body: JSON.stringify({ servings: 1 }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

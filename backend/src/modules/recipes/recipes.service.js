@@ -1,17 +1,17 @@
 import { validateListRecipesInput, validatePositiveInteger, validateReviewInput } from "./recipes.validator.js";
 import { listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite } from "./recipes.repository.js";
 
-async function listRecipesService({ category, cuisine, ingredients }) {
+async function listRecipesService({ category, cuisine, ingredients, subscriberId }) {
   const filters = validateListRecipesInput({ category, cuisine, ingredients });
   const recipes = await listRecipes(filters);
-  return processReturnedRecipes(recipes);
+  return processReturnedRecipes(recipes, subscriberId);
 }
 
-async function getRecipeByIdService({ recipeId }) {
+async function getRecipeByIdService({ recipeId, subscriberId }) {
   const normalizedRecipeId = validatePositiveInteger({ value: recipeId });
   const recipe = await findRecipeById({ recipeId: normalizedRecipeId });
   if (!recipe) return null;
-  return processReturnedRecipes([recipe])[0];
+  return processReturnedRecipes([recipe], subscriberId)[0];
 }
 
 async function submitRecipeReviewService({ recipeId, subscriberId, rating, comment }) {
@@ -38,10 +38,10 @@ async function getFavoriteRecipesService({ subscriberId, category, cuisine, ingr
   const normalizedSubscriberId = validatePositiveInteger({ value: subscriberId });
   const filters = validateListRecipesInput({ category, cuisine, ingredients });
   const recipes = await listRecipes({ ...filters, favoritedBySubscriberId: normalizedSubscriberId });
-  return processReturnedRecipes(recipes);
+  return processReturnedRecipes(recipes, normalizedSubscriberId);
 }
 
-function processReturnedRecipes(recipes) { // here, we will only average the rating and extract ingredient names
+function processReturnedRecipes(recipes, subscriberId) {
   const averageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return null;
     const total = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -49,14 +49,20 @@ function processReturnedRecipes(recipes) { // here, we will only average the rat
   }
 
   return recipes.map((recipe) => {
-    const { recipeIngredients, ...recipeWithoutIngredients } = recipe;
+    const { recipeIngredients, reviews, favorites, ...recipeWithoutIngredients } = recipe;
+    const isFavorited = subscriberId
+      ? (favorites ?? []).some(f => f.subscriberId === subscriberId)
+      : false;
     return {
       ...recipeWithoutIngredients,
-      averageRating: averageRating(recipe.reviews),
+      averageRating: averageRating(reviews),
+      reviewCount: (reviews ?? []).length,
+      reviews,
+      isFavorited,
       ingredients: recipeIngredients.map((ri) => ri.ingredient.name),
+      ingredientDetails: recipeIngredients.map((ri) => ({ quantity: ri.quantity, name: ri.ingredient.name })),
     };
   });
-
 }
 
 export {

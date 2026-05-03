@@ -16,8 +16,9 @@ async function listRecipes(req, res, next) {
     const ingredients = typeof rawIngredients === "string"
       ? rawIngredients.split(",").map((ingredient) => ingredient.trim()).filter(Boolean)
       : [];
+    const subscriberId = req.user?.userId ?? null;
 
-    const recipes = await listRecipesService({ category, cuisine, ingredients });
+    const recipes = await listRecipesService({ category, cuisine, ingredients, subscriberId });
 
     return res.status(200).json({ recipes });
   } catch (error) {
@@ -31,7 +32,8 @@ async function listRecipes(req, res, next) {
 async function getRecipeById(req, res, next) {
   try {
     const { id: recipeId } = req.params;
-    const recipe = await getRecipeByIdService({ recipeId });
+    const subscriberId = req.user?.userId ?? null;
+    const recipe = await getRecipeByIdService({ recipeId, subscriberId });
 
     return res.status(200).json({ recipe });
   } catch (error) {
@@ -82,8 +84,8 @@ async function toggleRecipeFavorite(req, res, next) {
 async function getFavoriteRecipes(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
-    const favRecipes = await getFavoriteRecipesService({ subscriberId });
-    return res.status(200).json({ favRecipes });
+    const recipes = await getFavoriteRecipesService({ subscriberId });
+    return res.status(200).json({ recipes });
   } catch (error) {
     if (error instanceof RecipeError) {
       return res.status(400).json({ error: error.message });

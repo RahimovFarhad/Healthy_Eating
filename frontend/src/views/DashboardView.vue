@@ -2,100 +2,132 @@
 <template>
   <div class="container-fluid px-4 py-3">
 
-    <div class="d-flex justify-content-between align-items-center p-3 mb-3 rounded"
-         style="background:#e8f4e6;border:1px solid #5a9e56;">
+    <div class="d-flex justify-content-between align-items-center p-3 mb-4 rounded"
+         style="background:linear-gradient(135deg,#5a9e56 0%,#3f7a3c 100%);border:none;">
       <div>
-        <h4 style="color:#5a9e56;" class="mb-0">Welcome 🌿</h4>
-        <small class="text-secondary">Here's your health summary for today - {{ today }}</small>
+        <h4 class="fw-bold text-white mb-0">Welcome back</h4>
+        <small style="color:rgba(255,255,255,0.8);">{{ today }}</small>
       </div>
-      <RouterLink to="/diary" class="btn btn-gf btn-sm">Log Meal</RouterLink>
+      <RouterLink to="/diary" class="btn btn-sm fw-semibold"
+                  style="background:#fff;color:#5a9e56;border:none;">
+        + Log Meal
+      </RouterLink>
     </div>
 
-    <div v-if="error" class="alert alert-danger small">{{ error }}</div>
+    <div v-if="error" class="alert alert-danger small mb-3">{{ error }}</div>
 
     <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="stat-card h-100">
-          <div class="stat-label">Calories Today</div>
-          <div class="stat-value">
-            <span v-if="loading">…</span>
-            <span v-else-if="caloriesToday != null">{{ Math.round(caloriesToday) }} kcal</span>
-            <span v-else>- kcal</span>
-          </div>
+
+      <div class="col-md-5">
+        <div class="h-100 p-3 rounded"
+             style="background:#fff;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div class="small fw-semibold mb-3" style="color:#888;">Calories Today</div>
+          <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
+          <template v-else>
+            <div class="d-flex justify-content-between align-items-end mb-1">
+              <div>
+                <span class="fw-bold" style="font-size:2rem;color:#5a9e56;line-height:1;">
+                  {{ Math.round(caloriesToday) }}
+                </span>
+                <span class="small text-muted ms-1">eaten</span>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold" style="font-size:1.2rem;"
+                      :style="`color:${caloriesRemaining < 0 ? '#d94f4f' : '#333'};`">
+                  {{ Math.abs(caloriesRemaining) }}
+                </span>
+                <span class="small text-muted ms-1">
+                  {{ caloriesRemaining < 0 ? 'over' : 'remaining' }}
+                </span>
+              </div>
+            </div>
+            <div class="mb-3" style="height:8px;background:#e8f4e6;border-radius:4px;">
+              <div style="height:100%;border-radius:4px;transition:width 0.5s;"
+                   :style="`width:${Math.min(caloriePercent, 100)}%;background:${caloriePercent > 100 ? '#d94f4f' : '#5a9e56'};`">
+              </div>
+            </div>
+            <div class="row g-2 text-center">
+              <div v-for="m in macroSummary" :key="m.code" class="col-4">
+                <div class="p-2 rounded" style="background:#f9fdf9;border:1px solid #e8f4e6;">
+                  <div class="fw-bold small" style="color:#5a9e56;">{{ m.amount }}{{ m.unit }}</div>
+                  <div style="font-size:0.7rem;color:#888;">{{ m.label }}</div>
+                  <div style="height:3px;background:#e8f4e6;border-radius:2px;margin-top:4px;">
+                    <div style="height:100%;border-radius:2px;background:#5a9e56;transition:width 0.5s;"
+                         :style="`width:${m.pct}%;`"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-center mt-2" style="font-size:0.72rem;color:#aaa;">
+              Goal: {{ calorieBudget }} kcal
+            </div>
+          </template>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
-        <div class="stat-card h-100">
-          <div class="stat-label">Water Intake</div>
-          <div class="stat-value mb-1">{{ waterGlasses }} / 8</div>
-          <div class="d-flex align-items-center justify-content-between gap-1">
-            <button class="btn btn-sm btn-gf-outline px-2 py-0"
-                    @click="waterGlasses > 0 && waterGlasses--"
-                    :disabled="waterGlasses === 0">−</button>
-            <span style="font-size:0.7rem;">
-              <span v-for="n in 8" :key="n">{{ n <= waterGlasses ? '•' : '○' }}</span>
-            </span>
-            <button class="btn btn-sm btn-gf px-2 py-0"
-                    @click="waterGlasses < 8 && waterGlasses++"
-                    :disabled="waterGlasses === 8">+</button>
-          </div>
+      <div class="col-md-7">
+        <div class="h-100 p-3 rounded"
+             style="background:#fff;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div class="small fw-semibold mb-3" style="color:#888;">This Week's Calories</div>
+          <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
+          <template v-else>
+            <div class="d-flex align-items-end gap-1" style="height:90px;">
+              <div v-for="bar in weekBars" :key="bar.date"
+                   class="d-flex flex-column align-items-center"
+                   style="flex:1;">
+                <span style="font-size:0.62rem;margin-bottom:2px;font-weight:600;"
+                      :style="`color:${bar.over ? '#d94f4f' : bar.val === '-' ? '#ccc' : '#5a9e56'};`">
+                  {{ bar.val }}
+                </span>
+                <div style="width:100%;border-radius:3px 3px 0 0;transition:height 0.4s;min-height:3px;"
+                     :style="`height:${bar.height}px;background:${bar.isToday ? '#5a9e56' : bar.over ? '#f5b8b8' : '#d6e8d4'};border:1px solid ${bar.isToday ? '#3f7a3c' : bar.over ? '#e8a0a0' : '#aacca8'};`">
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mt-1">
+              <span style="font-size:0.68rem;color:#aaa;">
+                Goal: {{ calorieBudget }} kcal/day
+              </span>
+            </div>
+            <div class="d-flex gap-1 mt-1">
+              <div v-for="bar in weekBars" :key="bar.date + '-label'"
+                   class="text-center" style="flex:1;">
+                <span style="font-size:0.65rem;"
+                      :style="`color:${bar.isToday ? '#5a9e56' : '#aaa'};font-weight:${bar.isToday ? '700' : '400'};`">
+                  {{ bar.day }}
+                </span>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
-        <div class="stat-card h-100">
-          <div class="stat-label">Meals Logged</div>
-          <div class="stat-value">
-            <span v-if="loading">…</span>
-            <span v-else>{{ mealsLoggedToday ?? 0 }} today</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-3">
-        <div class="stat-card h-100">
-          <div class="stat-label">Days Logged</div>
-          <div class="stat-value">
-            <span v-if="loading">…</span>
-            <span v-else>{{ daysLogged ?? 0 }} days</span>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <h5 class="fw-bold mb-3" style="color:#5a9e56;">Your Overview</h5>
-
     <div class="row g-3 mb-3">
+
       <div class="col-md-6">
         <RouterLink to="/diary" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Food Diary</span>
-              <span class="btn btn-gf btn-sm">View All</span>
+              <span class="btn btn-gf btn-sm py-0">View All</span>
             </div>
             <div class="card-body p-0">
-              <div v-if="loading" class="p-3 text-center text-muted">
-                <small>Loading…</small>
-              </div>
-
-              <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0 p-3">
+              <div v-if="loading" class="p-3 text-center text-muted"><small>Loading…</small></div>
+              <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0">
                 <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
-                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
-                  <span class="small">
-                    <span class="fw-semibold text-capitalize">{{ entry.mealType }}</span>
-                  </span>
-                  <span class="text-muted" style="font-size:0.75rem;">
-                    {{ entry.items?.length ?? 0 }}
-                    {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
+                    class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                  <span class="small fw-semibold text-capitalize" style="color:#333;">{{ entry.mealType }}</span>
+                  <span class="badge rounded-pill" style="background:#e8f4e6;color:#5a9e56;font-weight:600;">
+                    {{ entry.items?.length ?? 0 }} {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
                   </span>
                 </li>
               </ul>
-
               <div v-else class="p-3 text-center text-muted">
-                <small>No meals logged today yet. Click to log your first meal.</small>
+                <small>No meals logged today yet. Click to add your first meal.</small>
               </div>
             </div>
           </div>
@@ -105,115 +137,162 @@
       <div class="col-md-6">
         <RouterLink to="/nutrition" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
-              <span>Nutritional Overview</span>
-              <span class="btn btn-gf btn-sm">Details</span>
-            </div>
-            <div class="card-body">
-              <div v-if="loading" class="p-3 text-center text-muted">
-                <small>Loading…</small>
-              </div>
-
-              <ul v-else-if="nutritionPreview.length > 0" class="list-unstyled mb-0">
-                <li v-for="n in nutritionPreview" :key="n.code"
-                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
-                  <span class="small">{{ nutrientLabels[n.code] ?? n.name ?? n.code }}</span>
-                  <span class="fw-semibold small">{{ formatAmount(n) }}</span>
-                </li>
-              </ul>
-
-              <div v-else class="p-3 text-center text-muted">
-                <small>No data yet. Log meals in the Food Diary to see your nutrition breakdown.</small>
-              </div>
-            </div>
-          </div>
-        </RouterLink>
-      </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <RouterLink to="/recipes" class="text-decoration-none">
-          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
-               @mouseleave="$event.currentTarget.style.boxShadow=''">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <span>Recipes</span>
-              <span class="btn btn-gf btn-sm">Browse</span>
-            </div>
-            <div class="card-body p-3 text-center text-muted">
-              <small>Browse the recipe library to save favourites.</small>
-            </div>
-          </div>
-        </RouterLink>
-      </div>
-
-      <div class="col-md-4">
-        <RouterLink to="/messages" class="text-decoration-none">
-          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
-               @mouseleave="$event.currentTarget.style.boxShadow=''">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <span>Professional Support</span>
-              <span class="btn btn-gf btn-sm">Messages</span>
+              <span>Nutrition Today</span>
+              <span class="btn btn-gf btn-sm py-0">Details</span>
             </div>
             <div class="card-body p-3">
-              <div v-if="loadingPro" class="text-center text-muted"><small>Loading…</small></div>
-              <div v-else-if="professional" class="d-flex align-items-center gap-2">
-                <div class="avatar-circle flex-shrink-0" style="width:36px;height:36px;font-size:0.8rem;">
-                  {{ initialsFor(professional.professional.fullName) }}
-                </div>
-                <div>
-                  <div class="fw-semibold small">{{ professional.professional.fullName }}</div>
-                  <div class="text-muted" style="font-size:0.75rem;">Your assigned nutritionist</div>
+              <div v-if="loading" class="text-center text-muted"><small>Loading…</small></div>
+              <div v-else-if="nutritionPreview.length > 0">
+                <div v-for="n in nutritionPreview" :key="n.code" class="mb-2">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="small fw-semibold" style="color:#333;">{{ nutrientLabels[n.code] ?? n.name }}</span>
+                    <span class="small" style="color:#5a9e56;">{{ formatAmount(n) }}</span>
+                  </div>
+                  <div style="height:5px;background:#e8f4e6;border-radius:3px;">
+                    <div style="height:100%;border-radius:3px;background:#5a9e56;transition:width 0.4s;"
+                         :style="`width:${nutrientPercent(n)}%;`"></div>
+                  </div>
                 </div>
               </div>
               <div v-else class="text-center text-muted">
-                <small>No professional assigned yet. A nutritionist will appear here once linked to your account.</small>
+                <small>No data yet. Log meals to see your breakdown.</small>
               </div>
             </div>
           </div>
         </RouterLink>
       </div>
 
-      <div class="col-md-4">
+    </div>
+
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-6">
         <RouterLink to="/goals" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.25)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Goals & Progress</span>
-              <span class="btn btn-gf btn-sm">View All</span>
+              <span class="btn btn-gf btn-sm py-0">View All</span>
             </div>
             <div class="card-body p-3">
               <div v-if="loadingGoals" class="text-center text-muted"><small>Loading…</small></div>
               <div v-else-if="goals.length === 0" class="text-center text-muted">
                 <small>No active goals yet.</small>
               </div>
-              <ul v-else class="list-unstyled mb-0">
-                <li v-for="goal in goals.slice(0, 3)" :key="goal.goalId"
-                    class="d-flex justify-content-between align-items-center pb-1 mb-1 border-bottom">
-                  <span class="small fw-semibold">{{ goal.nutrient?.name ?? 'Custom goal' }}</span>
-                  <span class="text-muted" style="font-size:0.75rem;">{{ goalRange(goal) }}</span>
-                </li>
-              </ul>
-              <div v-if="goals.length > 3" class="text-muted text-center mt-1" style="font-size:0.75rem;">
-                +{{ goals.length - 3 }} more
+              <div v-else>
+                <div v-for="goal in goals.slice(0, 3)" :key="goal.goalId"
+                     class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+                  <div>
+                    <div class="small fw-semibold" style="color:#333;">
+                      {{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}
+                    </div>
+                    <div class="small text-muted">{{ goalRange(goal) }}</div>
+                  </div>
+                  <span class="badge rounded-pill"
+                        :style="`background:${goal.source === 'professional_defined' ? '#5a9e56' : '#e8f4e6'};color:${goal.source === 'professional_defined' ? '#fff' : '#5a9e56'};`">
+                    {{ goal.source === 'professional_defined' ? 'Pro' : 'Personal' }}
+                  </span>
+                </div>
+                <div v-if="goals.length > 3" class="text-muted text-center mt-1" style="font-size:0.75rem;">
+                  +{{ goals.length - 3 }} more
+                </div>
               </div>
             </div>
           </div>
         </RouterLink>
       </div>
+
+      <div class="col-md-6">
+        <RouterLink to="/messages" class="text-decoration-none">
+          <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Professional Support</span>
+              <span class="btn btn-gf btn-sm py-0">Messages</span>
+            </div>
+            <div class="card-body p-3">
+              <div v-if="loadingPro" class="text-center text-muted"><small>Loading…</small></div>
+              <div v-else-if="professional" class="d-flex align-items-center gap-3">
+                <div class="avatar-circle flex-shrink-0" style="width:44px;height:44px;font-size:0.95rem;">
+                  {{ initialsFor(professional.professional.fullName) }}
+                </div>
+                <div>
+                  <div class="fw-semibold small" style="color:#333;">{{ professional.professional.fullName }}</div>
+                  <div class="small text-muted">Your assigned nutritionist</div>
+                  <div class="small" style="color:#5a9e56;">Tap to message →</div>
+                </div>
+              </div>
+              <div v-else class="text-center text-muted">
+                <small>No nutritionist linked yet. One will appear here once you're connected.</small>
+              </div>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+
     </div>
 
     <div class="section-header mb-3">
-      <h5 class="text-center">Recommended for You</h5>
+      <h5 class="text-center">My Favourite Recipes</h5>
     </div>
-    <div class="text-center text-muted py-4">
-      <small>Recommended recipes will appear here once you've set up your profile and goals.</small><br>
-      <RouterLink to="/recipes" class="btn btn-gf btn-sm mt-2">Browse All Recipes</RouterLink>
+
+    <div v-if="loadingFavs" class="text-center text-muted py-4">
+      <small>Loading favourites…</small>
+    </div>
+
+    <div v-else-if="favourites.length > 0">
+      <div class="row g-3 mb-3">
+        <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
+          <div class="card recipe-card h-100" style="transition:box-shadow 0.15s;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseleave="$event.currentTarget.style.boxShadow=''">
+            <div style="position:relative;overflow:hidden;height:160px;">
+              <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
+                   style="width:100%;height:100%;object-fit:cover;" />
+              <span v-if="recipe.category"
+                    class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
+                    style="background:#5a9e56;">
+                {{ recipe.category }}
+              </span>
+              <span class="position-absolute top-0 end-0 m-2"
+                    style="color:#d94f4f;font-size:1rem;">♥</span>
+            </div>
+            <div class="card-body pb-1">
+              <div class="fw-bold small mb-1" style="color:#333;">{{ recipe.title }}</div>
+              <div class="text-muted" style="font-size:0.72rem;">
+                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
+              </div>
+              <div v-if="recipe.averageRating != null" style="font-size:0.72rem;color:#e8a820;">
+                {{ '★'.repeat(Math.round(recipe.averageRating)) }}{{ '☆'.repeat(5 - Math.round(recipe.averageRating)) }}
+                <span class="text-muted">({{ recipe.reviewCount }})</span>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-top pt-2 pb-2">
+              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                          class="btn btn-gf-outline btn-sm w-100" style="font-size:0.78rem;">
+                View in Recipes →
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="favourites.length > 3" class="text-center mb-4">
+        <RouterLink to="/recipes" class="btn btn-gf-outline btn-sm px-4">
+          View all {{ favourites.length }} favourites →
+        </RouterLink>
+      </div>
+    </div>
+
+    <div v-else class="text-center text-muted py-4 mb-3 rounded"
+         style="border:1.5px dashed #d6e8d4;background:#f9fdf9;">
+      <p class="mb-2 small">You haven't saved any favourite recipes yet.</p>
+      <RouterLink to="/recipes" class="btn btn-gf btn-sm">Browse Recipe Library</RouterLink>
     </div>
 
   </div>
@@ -223,7 +302,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { apiFetch } from '../auth.js'
 
-const waterGlasses = ref(0)
 const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
 const dashboard = ref(null)
@@ -236,8 +314,18 @@ const loadingPro = ref(true)
 const goals = ref([])
 const loadingGoals = ref(true)
 
+const favourites = ref([])
+const loadingFavs = ref(true)
+
+const calorieBudget = computed(() => {
+  const goal = goals.value.find(g =>
+    g.status === 'active' && g.nutrient?.code === 'calories' && g.targetMax != null
+  )
+  return goal ? Number(goal.targetMax) : 2000
+})
+
 onMounted(async () => {
-  await Promise.all([loadDashboard(), loadProfessional(), loadGoals()])
+  await Promise.all([loadDashboard(), loadProfessional(), loadGoals(), loadFavourites()])
 })
 
 async function loadDashboard() {
@@ -264,7 +352,6 @@ async function loadProfessional() {
     const data = await res.json().catch(() => ({}))
     if (res.ok) professional.value = (data.professionals ?? [])[0] ?? null
   } catch {
-    // non-critical, silently ignore
   } finally {
     loadingPro.value = false
   }
@@ -277,25 +364,76 @@ async function loadGoals() {
     const data = await res.json().catch(() => ({}))
     if (res.ok) goals.value = data.goals ?? []
   } catch {
-    // non-critical, silently ignore
   } finally {
     loadingGoals.value = false
   }
 }
 
+async function loadFavourites() {
+  loadingFavs.value = true
+  try {
+    const res = await apiFetch('/api/recipes/favorites')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) favourites.value = data.recipes ?? []
+  } catch {
+  } finally {
+    loadingFavs.value = false
+  }
+}
+
+
 const quickStats = computed(() => dashboard.value?.quickStats ?? {})
 const foodDiaryPreview = computed(() => (dashboard.value?.foodDiaryPreview ?? []).filter(e => (e.items?.length ?? 0) > 0))
 const nutritionPreview = computed(() => dashboard.value?.nutritionPreview ?? [])
+const caloriesToday = computed(() => quickStats.value.calories_today ?? 0)
+const caloriePercent = computed(() => Math.round((caloriesToday.value / calorieBudget.value) * 100))
+const caloriesRemaining = computed(() => calorieBudget.value - Math.round(caloriesToday.value))
 
-const caloriesToday = computed(() => quickStats.value.calories_today ?? null)
-const mealsLoggedToday = computed(() => quickStats.value.meals_logged_today ?? null)
-const daysLogged = computed(() => quickStats.value.days_logged ?? null)
+const MACRO_REFS = { protein: { label: 'Protein', ref: 50, unit: 'g' }, carbohydrates: { label: 'Carbs', ref: 260, unit: 'g' }, fat: { label: 'Fat', ref: 70, unit: 'g' } }
+const nutrientLabels = { protein: 'Protein', carbohydrates: 'Carbs', fat: 'Fat', fibre: 'Fibre' }
 
-const nutrientLabels = {
-  protein: 'Protein',
-  carbohydrates: 'Carbs',
-  fat: 'Fat',
-  fibre: 'Fibre',
+const macroSummary = computed(() =>
+  Object.entries(MACRO_REFS).map(([code, meta]) => {
+    const n = nutritionPreview.value.find(x => x.code === code)
+    const amount = Math.round(Number(n?.totalAmount ?? 0))
+    return {
+      code,
+      label: meta.label,
+      unit: meta.unit,
+      amount,
+      pct: Math.min(Math.round((amount / meta.ref) * 100), 100),
+    }
+  })
+)
+
+const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const MAX_BAR_H = 72
+const todayIso = new Date().toISOString().slice(0, 10)
+
+const weekBars = computed(() => {
+  const trend = dashboard.value?.weeklyCaloryTrend ?? []
+  if (!trend.length) {
+    return WEEK_DAYS.map((day, i) => ({ day, date: '', val: '-', height: 0, over: false, isToday: false }))
+  }
+  const maxCal = Math.max(...trend.map(d => d.calories), calorieBudget.value)
+  return trend.map((d, dayIndex) => {
+    const cal = Math.round(d.calories)
+    const isToday = d.date === todayIso
+    return {
+      day: isToday ? 'Today' : (WEEK_DAYS[dayIndex] ?? d.date.slice(5)),
+      date: d.date,
+      val: cal > 0 ? String(cal) : '-',
+      height: cal > 0 ? Math.max(3, Math.round((cal / maxCal) * MAX_BAR_H)) : 0,
+      over: cal > calorieBudget.value,
+      isToday,
+    }
+  })
+})
+
+function nutrientPercent(n) {
+  const meta = MACRO_REFS[n.code]
+  if (!meta) return 0
+  return Math.min(Math.round((Number(n.totalAmount) / meta.ref) * 100), 100)
 }
 
 function formatAmount(n) {
@@ -316,6 +454,6 @@ function goalRange(goal) {
   if (min != null && max != null) return `${min}–${max}${unit}`
   if (min != null) return `≥ ${min}${unit}`
   if (max != null) return `≤ ${max}${unit}`
-  return ''
+  return 'Custom goal'
 }
 </script>

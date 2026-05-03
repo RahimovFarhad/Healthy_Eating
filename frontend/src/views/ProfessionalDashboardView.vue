@@ -34,6 +34,31 @@
       <div v-if="inviteSuccess" class="alert alert-success py-2 small mt-2 mb-0">{{ inviteSuccess }}</div>
     </div>
 
+    <div v-if="pendingInvitations.length > 0" class="mb-3">
+      <h6 class="fw-bold mb-2" style="color:#5a9e56;">
+        Pending Invitations
+        <span class="badge ms-1" style="background:#e8a820;font-size:0.7rem;">{{ pendingInvitations.length }}</span>
+      </h6>
+      <div v-for="inv in pendingInvitations" :key="inv.id"
+           class="card card-gf mb-2 p-3 d-flex flex-row align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <div class="avatar-circle" style="width:36px;height:36px;font-size:0.8rem;">
+            {{ initialsFor(inv.subscriber.fullName) }}
+          </div>
+          <div>
+            <div class="fw-bold small">{{ inv.subscriber.fullName }}</div>
+            <div class="text-muted" style="font-size:0.75rem;">
+              {{ inv.subscriber.email }} · ID {{ inv.subscriberId }}
+            </div>
+            <div class="text-muted" style="font-size:0.7rem;">
+              Invited {{ formatDate(inv.assignedAt) }} · awaiting response
+            </div>
+          </div>
+        </div>
+        <span class="badge" style="background:#e8a820;font-size:0.7rem;">Pending</span>
+      </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-2">
       <h5 class="fw-bold mb-0" style="color:#5a9e56;">Your Clients</h5>
       <span class="badge" style="background:#5a9e56;font-size:0.75rem;">
@@ -466,6 +491,8 @@ const inviteLoading = ref(false)
 const inviteError = ref('')
 const inviteSuccess = ref('')
 
+const pendingInvitations = ref([])
+
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
 function blankClientState() {
@@ -484,7 +511,18 @@ function blankClientState() {
 onMounted(() => {
   loadClients()
   loadNutrients()
+  loadPendingInvitations()
 })
+
+async function loadPendingInvitations() {
+  try {
+    const res = await apiFetch('/api/professional/client-invitations')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) pendingInvitations.value = data.invitations ?? data.clients ?? []
+  } catch {
+    // non-critical
+  }
+}
 
 async function loadNutrients() {
   try {
@@ -586,6 +624,7 @@ async function sendInvite() {
     }
     inviteSuccess.value = `Invitation sent to user #${inviteId.value}.`
     inviteId.value = null
+    await loadPendingInvitations()
   } catch {
     inviteError.value = 'Network error - could not send invitation'
   } finally {

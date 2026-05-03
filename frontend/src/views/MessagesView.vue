@@ -367,7 +367,7 @@
 import { ref, reactive, computed, nextTick, onMounted, watch } from 'vue'
 import { apiFetch, currentUser } from '../auth.js'
 
-const isProfessional = currentUser.value.role === 'professional'
+const isProfessional = computed(() => currentUser.value.role === 'professional')
 
 const clients = ref([])
 const loadingClients = ref(false)
@@ -750,7 +750,7 @@ function formatDate(value) {
 }
 
 onMounted(() => {
-  if (isProfessional) loadClients()
+  if (isProfessional.value) loadClients()
   else loadProfessional()
 })
 </script>
