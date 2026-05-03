@@ -483,6 +483,67 @@ describe("Diary Service", () => {
       expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
     });
   });
+  
+  describe("Recipe to Diary Entry Item (unit)", () => {
+    test("creates diary entry item from recipe portion when valid", async () => {
+        const validatedInput = {
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 123,
+          portionId: 1,
+          quantity: 2,
+        };
+
+        mockValidateCreateRecipeAsDiaryEntryItemInput.mockReturnValue(validatedInput);
+        mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+        mockFindRecipePortionForDiary.mockResolvedValue({
+          portionId: 1,
+          recipeId: 123,
+          description: "1 serving",
+          nutrients: [{ nutrientId: 1, amount: 250 }],
+        });
+        mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+        const result = await createDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 123,
+          portionId: 1,
+          quantity: 2,
+        });
+
+        expect(mockValidateCreateRecipeAsDiaryEntryItemInput).toHaveBeenCalled();
+        expect(mockFindRecipePortionForDiary).toHaveBeenCalledWith(123, 1);
+        expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          portionId: 1,
+          quantity: 2,
+        }));
+        expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("throws DiaryEntryError when recipe portion is not found for the diary entry", async () => {
+        mockValidateCreateRecipeAsDiaryEntryItemInput.mockReturnValue({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 999,
+          portionId: 1,
+          quantity: 2,
+        });
+        mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+        mockFindRecipePortionForDiary.mockResolvedValue(null);
+        
+        await expect(createDiaryEntryItem({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 999,
+          portionId: 1,
+          quantity: 2,
+        })).rejects.toEqual(expect.objectContaining({
+          message: "Recipe portion not found for diary entry"
+        }));
+    });
+  });
 
   describe("updateDiaryEntryItem (unit)", () => {
     test("returns updated diary entry item when inputs are valid and diary entry item exists", async () => {
