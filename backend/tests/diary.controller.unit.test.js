@@ -1307,4 +1307,148 @@ describe("Diary Controller", () => {
       expect(next).toHaveBeenCalledWith(error);
     });
   });
+
+  describe("createEntryWithRecipe", () => {
+    test("Returns status code 201 and creates diary entry with recipe when successful", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          recipeId: "11",
+        },
+        body: {
+          consumedAt: "2026-4-18",
+          mealType: "lunch",
+          notes: "recipe item",
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const newItem = { diaryEntryItemId: TEST_ENTRYITEMID };
+
+      mockCreateDiaryEntry.mockResolvedValue({ diaryEntryId: TEST_ENTRYID });
+      mockCreateRecipeAsDiaryEntryItemService.mockResolvedValue(newItem);
+
+      await createEntryWithRecipe(req,res,next);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({ entry: newItem });
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("Returns status code 400 when createDiaryEntry throws DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          recipeId: "11",
+        },
+        body: {
+          consumedAt: "2026-4-18",
+          mealType: "lunch",
+          notes: "recipe item",
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockCreateDiaryEntry.mockRejectedValue(new DiaryEntryError("Consumed at date is required"));
+
+      await createEntryWithRecipe(req,res,next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Consumed at date is required" });
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("Calls next when generic error with createDiaryEntry failing unexpectedly that is not a DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          recipeId: "11",
+        },
+        body: {
+          consumedAt: "2026-4-18",
+          mealType: "lunch",
+          notes: "recipe item",
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const error = new Error("Unexpected error");
+
+      mockCreateDiaryEntry.mockRejectedValue(error);
+
+      await createEntryWithRecipe(req,res,next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("createRecipeAsDiaryEntryItem", () => {
+    test("Returns status code 201 and creates recipe diary entry item when successful", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          id: String(TEST_ENTRYID),
+          recipeId: "11",
+        },
+        body: {
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const newItem = { diaryEntryItemId: TEST_ENTRYITEMID };
+
+      mockCreateRecipeAsDiaryEntryItemService.mockResolvedValue(newItem);
+
+      await createRecipeAsDiaryEntryItem(req,res,next);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({ newItem });
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("Returns status code 400 when createRecipeAsDiaryEntryItemService throws DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          id: String(TEST_ENTRYID),
+          recipeId: "11",
+        },
+        body: {
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const error = new Error("Unexpected error");
+
+      mockCreateRecipeAsDiaryEntryItemService.mockRejectedValue(error);
+
+      await createRecipeAsDiaryEntryItem(req,res,next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+    test("Calls next when generic error with createRecipeAsDiaryEntryItemService failing unexpectedly that is not a DiaryEntryError", async () => {
+      const req = {
+        user: { userId: TEST_USERID },
+        params: {
+          id: String(TEST_ENTRYID),
+          recipeId: "11",
+        },
+        body: {
+          servings: 2,
+        }
+      };
+      const res = createRes();
+      const next = jest.fn();
+      const error = new Error("Unexpected error");
+
+      mockCreateRecipeAsDiaryEntryItemService.mockRejectedValue(error);
+
+      await createRecipeAsDiaryEntryItem(req,res,next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
 });
