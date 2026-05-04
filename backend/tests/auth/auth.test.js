@@ -19,7 +19,7 @@ const expiredRefreshToken = sign(
     role: "default",
     tokenType: "refresh"
   },
-  process.env.JWT_SECRET || "default-secret-key",
+  process.env.JWT_SECRET,
   { expiresIn: "-1h" }
 );
 
@@ -40,7 +40,7 @@ describe("Auth API", () => {
 
   describe("Register", () => {
     test("Register creates user", async () => {
-      const res = await request(app).post("/auth/register").send(TEST_USER);
+      const res = await request(app).post("/api/auth/register").send(TEST_USER);
 
       expect(res.statusCode).toBe(201);
       expect(res.body).toMatchObject({
@@ -51,14 +51,14 @@ describe("Auth API", () => {
     });
 
     test("Register rejects duplicate email", async () => {
-      const res = await request(app).post("/auth/register").send(TEST_USER);
+      const res = await request(app).post("/api/auth/register").send(TEST_USER);
 
       expect(res.statusCode).toBe(409);
       expect(res.body).toHaveProperty("message");
     });
 
     test("Register rejects duplicate username", async () => {
-      const res = await request(app).post("/auth/register").send({
+      const res = await request(app).post("/api/auth/register").send({
         email: `another-${Date.now()}@example.com`,
         username: TEST_USER.username,
         password: TEST_USER.password,
@@ -70,7 +70,7 @@ describe("Auth API", () => {
 
     test("Register rejects missing username", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           email: "test@example.com",
           password: "123456"
@@ -84,7 +84,7 @@ describe("Auth API", () => {
 
     test("Register rejects missing email", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           username: "testuser",
           password: "123456"
@@ -95,7 +95,7 @@ describe("Auth API", () => {
 
     test("Register rejects missing password", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           email: "test@example.com",
           username: "testuser"
@@ -106,7 +106,7 @@ describe("Auth API", () => {
 
     test("Register rejects empty body", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({})
 
       expect(res.statusCode).toBe(400)
@@ -116,7 +116,7 @@ describe("Auth API", () => {
   describe("Login", () => {
     test("Login returns access token and refresh cookie with email", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: TEST_USER.email,
           password: TEST_USER.password,
@@ -140,7 +140,7 @@ describe("Auth API", () => {
 
     test("Login rejects invalid password", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: TEST_USER.email,
           password: "WrongPassword123!",
@@ -152,7 +152,7 @@ describe("Auth API", () => {
 
     test("Login rejects missing email", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           password: "123456"
         })
@@ -165,7 +165,7 @@ describe("Auth API", () => {
     
     test("Login rejects missing password", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: "test@example.com"
         })
@@ -178,7 +178,7 @@ describe("Auth API", () => {
 
     test("Login rejects empty body", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({})
 
       expect(res.statusCode).toBe(400)
@@ -186,7 +186,7 @@ describe("Auth API", () => {
 
     test("Login rejects non-existing user", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: "nonexistent@example.com",
           password: "123456"
@@ -204,7 +204,7 @@ describe("Auth API", () => {
       expect(refreshCookie).toBeDefined();
 
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
         .set("Cookie", refreshCookie);
 
       expect(res.statusCode).toBe(200);
@@ -214,7 +214,7 @@ describe("Auth API", () => {
 
     test ("Refresh rejects missing token", async () => {
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
 
       expect(res.statusCode).toBe(401)
       expect(res.body).toEqual({
@@ -225,7 +225,7 @@ describe("Auth API", () => {
     test("Refresh rejects expired token", async () => {
       const expiredTokenCookie = `refreshToken=${expiredRefreshToken}; HttpOnly; Path=/; Max-Age=3600`;
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
         .set("Cookie", expiredTokenCookie);
 
       expect(res.statusCode).toBe(401);

@@ -1,5 +1,15 @@
-import { GoalError, getGoalErrorStatus, normalizeBooleanQuery, normalizeGoalId, normalizeGoalIncludeQuery, validateUpdateGoalInput } from "./goals.validator.js";
-import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, toggleGoalDoneForToday } from "./goals.service.js";
+import { GoalError, normalizeBooleanQuery, normalizeGoalId, normalizeGoalIncludeQuery, validateUpdateGoalInput } from "./goals.validator.js";
+import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, toggleGoalDoneForToday, listNutrientsService } from "./goals.service.js";
+
+function getGoalErrorStatus(errorMessage) {
+  if (errorMessage === "Goal not found") return 404;
+  if (errorMessage === "Unauthorized to archive this goal") return 403;
+  if (errorMessage === "Goal is already archived") return 409;
+  if (errorMessage === "Goal is archived") return 409;
+  if (errorMessage === "Goal has not started yet") return 409;
+  if (errorMessage === "Goal end date has passed") return 409;
+  return 400;
+}
 
 async function getGoals(req, res, next) {
   try {
@@ -68,6 +78,15 @@ async function createGoal(req, res, next) {
   }
 }
 
+async function listNutrients(_req, res, next) {
+  try {
+    const nutrients = await listNutrientsService();
+    return res.status(200).json({ nutrients });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function toggleGoalDone(req, res, next) {
   try {
     const subscriberId = req.user?.userId ?? null;
@@ -83,4 +102,4 @@ async function toggleGoalDone(req, res, next) {
   }
 }
 
-export { getGoals, updateGoal, deleteGoal, createGoal, toggleGoalDone };
+export { getGoals, updateGoal, deleteGoal, createGoal, toggleGoalDone, listNutrients };

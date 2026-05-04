@@ -17,7 +17,7 @@ function requireAuth(req, res, next) {
     }
 
     try {
-        const decoded = verify(token, process.env.JWT_SECRET || "default-secret-key");
+        const decoded = verify(token, process.env.JWT_SECRET);
 
         if (decoded.tokenType !== "access") {
             return res.status(401).json({ message: "Invalid token" });

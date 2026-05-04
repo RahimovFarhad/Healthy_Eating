@@ -35,15 +35,30 @@ async function authenticateUser(email, password) {
     const payload = {
         userId: user.userId,
         email: user.email,
+        fullName: user.fullName,
         role: user.role,
         tokenType: "access"
     };
 
-    const token = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
+    const token = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
     return token;
 }
 
 async function registerUser(email, username, password) {
+    // this is a basic email format check: must contain @ with characters on both sides and end with .com
+    const atIndex = email?.indexOf("@") ?? -1;
+    if (atIndex <= 0 || !email.endsWith(".com") || atIndex >= email.length - 1) {
+        throw new AuthError("Please enter a valid email address");
+    }
+
+    // this enforces the password length bounds
+    if (!password || password.length < 8) {
+        throw new AuthError("Password must be at least 8 characters");
+    }
+    if (password.length > 30) {
+        throw new AuthError("Password must be 30 characters or fewer");
+    }
+
     const existingUser = await prisma.user.findFirst({
         where: {
             OR: [
@@ -104,14 +119,14 @@ async function generateRefreshToken(email) {
         tokenType: "refresh"
     };
 
-    const refreshToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
+    const refreshToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
     // Optionally, you can store the refresh token in the database for later validation.
     return refreshToken;
 }
 
 async function refreshAccessToken(refreshToken) {
     try {
-        const decoded = verify(refreshToken, process.env.JWT_SECRET || "default-secret-key");
+        const decoded = verify(refreshToken, process.env.JWT_SECRET);
 
         if (decoded.tokenType !== "refresh") {
             throw new AuthError("Invalid refresh token");
@@ -130,11 +145,12 @@ async function refreshAccessToken(refreshToken) {
         const payload = {
             userId: user.userId,
             email: user.email,
+            fullName: user.fullName,
             role: user.role,
             tokenType: "access"
         };
 
-        const newAccessToken = sign(payload, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "1h" });
+        const newAccessToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
         return newAccessToken;
     } catch (error) {
         throw new AuthError("Invalid refresh token");

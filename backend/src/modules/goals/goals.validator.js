@@ -22,7 +22,7 @@ function getGoalErrorStatus(message) {
 
 const GOAL_SOURCES = new Set(["system_default", "user_defined", "professional_defined"]);
 const GOAL_STATUSES = new Set(["active", "archived"]);
-const GOAL_INCLUDE_OPTIONS = new Set(["today", "all"]);
+const GOAL_INCLUDE_OPTIONS = new Set(["today", "all", "none"]);
 
 function normalizePositiveInteger(value) {
   const parsed = typeof value === "string" ? Number(value) : value;
@@ -196,6 +196,25 @@ function validateCreateGoalInput(goal, options = {}) {
     throw new GoalError("endDate must be on or after startDate");
   }
 
+  const nutrientId = goal.nutrientId == null ? null : normalizePositiveInteger(goal.nutrientId);
+  if (goal.nutrientId != null && !nutrientId) {
+    throw new GoalError("nutrientId must be a positive integer");
+  }
+
+  const targetMin = goal.targetMin == null ? null : normalizeNonNegativeNumber(goal.targetMin);
+  if (goal.targetMin != null && targetMin === null) {
+    throw new GoalError("targetMin must be a non-negative number");
+  }
+
+  const targetMax = goal.targetMax == null ? null : normalizeNonNegativeNumber(goal.targetMax);
+  if (goal.targetMax != null && targetMax === null) {
+    throw new GoalError("targetMax must be a non-negative number");
+  }
+
+  if (targetMin != null && targetMax != null && targetMin > targetMax) {
+    throw new GoalError("targetMin must be less than or equal to targetMax");
+  }
+
   const forcedSource = options.forcedSource;
   if (forcedSource !== undefined && !GOAL_SOURCES.has(forcedSource)) {
     throw new GoalError("forcedSource must be one of: system_default, user_defined, professional_defined");
@@ -229,9 +248,9 @@ function validateCreateGoalInput(goal, options = {}) {
 
   return {
     nutrientCode: null,
-    nutrientId: null,
-    targetMin: null,
-    targetMax: null,
+    nutrientId,
+    targetMin,
+    targetMax,
     source,
     status: "active",
     setByProfessionalId,

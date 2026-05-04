@@ -22,6 +22,7 @@ async function findProfessionalClientLink({ professionalId, clientId }) {
         if (error.code === "P2023") {
             return null; // Professional or subscriber does not exist
         }
+        throw error;
     }
 }
 
@@ -33,18 +34,19 @@ async function createProfessionalClientLink({ professionalId, subscriberId }) {
                 subscriberId,
                 status: "invited",
             },
-        }); 
+        });
         return result;
     } catch (error) {
         if (error.code === "P2003") {
             return null; // Professional or subscriber does not exist
         }
+        throw error;
     }
 }
 
 async function listProfessionalClients({ professionalId, includeDetails, status }) {
     return prisma.professionalClient.findMany({
-        where: { 
+        where: {
             professionalId,
             status: status || "active",
         },
@@ -61,69 +63,59 @@ async function listProfessionalClients({ professionalId, includeDetails, status 
                     fullName: true,
                     email: true,
                     role: true,
-                },
-            },
-            ...(includeDetails
-                ? {
-                    subscriber: {
-                        select: {
-                            userId: true,
-                            fullName: true,
-                            email: true,
-                            role: true,
-                            clientRiskSnapshots: {
-                                orderBy: [{ computedAt: "desc" }, { snapshotId: "desc" }],
-                                take: 5,
-                                select: {
-                                    snapshotId: true,
-                                    ruleId: true,
-                                    riskLevel: true,
-                                    score: true,
-                                    reason: true,
-                                    computedAt: true,
-                                    rule: {
-                                        select: {
-                                            ruleId: true,
-                                            name: true,
-                                            severity: true,
-                                            nutrient: {
-                                                select: {
-                                                    nutrientId: true,
-                                                    code: true,
-                                                    name: true,
-                                                    unit: true,
-                                                },
+                    ...(includeDetails && {
+                        clientRiskSnapshots: {
+                            orderBy: [{ computedAt: "desc" }, { snapshotId: "desc" }],
+                            take: 5,
+                            select: {
+                                snapshotId: true,
+                                ruleId: true,
+                                riskLevel: true,
+                                score: true,
+                                reason: true,
+                                computedAt: true,
+                                rule: {
+                                    select: {
+                                        ruleId: true,
+                                        name: true,
+                                        severity: true,
+                                        nutrient: {
+                                            select: {
+                                                nutrientId: true,
+                                                code: true,
+                                                name: true,
+                                                unit: true,
                                             },
                                         },
                                     },
                                 },
                             },
-                            nutritionGoalsAsSubscriber: {
-                                where: { status: "active" },
-                                orderBy: [{ createdAt: "desc" }, { goalId: "desc" }],
-                                select: {
-                                    goalId: true,
-                                    nutrientId: true,
-                                    targetMin: true,
-                                    targetMax: true,
-                                    status: true,
-                                    source: true,
-                                    startDate: true,
-                                    endDate: true,
-                                    nutrient: {
-                                        select: {
-                                            nutrientId: true,
-                                            code: true,
-                                            name: true,
-                                            unit: true,
-                                        },
+                        },
+                        nutritionGoalsAsSubscriber: {
+                            where: { status: "active" },
+                            orderBy: [{ createdAt: "desc" }, { goalId: "desc" }],
+                            select: {
+                                goalId: true,
+                                nutrientId: true,
+                                targetMin: true,
+                                targetMax: true,
+                                status: true,
+                                source: true,
+                                startDate: true,
+                                endDate: true,
+                                nutrient: {
+                                    select: {
+                                        nutrientId: true,
+                                        code: true,
+                                        name: true,
+                                        unit: true,
                                     },
                                 },
                             },
                         },
-                    },
-                }
-                : {}),
+                    }),
+                },
+            },
         },
     });
 }
@@ -173,7 +165,7 @@ async function createSharedRecipe({ professionalId, clientId, recipeId }) {
             subscriberId: true,
             recipeId: true,
             sharedAt: true,
-        },  
+        },
     });
 }
 
@@ -194,7 +186,7 @@ async function listSharedRecipes({ professionalId, clientId }) {
                 select: {
                     recipeId: true,
                     title: true,
-                    instructions: true,
+                    image: true,
                 },
             },
         },

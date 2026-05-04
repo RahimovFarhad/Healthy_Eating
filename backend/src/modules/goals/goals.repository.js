@@ -75,6 +75,19 @@ async function findNutrientByCode({ nutrientCode }) {
   });
 }
 
+async function listNutrients() {
+  return prisma.nutrient.findMany({
+    orderBy: [{ type: "asc" }, { nutrientId: "asc" }],
+    select: {
+      nutrientId: true,
+      code: true,
+      name: true,
+      unit: true,
+      type: true,
+    },
+  });
+}
+
 async function findGoalByIdForSubscriber({ subscriberId, goalId }) {
   return prisma.nutritionGoal.findFirst({
     where: {
@@ -144,6 +157,14 @@ async function insertGoal({
       setByProfessionalId: true, 
     }
       
+  });
+}
+
+// archives all currently active goals for a given subscriber and nutrient
+async function archiveGoalsForNutrient({ subscriberId, nutrientId }) {
+  return prisma.nutritionGoal.updateMany({
+    where: { subscriberId, nutrientId, status: "active" },
+    data: { status: "archived", endDate: new Date() },
   });
 }
 
@@ -220,8 +241,10 @@ export {
   fetchGoals,
   findNutrientById,
   findNutrientByCode,
+  listNutrients,
   findGoalByIdForSubscriber,
   archiveGoal,
+  archiveGoalsForNutrient,
   updateGoal,
   insertGoal,
   findGuidelinesByDemographic,
