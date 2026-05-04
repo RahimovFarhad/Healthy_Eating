@@ -3,13 +3,13 @@
   <div class="container-fluid px-4 py-3">
 
     <div class="d-flex justify-content-between align-items-center p-3 mb-4 rounded"
-         style="background:linear-gradient(135deg,#5a9e56 0%,#3f7a3c 100%);border:none;">
+         style="background:#ffffff;border:1px solid #d4e7d4;">
       <div>
-        <h4 class="fw-bold text-white mb-0">Welcome back</h4>
-        <small style="color:rgba(255,255,255,0.8);">{{ today }}</small>
+        <h4 class="fw-bold mb-0" style="color:#1b4d1b;">Welcome back</h4>
+        <small style="color:#2d5a2d;">{{ today }}</small>
       </div>
       <RouterLink to="/diary" class="btn btn-sm fw-semibold"
-                  style="background:#fff;color:#5a9e56;border:none;">
+                  style="background:#1b4d1b;color:#ffffff;border:none;">
         + Log Meal
       </RouterLink>
     </div>
@@ -20,20 +20,20 @@
 
       <div class="col-md-5">
         <div class="h-100 p-3 rounded"
-             style="background:#fff;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-          <div class="small fw-semibold mb-3" style="color:#888;">Calories Today</div>
+             style="background:#fff;border:1px solid #d4e7d4;box-shadow:0 2px 8px rgba(27,77,27,0.06);">
+          <div class="small fw-semibold mb-3" style="color:#2d5a2d;">Calories Today</div>
           <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
           <template v-else>
             <div class="d-flex justify-content-between align-items-end mb-1">
               <div>
-                <span class="fw-bold" style="font-size:2rem;color:#5a9e56;line-height:1;">
+                <span class="fw-bold" style="font-size:2rem;color:#1b4d1b;line-height:1;">
                   {{ Math.round(caloriesToday) }}
                 </span>
                 <span class="small text-muted ms-1">eaten</span>
               </div>
               <div class="text-end">
                 <span class="fw-bold" style="font-size:1.2rem;"
-                      :style="`color:${caloriesRemaining < 0 ? '#d94f4f' : '#333'};`">
+                      :style="`color:${caloriesRemaining < 0 ? '#d94f4f' : '#1b4d1b'};`">
                   {{ Math.abs(caloriesRemaining) }}
                 </span>
                 <span class="small text-muted ms-1">
@@ -41,24 +41,24 @@
                 </span>
               </div>
             </div>
-            <div class="mb-3" style="height:8px;background:#e8f4e6;border-radius:4px;">
+            <div class="mb-3" style="height:8px;background:#e8f5e8;border-radius:4px;">
               <div style="height:100%;border-radius:4px;transition:width 0.5s;"
-                   :style="`width:${Math.min(caloriePercent, 100)}%;background:${caloriePercent > 100 ? '#d94f4f' : '#5a9e56'};`">
+                   :style="`width:${Math.min(caloriePercent, 100)}%;background:${caloriePercent > 100 ? '#d94f4f' : '#2e7d32'};`">
               </div>
             </div>
             <div class="row g-2 text-center">
               <div v-for="m in macroSummary" :key="m.code" class="col-4">
-                <div class="p-2 rounded" style="background:#f9fdf9;border:1px solid #e8f4e6;">
-                  <div class="fw-bold small" style="color:#5a9e56;">{{ m.amount }}{{ m.unit }}</div>
-                  <div style="font-size:0.7rem;color:#888;">{{ m.label }}</div>
-                  <div style="height:3px;background:#e8f4e6;border-radius:2px;margin-top:4px;">
-                    <div style="height:100%;border-radius:2px;background:#5a9e56;transition:width 0.5s;"
+                <div class="p-2 rounded" style="background:#f9fdf9;border:1px solid #d4e7d4;">
+                  <div class="fw-bold small" style="color:#1b4d1b;">{{ m.amount }}{{ m.unit }}</div>
+                  <div style="font-size:0.7rem;color:#2d5a2d;">{{ m.label }}</div>
+                  <div style="height:3px;background:#e8f5e8;border-radius:2px;margin-top:4px;">
+                    <div style="height:100%;border-radius:2px;background:#2e7d32;transition:width 0.5s;"
                          :style="`width:${m.pct}%;`"></div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="text-center mt-2" style="font-size:0.72rem;color:#aaa;">
+            <div class="text-center mt-2" style="font-size:0.72rem;color:#2d5a2d;">
               Goal: {{ calorieBudget }} kcal
             </div>
           </template>
@@ -67,8 +67,8 @@
 
       <div class="col-md-7">
         <div class="h-100 p-3 rounded"
-             style="background:#fff;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-          <div class="small fw-semibold mb-3" style="color:#888;">This Week's Calories</div>
+             style="background:#fff;border:1px solid #d4e7d4;box-shadow:0 2px 8px rgba(27,77,27,0.06);">
+          <div class="small fw-semibold mb-3" style="color:#2d5a2d;">This Week's Calories</div>
           <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
           <template v-else>
             <div class="d-flex align-items-end gap-1" style="height:90px;">
@@ -76,16 +76,16 @@
                    class="d-flex flex-column align-items-center"
                    style="flex:1;">
                 <span style="font-size:0.62rem;margin-bottom:2px;font-weight:600;"
-                      :style="`color:${bar.over ? '#d94f4f' : bar.val === '-' ? '#ccc' : '#5a9e56'};`">
+                      :style="`color:${bar.over ? '#d94f4f' : bar.val === '-' ? '#ccc' : '#1b4d1b'};`">
                   {{ bar.val }}
                 </span>
                 <div style="width:100%;border-radius:3px 3px 0 0;transition:height 0.4s;min-height:3px;"
-                     :style="`height:${bar.height}px;background:${bar.isToday ? '#5a9e56' : bar.over ? '#f5b8b8' : '#d6e8d4'};border:1px solid ${bar.isToday ? '#3f7a3c' : bar.over ? '#e8a0a0' : '#aacca8'};`">
+                     :style="`height:${bar.height}px;background:${bar.isToday ? '#2e7d32' : bar.over ? '#f5b8b8' : '#e8f5e8'};border:1px solid ${bar.isToday ? '#1b4d1b' : bar.over ? '#e8a0a0' : '#d4e7d4'};`">
                 </div>
               </div>
             </div>
             <div class="d-flex justify-content-end mt-1">
-              <span style="font-size:0.68rem;color:#aaa;">
+              <span style="font-size:0.68rem;color:#2d5a2d;">
                 Goal: {{ calorieBudget }} kcal/day
               </span>
             </div>
@@ -93,7 +93,7 @@
               <div v-for="bar in weekBars" :key="bar.date + '-label'"
                    class="text-center" style="flex:1;">
                 <span style="font-size:0.65rem;"
-                      :style="`color:${bar.isToday ? '#5a9e56' : '#aaa'};font-weight:${bar.isToday ? '700' : '400'};`">
+                      :style="`color:${bar.isToday ? '#1b4d1b' : '#2d5a2d'};font-weight:${bar.isToday ? '700' : '400'};`">
                   {{ bar.day }}
                 </span>
               </div>
@@ -109,7 +109,7 @@
       <div class="col-md-6">
         <RouterLink to="/diary" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(27,77,27,0.12)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Food Diary</span>
@@ -120,8 +120,8 @@
               <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0">
                 <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
                     class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                  <span class="small fw-semibold text-capitalize" style="color:#333;">{{ entry.mealType }}</span>
-                  <span class="badge rounded-pill" style="background:#e8f4e6;color:#5a9e56;font-weight:600;">
+                  <span class="small fw-semibold text-capitalize" style="color:#1b4d1b;">{{ entry.mealType }}</span>
+                  <span class="badge rounded-pill" style="background:#e8f5e8;color:#1b4d1b;font-weight:600;">
                     {{ entry.items?.length ?? 0 }} {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
                   </span>
                 </li>
@@ -137,7 +137,7 @@
       <div class="col-md-6">
         <RouterLink to="/nutrition" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(27,77,27,0.12)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Nutrition Today</span>
@@ -148,11 +148,11 @@
               <div v-else-if="nutritionPreview.length > 0">
                 <div v-for="n in nutritionPreview" :key="n.code" class="mb-2">
                   <div class="d-flex justify-content-between mb-1">
-                    <span class="small fw-semibold" style="color:#333;">{{ nutrientLabels[n.code] ?? n.name }}</span>
-                    <span class="small" style="color:#5a9e56;">{{ formatAmount(n) }}</span>
+                    <span class="small fw-semibold" style="color:#1b4d1b;">{{ nutrientLabels[n.code] ?? n.name }}</span>
+                    <span class="small" style="color:#2e7d32;">{{ formatAmount(n) }}</span>
                   </div>
-                  <div style="height:5px;background:#e8f4e6;border-radius:3px;">
-                    <div style="height:100%;border-radius:3px;background:#5a9e56;transition:width 0.4s;"
+                  <div style="height:5px;background:#e8f5e8;border-radius:3px;">
+                    <div style="height:100%;border-radius:3px;background:#2e7d32;transition:width 0.4s;"
                          :style="`width:${nutrientPercent(n)}%;`"></div>
                   </div>
                 </div>
@@ -172,7 +172,7 @@
       <div class="col-md-6">
         <RouterLink to="/goals" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(27,77,27,0.12)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Goals & Progress</span>
@@ -187,13 +187,13 @@
                 <div v-for="goal in goals.slice(0, 3)" :key="goal.goalId"
                      class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
                   <div>
-                    <div class="small fw-semibold" style="color:#333;">
+                    <div class="small fw-semibold" style="color:#1b4d1b;">
                       {{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}
                     </div>
                     <div class="small text-muted">{{ goalRange(goal) }}</div>
                   </div>
                   <span class="badge rounded-pill"
-                        :style="`background:${goal.source === 'professional_defined' ? '#5a9e56' : '#e8f4e6'};color:${goal.source === 'professional_defined' ? '#fff' : '#5a9e56'};`">
+                        :style="`background:${goal.source === 'professional_defined' ? '#2e7d32' : '#e8f5e8'};color:${goal.source === 'professional_defined' ? '#fff' : '#1b4d1b'};`">
                     {{ goal.source === 'professional_defined' ? 'Pro' : 'Personal' }}
                   </span>
                 </div>
@@ -209,7 +209,7 @@
       <div class="col-md-6">
         <RouterLink to="/messages" class="text-decoration-none">
           <div class="card card-gf h-100" style="cursor:pointer;transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(27,77,27,0.12)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div class="card-header d-flex justify-content-between align-items-center">
               <span>Professional Support</span>
@@ -223,14 +223,14 @@
                     {{ initialsFor(professional.professional.fullName) }}
                   </div>
                   <div>
-                    <div class="fw-semibold small" style="color:#333;">{{ professional.professional.fullName }}</div>
+                    <div class="fw-semibold small" style="color:#1b4d1b;">{{ professional.professional.fullName }}</div>
                     <div class="small text-muted">Your assigned nutritionist</div>
-                    <div class="small" style="color:#5a9e56;">Tap to message →</div>
+                    <div class="small" style="color:#2e7d32;">Tap to message →</div>
                   </div>
                 </div>
                 <div v-for="inv in pendingInvites" :key="inv.professionalId ?? inv.id"
                      class="p-2 rounded mb-2" style="background:#fffbf0;border:1px solid #e8a820;">
-                  <div class="small fw-semibold mb-1" style="color:#333;">
+                  <div class="small fw-semibold mb-1" style="color:#1b4d1b;">
                     {{ inv.professional?.fullName ?? 'A nutritionist' }} has invited you
                   </div>
                   <div class="small text-muted mb-2">Would you like to accept this invitation?</div>
@@ -258,7 +258,7 @@
     </div>
 
     <div class="section-header mb-3">
-      <h5 class="text-center">My Favourite Recipes</h5>
+      <h5 class="text-center" style="color:#1b4d1b;">My Favourite Recipes</h5>
     </div>
 
     <div v-if="loadingFavs" class="text-center text-muted py-4">
@@ -268,22 +268,22 @@
     <div v-else-if="favourites.length > 0">
       <div class="row g-3 mb-3">
         <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
-          <div class="card recipe-card h-100" style="transition:box-shadow 0.15s;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(90,158,86,0.2)'"
+          <div class="card recipe-card h-100" style="transition:box-shadow 0.15s;border:1px solid #d4e7d4;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(27,77,27,0.12)'"
                @mouseleave="$event.currentTarget.style.boxShadow=''">
             <div style="position:relative;overflow:hidden;height:160px;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
                     class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
-                    style="background:#5a9e56;">
+                    style="background:#2e7d32;">
                 {{ recipe.category }}
               </span>
               <span class="position-absolute top-0 end-0 m-2"
                     style="color:#d94f4f;font-size:1rem;">♥</span>
             </div>
             <div class="card-body pb-1">
-              <div class="fw-bold small mb-1" style="color:#333;">{{ recipe.title }}</div>
+              <div class="fw-bold small mb-1" style="color:#1b4d1b;">{{ recipe.title }}</div>
               <div class="text-muted" style="font-size:0.72rem;">
                 {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
               </div>
@@ -310,7 +310,7 @@
     </div>
 
     <div v-else class="text-center text-muted py-4 mb-3 rounded"
-         style="border:1.5px dashed #d6e8d4;background:#f9fdf9;">
+         style="border:1.5px dashed #d4e7d4;background:#f9fdf9;">
       <p class="mb-2 small">You haven't saved any favourite recipes yet.</p>
       <RouterLink to="/recipes" class="btn btn-gf btn-sm">Browse Recipe Library</RouterLink>
     </div>

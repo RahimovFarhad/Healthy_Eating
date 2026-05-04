@@ -50,7 +50,7 @@ export async function login(email, password) {
   return true
 }
 
-export async function register(email, username, password, isProfessional = false) {
+export async function register(email, username, password) {
   authError.value = ''
   const res = await fetch('/api/auth/register', {
     method: 'POST',
@@ -65,10 +65,31 @@ export async function register(email, username, password, isProfessional = false
     return false
   }
 
-  if (isProfessional) {
-    const loggedIn = await login(email, password)
-    if (!loggedIn) return false
+  return true
+}
 
+export async function verifyAndLogin(email, code, isProfessional = false) {
+  authError.value = ''
+  const res = await fetch('/api/auth/register/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    authError.value = data.message ?? 'Verification failed'
+    return false
+  }
+
+  const loggedIn = await login(email, code)
+  if (!loggedIn) {
+    authError.value = 'Verification successful but login failed. Please try logging in.'
+    return false
+  }
+
+  if (isProfessional) {
     const upgradeRes = await apiFetch('/api/professional/setAsProfessional', { method: 'PATCH' })
     if (!upgradeRes.ok) {
       authError.value = 'Account created but failed to upgrade to professional.'

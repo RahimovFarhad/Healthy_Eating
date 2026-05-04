@@ -187,11 +187,33 @@
                 <input type="password" class="form-control"
                        placeholder="Min. 8 characters"
                        v-model="signupForm.password"
-                       minlength="8"
                        maxlength="30"
                        style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
                        onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
                        onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
+                
+                <div v-if="signupForm.password" class="mt-2" style="font-size:0.8rem;">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">8-30 characters</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">One uppercase letter</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">One lowercase letter</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">One number</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">One special character (!@#$%^&*...)</span>
+                  </div>
+                </div>
               </div>
 
 
@@ -220,7 +242,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, authError } from '../auth.js'
 
@@ -234,6 +256,21 @@ const loginError = ref('')
 const signupLoading = ref(false)
 const signupError = ref('')
 const signupSuccess = ref('')
+
+const passwordValidation = computed(() => {
+  const pwd = signupForm.value.password
+  return {
+    length: pwd.length >= 8 && pwd.length <= 30,
+    uppercase: /[A-Z]/.test(pwd),
+    lowercase: /[a-z]/.test(pwd),
+    number: /[0-9]/.test(pwd),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
+  }
+})
+
+const isPasswordValid = computed(() => {
+  return Object.values(passwordValidation.value).every(v => v === true)
+})
 
 async function handleLogin() {
   loginError.value = ''
@@ -252,7 +289,7 @@ async function handleLogin() {
 
 function isValidEmail(email) {
   const atIndex = email.indexOf('@')
-  return atIndex > 0 && email.endsWith('.com') && atIndex < email.length - 1
+  return atIndex > 0 && atIndex < email.length - 1
 }
 
 async function handleSignup() {
@@ -262,8 +299,8 @@ async function handleSignup() {
     signupError.value = 'Please enter a valid email address'
     return
   }
-  if (signupForm.value.password.length < 8) {
-    signupError.value = 'Password must be at least 8 characters'
+  if (!isPasswordValid.value) {
+    signupError.value = 'Please meet all password requirements'
     return
   }
   signupLoading.value = true
@@ -271,12 +308,10 @@ async function handleSignup() {
     const ok = await register(
       signupForm.value.email,
       signupForm.value.name,
-      signupForm.value.password,
-      false,
+      signupForm.value.password
     )
     if (ok) {
-      signupSuccess.value = 'Account created! You can now log in.'
-      signupForm.value = { name: '', email: '', password: '' }
+      router.push(`/verify-email?email=${encodeURIComponent(signupForm.value.email)}`)
     } else {
       signupError.value = authError.value || 'Registration failed'
     }
