@@ -16,6 +16,7 @@ const userPayload = {
 };
 
 var subscriber;
+var testRecipeId = null;
 
 var validAccessToken = null;
 var subscriberAccessToken = null;
@@ -53,6 +54,16 @@ describe("Professional API", () => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
+
+    const firstRecipe = await prisma.recipe.findFirst({
+      select: {
+        recipeId: true,
+      },
+      orderBy: {
+        recipeId: "asc",
+      },
+    });
+    testRecipeId = firstRecipe?.recipeId ?? null;
 
   });
 
@@ -196,6 +207,32 @@ describe("Professional API", () => {
       expect(res.body.invitation).toHaveProperty("subscriberId", subscriber.userId);
     });
 
+  });
+
+  describe("GET /professional/client-invitations", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app).get("/professional/client-invitations");
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get("/professional/client-invitations")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("invitations");
+      expect(Array.isArray(res.body.invitations)).toBe(true);
+      expect(
+        res.body.invitations.some(
+          (invitation) => 
+            invitation.professionalId === userPayload.userId &&
+            invitation.subscriberId === subscriber.userId &&
+            invitation.status === "invited"
+        )
+      ).toBe(true);
+    });
   });
 
   describe("GET /professional/clients", () => {
@@ -432,6 +469,84 @@ describe("Professional API", () => {
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("goals");
       expect(Array.isArray(res.body.goals)).toBe(true);
+    });
+  });
+
+  describe("POST /professional/clients/:clientId/shared-recipes", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .send({
+          recipeId: testRecipeId || 1,
+        });
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects invalid clientId", async () => {
+      const res = await request(app)
+        .post("/professional/clients/invalid/shared-recipes")
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          recipeId: testRecipeId || 1,
+        });
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("rejects missing recipeId", async () => {
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {
+      if (!testRecipeId) {
+        return;
+      }
+
+      const res = await request(app)
+        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          recipeId: testRecipeId,
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("sharedRecipe");
+      expect(res.body.sharedRecipe).toHaveProperty("professionalId", userPayload.userId);
+      expect(res.body.sharedRecipe).toHaveProperty("subscriberId", subscriber.userId);
+      expect(res.body.sharedRecipe).toHaveProperty("recipeId", testRecipeId);
+    });
+  });
+
+  describe("GET /professional/clients/:clientId/shared-recipes", () => {
+    test("rejects unauthorized requests", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/shared-recipes`);
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    test("rejects invalid clientId", async () => {
+      const res = await request(app)
+        .get("/professional/clients/invalid/shared-recipes")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    test("success on valid input", async () => {
+      const res = await request(app)
+        .get(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("sharedRecipes");
+      expect(Array.isArray(res.body.sharedRecipes)).toBe(true);
     });
   });
 
