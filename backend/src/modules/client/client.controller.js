@@ -18,7 +18,7 @@ async function acceptInvitation(req, res, next) {
         if (accept) {
             return res.status(200).json({ message: "Invitation accepted successfully" });
         } else {
-            return res.status(400).json({ error: "Failed to accept invitation" });
+            throw new ClientError("Failed to accept invitation");
         }
     } catch (error) {
         if (error instanceof ClientError) {
