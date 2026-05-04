@@ -40,7 +40,7 @@ const mockFindRecipePortionForDiary = jest.fn();
 const mockSearchFoodById = jest.fn();
 const mockParseFoodResponse = jest.fn();
 
-jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.validator.js", () => ({
   DiaryEntryError: DiaryEntryError,
   validateCreateDiaryEntryInput: mockValidateCreateDiaryEntryInput,
   validateSummaryInput: mockValidateSummaryInput,
@@ -56,7 +56,7 @@ jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
   validateCreateRecipeAsDiaryEntryItemInput: mockValidateCreateRecipeAsDiaryEntryItemInput,
 }));
 
-jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.repository.js", () => ({
   fetchSummaryData: mockFetchSummaryData,
   insertDiaryEntry: mockInsertDiaryEntry,
   listDiaryEntries: mockListDiaryEntries,
@@ -75,7 +75,7 @@ jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
   findRecipePortionForDiary: mockFindRecipePortionForDiary,
 }));
 
-jest.unstable_mockModule("../src/utils/searchFood.js", () => ({
+jest.unstable_mockModule("../../src/utils/searchFood.js", () => ({
   searchFoodById: mockSearchFoodById,
   parseFoodResponse: mockParseFoodResponse,
 }));

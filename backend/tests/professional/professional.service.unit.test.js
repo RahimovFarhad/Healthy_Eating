@@ -29,17 +29,17 @@ const mockValidateSetGoalInput = jest.fn();
 const mockValidateSummaryInput = jest.fn();
 const mockValidateRecipeId = jest.fn();
 
-jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.service.js", () => ({
   getDashboardDataForSubscriber: mockgetDashboardDataForSubscriber,
   getNutritionSummary: mockGetNutritionSummary,
 }));
 
-jest.unstable_mockModule("../src/modules/goals/goals.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
   createGoalForSubscriber: mockCreateGoalForSubscriber,
   getGoalsService: mockGetGoalsService,
 }));
 
-jest.unstable_mockModule("../src/modules/professional/professional.repository.js", () => ({
+jest.unstable_mockModule("../../src/modules/professional/professional.repository.js", () => ({
   createProfessionalClientLink: mockCreateProfessionalClientLink,
   deleteProfessionalClientLink: mockDeleteProfessionalClientLink,
   findProfessionalClientLink: mockFindProfessionalClientLink,
@@ -51,7 +51,7 @@ jest.unstable_mockModule("../src/modules/professional/professional.repository.js
   listSharedRecipes: mockListSharedRecipes,
 }));
 
-jest.unstable_mockModule("../src/modules/professional/professional.validator.js", () => ({
+jest.unstable_mockModule("../../src/modules/professional/professional.validator.js", () => ({
   ProfessionalError: ProfessionalError,
   validateInviteClientInput: mockValidateInviteClientInput,
   validateListClientsInput: mockValidateListClientsInput,

@@ -23,7 +23,7 @@ const mockCreateFoodItem = jest.fn();
 const mockCreateFoodPortion = jest.fn();
 const mockGetDashboardDataForSubscriber = jest.fn();
 
-jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.service.js", () => ({
   createDiaryEntry: mockCreateDiaryEntry,
   getNutritionSummary: mockGetNutritionSummary,
   listDiaryEntries: mockListDiaryEntries,

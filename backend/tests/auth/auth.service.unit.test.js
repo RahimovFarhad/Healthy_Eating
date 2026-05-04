@@ -9,7 +9,7 @@ const mockTx = jest.fn();
 
 const TEST_ID = Math.floor(Math.random() * 100000);
 
-jest.unstable_mockModule("../src/db/prisma.js", () => ({
+jest.unstable_mockModule("../../src/db/prisma.js", () => ({
   prisma: {
     user: {
       findUnique: mockFindUnique,
@@ -19,7 +19,7 @@ jest.unstable_mockModule("../src/db/prisma.js", () => ({
   },
 }));
 
-jest.unstable_mockModule("../src/utils/hash.js", () => ({
+jest.unstable_mockModule("../../src/utils/hash.js", () => ({
   hashPassword: jest.fn(),
   verifyPassword: mockVerifyPassword,
 }));
@@ -31,7 +31,7 @@ jest.unstable_mockModule("jsonwebtoken", () => ({
   },
 }));
 
-jest.unstable_mockModule("../src/modules/goals/goals.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
   ensureDefaultGoalsForUser: jest.fn(),
 }));
 

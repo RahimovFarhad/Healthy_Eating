@@ -31,8 +31,10 @@ const mockCreateManyGoals = jest.fn();
 const mockFindGoalCheckInByDate = jest.fn();
 const mockCreateGoalCheckIn = jest.fn();
 const mockUpdateGoalCheckIn = jest.fn();
+const mockArchiveGoalsForNutrient = jest.fn();
+const mockListNutrients = jest.fn();
 
-jest.unstable_mockModule("../src/modules/goals/goals.validator.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.validator.js", () => ({
     GoalError: GoalError,
     normalizeSubscriberId: mockNormalizeSubscriberId,
     normalizeGoalId: mockNormalizeGoalId,
@@ -42,7 +44,7 @@ jest.unstable_mockModule("../src/modules/goals/goals.validator.js", () => ({
     validateCreateGoalInput: mockValidateCreateGoalInput,
 }));
 
-jest.unstable_mockModule("../src/modules/goals/goals.repository.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.repository.js", () => ({
     fetchGoals: mockFetchGoals,
     findNutrientById: mockFindNutrientById,
     findNutrientByCode: mockFindNutrientByCode,
@@ -55,6 +57,8 @@ jest.unstable_mockModule("../src/modules/goals/goals.repository.js", () => ({
     findGoalCheckInByDate: mockFindGoalCheckInByDate,
     createGoalCheckIn: mockCreateGoalCheckIn,
     updateGoalCheckIn: mockUpdateGoalCheckIn,
+    archiveGoalsForNutrient: mockArchiveGoalsForNutrient,
+    listNutrients: mockListNutrients,
 }));
 
 const {

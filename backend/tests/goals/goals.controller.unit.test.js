@@ -15,13 +15,13 @@ const mockArchiveUserGoal = jest.fn();
 const mockCreateUserGoal = jest.fn();
 const mockToggleGoalDoneForToday = jest.fn();
 
-jest.unstable_mockModule("../src/modules/goals/goals.service.js"), () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
     getGoalsService: mockGetGoalsService,
     updateUserGoal: mockUpdateUserGoal,
     archiveUserGoal: mockArchiveUserGoal,
     createUserGoal: mockCreateUserGoal, 
     toggleGoalDoneForToday: mockToggleGoalDoneForToday,
-})
+}));
 
 const {
     getGoals,

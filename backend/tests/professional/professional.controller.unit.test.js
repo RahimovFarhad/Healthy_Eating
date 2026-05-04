@@ -19,7 +19,7 @@ const mockGetClientGoalsForProfessional = jest.fn();
 const mockGetSharedRecipes = jest.fn();
 const mockShareRecipeWithClient = jest.fn();
 
-jest.unstable_mockModule("../src/modules/professional/professional.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/professional/professional.service.js", () => ({
   setUserAsProfessional: mockSetUserAsProfessional,
   inviteClientToProfessional: mockInviteClientToProfessional,
   getProfessionalClients: mockGetProfessionalClients,
