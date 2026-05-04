@@ -77,7 +77,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
       const entry = {
-        diaryEntryId: 10
+        diaryEntryId: TEST_ENTRYID
       };
 
       mockCreateDiaryEntry.mockResolvedValue(entry);

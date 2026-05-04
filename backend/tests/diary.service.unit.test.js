@@ -9,7 +9,7 @@ const TEST_ENTRYID = 3;
 const TEST_ENTRYITEMID = 4;
 
 const mockCheckDiaryEntryItemOwnership = jest.fn();
-  const mockValidateUpdatedEntryItem = jest.fn();
+const mockValidateUpdatedEntryItem = jest.fn();
 const mockUpdateDiaryEntryItem = jest.fn();
 const mockValidateDeletedDiaryEntry = jest.fn();
 const mockDeleteDiaryEntry = jest.fn();
