@@ -27,7 +27,7 @@ const mockGenerateRefreshToken = jest.fn();
 const mockRegisterUser = jest.fn();
 const mockRefreshToken = jest.fn();
 
-jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   authenticateUser: mockAuthenticateUser,
   generateRefreshToken: mockGenerateRefreshToken,
   AuthError: mockAuthError,

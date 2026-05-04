@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { createGoal, deleteGoal, getGoals, updateGoal, toggleGoalDone } from "./goals.controller.js";
+import { createGoal, deleteGoal, getGoals, updateGoal, toggleGoalDone, listNutrients } from "./goals.controller.js";
 
 const goalsRouter = Router();
 
 // Whether or not system generated goals are completed should be done by system automatically
+
+goalsRouter.get("/nutrients", listNutrients);
 
 goalsRouter.get("/", getGoals);
 goalsRouter.patch("/", updateGoal);

@@ -1,7 +1,11 @@
 {
   "devDependencies": {
+<<<<<<< HEAD
     "eslint": "^8.0.0",
     "jest": "^30.3.0"
+=======
+    "eslint": "^8.57.1"
+>>>>>>> origin/alex
   },
   "scripts": {
     "lint": "eslint .",

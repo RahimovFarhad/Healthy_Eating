@@ -71,4 +71,13 @@ async function refreshToken(req, res) {
 
 }
 
-export { login, register, refreshToken };
+async function logoutController(_req, res) {
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    return res.json({ message: "Logged out successfully" });
+}
+
+export { login, register, refreshToken, logoutController };

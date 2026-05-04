@@ -16,20 +16,20 @@ const app = express();
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
-app.use("/auth", authRouter);
-app.use("/diary", requireAuth, diaryRouter);
-app.use("/goals", requireAuth, goalRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/diary", requireAuth, diaryRouter);
+app.use("/api/goals", requireAuth, goalRouter);
+app.use("/api/professional", requireAuth, professionalRouter);
+app.use("/api/client", requireAuth, clientRouter);
+app.use("/api/recipes", recipesRouter);
+app.use("/api/meal-plans", requireAuth, mealPlansRouter);
 
-app.use("/professional", requireAuth, professionalRouter)
-app.use("/client", requireAuth, clientRouter)
-app.use("/api/recipes", recipesRouter)
-app.use("/api/meal-plans", requireAuth, mealPlansRouter)
 app.get("/health", async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ ok: true, db: "ok" });
 });
 
-app.get("/search", async (req, res) => {
+app.get("/api/search", requireAuth, async (req, res) => {
   await searchFood(req.query?.query).then(data => {
     res.json(data);
   }).catch(err => {
@@ -37,7 +37,7 @@ app.get("/search", async (req, res) => {
   });
 });
 
-app.get("/search-by-id", async (req, res) => {
+app.get("/api/search-by-id", requireAuth, async (req, res) => {
   await searchFoodById(req.query?.food_id).then(data => {
     res.json(data);
   }).catch(err => {

@@ -1,4 +1,4 @@
-import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn } from "./goals.repository.js";
+import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, archiveGoalsForNutrient, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn, listNutrients } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, normalizeGoalIncludeQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
 async function getGoalsService({ subscriberId, effective, include }) {
@@ -75,13 +75,21 @@ async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const validatedGoal = validateCreateGoalInput(goal, options);
 
+  // if this goal tracks a nutrient archive existing active goal for that nutrient first
+  if (validatedGoal.nutrientId != null) {
+    await archiveGoalsForNutrient({
+      subscriberId: normalizedSubscriberId,
+      nutrientId: validatedGoal.nutrientId,
+    });
+  }
+
   return insertGoal({
     subscriberId: normalizedSubscriberId,
-    nutrientId: null,
+    nutrientId: validatedGoal.nutrientId,
     source: validatedGoal.source,
     status: "active",
-    targetMin: null,
-    targetMax: null,
+    targetMin: validatedGoal.targetMin,
+    targetMax: validatedGoal.targetMax,
     setByProfessionalId: validatedGoal.setByProfessionalId,
     startDate: validatedGoal.startDate,
     endDate: validatedGoal.endDate,
@@ -155,4 +163,45 @@ async function toggleGoalDoneForToday({ subscriberId, goalId }) {
   });
 }
 
-export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser, toggleGoalDoneForToday };
+async function listNutrientsService() {
+  return listNutrients();
+}
+
+// will automatically evaluate whether each active nutrient goal is met for today based on the nutrition summary passed in
+async function evaluateGoalsForToday({ subscriberId, nutritionSummary }) {
+  const today = toDateOnly();
+  const goals = await fetchGoals({ subscriberId, effective: true });
+
+  // ensures this will only evaluate goals that are linked to a specific nutrient because non nutrient goals are manual
+  const nutrientGoals = goals.filter(g => g.nutrientId != null);
+  if (!nutrientGoals.length) return;
+
+  // lookup of nutrientid
+  const totalsMap = Object.fromEntries(
+    nutritionSummary.map(n => [n.nutrientId, Number(n.totalAmount)])
+  );
+
+  await Promise.all(nutrientGoals.map(async goal => {
+    const total = totalsMap[goal.nutrientId] ?? 0;
+    const min = goal.targetMin != null ? Number(goal.targetMin) : null;
+    const max = goal.targetMax != null ? Number(goal.targetMax) : null;
+
+    // range goals need both bounds met and single sided goals check one bound
+    let isDone = false;
+    if (min != null && max != null) isDone = total >= min && total <= max;
+    else if (min != null)           isDone = total >= min;
+    else if (max != null)           isDone = total <= max;
+
+    // only write if the status actually changed
+    const existing = await findGoalCheckInByDate({ goalId: goal.goalId, date: today });
+    if (existing) {
+      if (existing.isDone !== isDone) {
+        await updateGoalCheckIn({ checkInId: existing.checkInId, isDone });
+      }
+    } else {
+      await createGoalCheckIn({ goalId: goal.goalId, date: today, isDone });
+    }
+  }));
+}
+
+export { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, createGoalForSubscriber, ensureDefaultGoalsForUser, toggleGoalDoneForToday, listNutrientsService, evaluateGoalsForToday };

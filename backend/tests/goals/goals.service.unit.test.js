@@ -31,8 +31,10 @@ const mockCreateManyGoals = jest.fn();
 const mockFindGoalCheckInByDate = jest.fn();
 const mockCreateGoalCheckIn = jest.fn();
 const mockUpdateGoalCheckIn = jest.fn();
+const mockArchiveGoalsForNutrient = jest.fn();
+const mockListNutrients = jest.fn();
 
-jest.unstable_mockModule("../src/modules/goals/goals.validator.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.validator.js", () => ({
     GoalError: GoalError,
     normalizeSubscriberId: mockNormalizeSubscriberId,
     normalizeGoalId: mockNormalizeGoalId,
@@ -42,7 +44,7 @@ jest.unstable_mockModule("../src/modules/goals/goals.validator.js", () => ({
     validateCreateGoalInput: mockValidateCreateGoalInput,
 }));
 
-jest.unstable_mockModule("../src/modules/goals/goals.repository.js", () => ({
+jest.unstable_mockModule("../../src/modules/goals/goals.repository.js", () => ({
     fetchGoals: mockFetchGoals,
     findNutrientById: mockFindNutrientById,
     findNutrientByCode: mockFindNutrientByCode,
@@ -55,6 +57,8 @@ jest.unstable_mockModule("../src/modules/goals/goals.repository.js", () => ({
     findGoalCheckInByDate: mockFindGoalCheckInByDate,
     createGoalCheckIn: mockCreateGoalCheckIn,
     updateGoalCheckIn: mockUpdateGoalCheckIn,
+    archiveGoalsForNutrient: mockArchiveGoalsForNutrient,
+    listNutrients: mockListNutrients,
 }));
 
 const {
@@ -147,7 +151,10 @@ describe("Goals service", () => {
             };
             const existingGoal = {
                 goalId: TEST_GOALID,
-                status: "active"
+                status: "active",
+                subscriber: {
+                    userId: TEST_USERID
+                }
             };
             const updatedGoal = {
                 goalId: TEST_GOALID, 
@@ -227,7 +234,7 @@ describe("Goals service", () => {
                     goalId: TEST_GOALID,
                     notes: "updated"
                 }
-            })).rejects.toThrow("GoaL is archived");
+            })).rejects.toThrow("Goal is archived");
         });
         test("throws GoalError when goal doesn't belong to user", async () => {
             mockNormalizeSubscriberId.mockReturnValue(TEST_USERID);
@@ -251,7 +258,7 @@ describe("Goals service", () => {
                     goalId: TEST_GOALID,
                     notes: "updated"
                 }
-            })).rejects.toThrow("GoaL is archived");
+            })).rejects.toThrow("Unauthorized to archive this goal");
         });
     });
     describe("archiveUserGoal (unit)", () => {
@@ -416,15 +423,15 @@ describe("Goals service", () => {
             expect(mockValidateCreateGoalInput).toHaveBeenCalled();
             expect(mockInsertGoal).toHaveBeenCalledWith({
                 subscriberId: TEST_USERID,
-                nutrientId: null,
+                nutrientId: undefined,
                 source: "professional_defined",
                 status: "active",
-                targetMin: null,
-                targetMax: null,
+                targetMin: undefined,
+                targetMax: undefined,
                 setByProfessionalId: TEST_SETBYPROFESSIONALID,
                 startDate,
                 endDate: null,
-                notes: "Protein target",
+                notes: "30g protein target",
             });
             expect(result).toEqual(created)
         });
@@ -440,7 +447,9 @@ describe("Goals service", () => {
             mockNormalizeSubscriberId.mockImplementation(() => {
                 throw new GoalError("Subscriber ID is required");
             });
-            mockValidateCreateGoalInput.mockReturnValue(validatedGoal);
+            mockValidateCreateGoalInput.mockImplementation(() => {
+                throw new GoalError("goal.notes is required");
+            });
             mockInsertGoal.mockResolvedValue(null);
 
             await expect(createGoalForSubscriber({ 
@@ -466,7 +475,9 @@ describe("Goals service", () => {
                 notes: 1 // chosen error for this test
             }; // GoalError is thrown when any of the values in validatedGoal are not valid 
             mockNormalizeSubscriberId.mockReturnValue(TEST_USERID);
-            mockValidateCreateGoalInput.mockReturnValue(validatedGoal);
+            mockValidateCreateGoalInput.mockImplementation(() => {
+                throw new GoalError("goal.notes is required");
+            });
             mockInsertGoal.mockResolvedValue(null);
 
             await expect(createGoalForSubscriber({ 

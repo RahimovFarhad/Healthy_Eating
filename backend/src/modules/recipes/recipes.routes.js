@@ -10,10 +10,10 @@ import {
 
 const recipesRouter = Router();
 
-recipesRouter.get("/", listRecipes);
+recipesRouter.get("/", requireAuth, listRecipes);
 recipesRouter.get("/favorites", requireAuth, getFavoriteRecipes);
 
-recipesRouter.get("/:id", getRecipeById);
+recipesRouter.get("/:id", requireAuth, getRecipeById);
 recipesRouter.post("/:id/reviews", requireAuth, submitRecipeReview);
 recipesRouter.post("/:id/favorites", requireAuth, toggleRecipeFavorite);
 

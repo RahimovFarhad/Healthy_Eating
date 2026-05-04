@@ -112,7 +112,11 @@ async function findDiaryEntryById({ diaryEntryId, subscriberId }) {
             diaryEntryId,
             subscriberId,
         },
-        select: { 
+        select: {
+            diaryEntryId: true,
+            mealType: true,
+            consumedAt: true,
+            notes: true,
             items: {
                 select: {
                     id: true,
@@ -259,6 +263,7 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
 
 }
@@ -281,6 +286,7 @@ async function deleteDiaryEntry({ diaryEntryId }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
 
 }
@@ -298,8 +304,9 @@ async function deleteDiaryEntryItem({ diaryEntryItemId }) {
         if (error.code === "P2025") {
             return null;
         }
+        throw error;
     }
-    
+
 }
 
 async function getDaysLogged({ subscriberId }) {

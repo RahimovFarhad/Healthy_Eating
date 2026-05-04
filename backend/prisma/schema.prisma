@@ -323,9 +323,14 @@ model ClientRiskSnapshot {
 // ==================== RECIPES ====================
 
 model Recipe {
-  recipeId     Int    @id @default(autoincrement()) @map("recipe_id")
+  recipeId     Int      @id @default(autoincrement()) @map("recipe_id")
   title        String
-  instructions String @db.Text
+  category     String?
+  cuisine      String?
+  servings     Int?
+  cookTime     String?  @map("cook_time")
+  image        String?
+  instructions String   @db.Text
   kcal         Int?
   protein      Decimal? @db.Decimal(8,2)
   carbs        Decimal? @db.Decimal(8,2)
@@ -333,6 +338,7 @@ model Recipe {
   fat          Decimal? @db.Decimal(8,2)
   saturatedFat Decimal? @map("saturated_fat") @db.Decimal(8,2)
   salt         Decimal? @db.Decimal(8,2)
+  fibre        Decimal? @db.Decimal(8,2)
 
   recipeIngredients RecipeIngredient[]
   favorites         RecipeFavorite[]

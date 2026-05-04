@@ -23,7 +23,7 @@ const mockCreateFoodItem = jest.fn();
 const mockCreateFoodPortion = jest.fn();
 const mockGetDashboardDataForSubscriber = jest.fn();
 
-jest.unstable_mockModule("../src/modules/diary/diary.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.service.js", () => ({
   createDiaryEntry: mockCreateDiaryEntry,
   getNutritionSummary: mockGetNutritionSummary,
   listDiaryEntries: mockListDiaryEntries,
@@ -79,7 +79,7 @@ describe("Diary Controller", () => {
       const res = createRes();
       const next = jest.fn();
       const entry = {
-        diaryEntryId: TEST_ENTRYID
+        diaryEntryId: 10
       };
 
       mockCreateDiaryEntry.mockResolvedValue(entry);

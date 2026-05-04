@@ -1,5 +1,3 @@
-import { validateRelationshipInput } from "../professional/professional.validator.js";
-
 class ClientError extends Error {
     constructor(message) {
         super(message);
@@ -62,7 +60,7 @@ function validateClientProfessionalInput({ professionalId, clientId }) {
 }
 
 function validateMessageInput({ professionalId, clientId, message }) {
-    const normalizedRelationship = validateRelationshipInput({ professionalId, clientId });
+    const normalizedRelationship = validateClientProfessionalInput({ professionalId, clientId });
 
     if (!message || typeof message !== "string" || message.trim() === "") {
         throw new ClientError("message is required");
