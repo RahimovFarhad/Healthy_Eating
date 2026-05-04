@@ -1,19 +1,19 @@
 import {expect, jest} from "@jest/globals";
-import { AuthError } from "../src/modules/auth/auth.service";
+import { AuthError } from "../../src/modules/auth/auth.service.js";
 
 class mockAuthError extends Error {
     constructor(message) {
         super(message);
         this.name = "AuthError";
     }
-};
+}
 
 class mockUserNotFoundError extends AuthError {
     constructor() {
         super("User not found");
         this.name = "UserNotFoundError";
     }
-};
+}
 
 const TEST_ID = Date.now();
 const TEST_USER = {
@@ -36,7 +36,7 @@ jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
   refreshAccessToken: mockRefreshToken,
 }));
 
-const { login, register, refreshToken } = await import("../src/modules/auth/auth.controller.js");
+const { login, register, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
 
 function createRes() {
   const res = {};
