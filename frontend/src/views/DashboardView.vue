@@ -217,19 +217,39 @@
             </div>
             <div class="card-body p-3">
               <div v-if="loadingPro" class="text-center text-muted"><small>Loading…</small></div>
-              <div v-else-if="professional" class="d-flex align-items-center gap-3">
-                <div class="avatar-circle flex-shrink-0" style="width:44px;height:44px;font-size:0.95rem;">
-                  {{ initialsFor(professional.professional.fullName) }}
+              <template v-else>
+                <div v-if="professional" class="d-flex align-items-center gap-3 mb-2">
+                  <div class="avatar-circle flex-shrink-0" style="width:44px;height:44px;font-size:0.95rem;">
+                    {{ initialsFor(professional.professional.fullName) }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold small" style="color:#333;">{{ professional.professional.fullName }}</div>
+                    <div class="small text-muted">Your assigned nutritionist</div>
+                    <div class="small" style="color:#5a9e56;">Tap to message →</div>
+                  </div>
                 </div>
-                <div>
-                  <div class="fw-semibold small" style="color:#333;">{{ professional.professional.fullName }}</div>
-                  <div class="small text-muted">Your assigned nutritionist</div>
-                  <div class="small" style="color:#5a9e56;">Tap to message →</div>
+                <div v-for="inv in pendingInvites" :key="inv.professionalId ?? inv.id"
+                     class="p-2 rounded mb-2" style="background:#fffbf0;border:1px solid #e8a820;">
+                  <div class="small fw-semibold mb-1" style="color:#333;">
+                    {{ inv.professional?.fullName ?? 'A nutritionist' }} has invited you
+                  </div>
+                  <div class="small text-muted mb-2">Would you like to accept this invitation?</div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-gf btn-sm py-0"
+                            @click.prevent="respondToInvite(inv.professionalId ?? inv.professional?.userId, 'accept')">
+                      Accept
+                    </button>
+                    <button class="btn btn-sm py-0"
+                            style="background:#fde8e8;border:1px solid #d99;color:#c44;"
+                            @click.prevent="respondToInvite(inv.professionalId ?? inv.professional?.userId, 'reject')">
+                      Decline
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div v-else class="text-center text-muted">
-                <small>No nutritionist linked yet. One will appear here once you're connected.</small>
-              </div>
+                <div v-if="!professional && pendingInvites.length === 0" class="text-center text-muted">
+                  <small>No nutritionist linked yet. One will appear here once you're connected.</small>
+                </div>
+              </template>
             </div>
           </div>
         </RouterLink>
@@ -309,6 +329,7 @@ const loading = ref(true)
 const error = ref('')
 
 const professional = ref(null)
+const pendingInvites = ref([])
 const loadingPro = ref(true)
 
 const goals = ref([])
@@ -348,19 +369,32 @@ async function loadDashboard() {
 async function loadProfessional() {
   loadingPro.value = true
   try {
-    const res = await apiFetch('/api/client/professionals')
-    const data = await res.json().catch(() => ({}))
-    if (res.ok) professional.value = (data.professionals ?? [])[0] ?? null
+    const [proRes, inviteRes] = await Promise.all([
+      apiFetch('/api/client/professionals'),
+      apiFetch('/api/client/client-invitations'),
+    ])
+    const proData = await proRes.json().catch(() => ({}))
+    if (proRes.ok) professional.value = (proData.professionals ?? [])[0] ?? null
+    const inviteData = await inviteRes.json().catch(() => ({}))
+    if (inviteRes.ok) pendingInvites.value = inviteData.invitations ?? []
   } catch {
   } finally {
     loadingPro.value = false
   }
 }
 
+async function respondToInvite(professionalId, action) {
+  try {
+    const res = await apiFetch(`/api/client/client-invitations/${professionalId}/${action}`, { method: 'POST' })
+    if (res.ok) await loadProfessional()
+  } catch {
+  }
+}
+
 async function loadGoals() {
   loadingGoals.value = true
   try {
-    const res = await apiFetch('/api/goals')
+    const res = await apiFetch('/api/goals?effective=true')
     const data = await res.json().catch(() => ({}))
     if (res.ok) goals.value = data.goals ?? []
   } catch {
@@ -413,7 +447,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
 const weekBars = computed(() => {
   const trend = dashboard.value?.weeklyCaloryTrend ?? []
   if (!trend.length) {
-    return WEEK_DAYS.map((day, i) => ({ day, date: '', val: '-', height: 0, over: false, isToday: false }))
+    return WEEK_DAYS.map(day => ({ day, date: '', val: '-', height: 0, over: false, isToday: false }))
   }
   const maxCal = Math.max(...trend.map(d => d.calories), calorieBudget.value)
   return trend.map((d, dayIndex) => {

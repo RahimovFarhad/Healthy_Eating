@@ -13,10 +13,9 @@ function setSession(token) {
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
-    const email = payload.email ?? ''
     currentUser.value = {
-      name: email.split('@')[0] ?? '',
-      email,
+      name: payload.fullName ?? payload.email?.split('@')[0] ?? '',
+      email: payload.email ?? '',
       userId: payload.userId ?? null,
       role: payload.role ?? null,
     }

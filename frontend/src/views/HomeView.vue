@@ -89,7 +89,7 @@
         </div>
         <div class="row g-4" style="position:relative;">
           <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:#d4e7d4;z-index:0;transform:translateY(-50%);"></div>
-          <div class="col-md-6 col-lg-3" v-for="(step, index) in steps" :key="step.num">
+          <div class="col-md-6 col-lg-3" v-for="step in steps" :key="step.num">
             <div class="h-100 text-center" style="background:#ffffff;border-radius:12px;padding:2rem 1.5rem;border:1px solid #d4e7d4;transition:all 0.3s;position:relative;z-index:1;box-shadow:0 2px 8px rgba(27,77,27,0.06);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 8px 20px rgba(27,77,27,0.12)';this.style.borderColor='#2e7d32'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(27,77,27,0.06)';this.style.borderColor='#d4e7d4'">
               <div style="width:55px;height:55px;background:#ffffff;border:1px solid #2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;position:relative;">
                 <span style="font-size:1.5rem;font-weight:500;color:#2e7d32;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.num }}</span>
@@ -187,21 +187,13 @@
                 <input type="password" class="form-control"
                        placeholder="Min. 8 characters"
                        v-model="signupForm.password"
+                       minlength="8"
+                       maxlength="30"
                        style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
                        onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
                        onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
               </div>
 
-              <div class="mb-3" style="background:#f9fdf9;border-radius:6px;padding:1rem;border:1px solid #d4e7d4;">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="isProfessional"
-                         v-model="signupForm.isProfessional"
-                         style="width:18px;height:18px;border:2px solid #2e7d32;cursor:pointer;">
-                  <label class="form-check-label" for="isProfessional" style="color:#2d5a2d;font-weight:500;font-size:0.9rem;margin-left:0.5rem;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                     Are you a nutrition professional?
-                  </label>
-                </div>
-              </div>
 
               <div v-if="signupError" style="background:#ffebee;border:1px solid #ef5350;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
                 <span style="color:#c62828;font-size:0.9rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ signupError }}</span>
@@ -235,7 +227,7 @@ import { login, register, authError } from '../auth.js'
 const router = useRouter()
 
 const loginForm = ref({ email: '', password: '' })
-const signupForm = ref({ name: '', email: '', password: '', isProfessional: false })
+const signupForm = ref({ name: '', email: '', password: '' })
 
 const loginLoading = ref(false)
 const loginError = ref('')
@@ -258,24 +250,33 @@ async function handleLogin() {
   }
 }
 
+function isValidEmail(email) {
+  const atIndex = email.indexOf('@')
+  return atIndex > 0 && email.endsWith('.com') && atIndex < email.length - 1
+}
+
 async function handleSignup() {
   signupError.value = ''
   signupSuccess.value = ''
+  if (!isValidEmail(signupForm.value.email)) {
+    signupError.value = 'Please enter a valid email address'
+    return
+  }
+  if (signupForm.value.password.length < 8) {
+    signupError.value = 'Password must be at least 8 characters'
+    return
+  }
   signupLoading.value = true
   try {
     const ok = await register(
       signupForm.value.email,
       signupForm.value.name,
       signupForm.value.password,
-      signupForm.value.isProfessional,
+      false,
     )
     if (ok) {
-      if (signupForm.value.isProfessional) {
-        router.push('/dashboard')
-        return
-      }
       signupSuccess.value = 'Account created! You can now log in.'
-      signupForm.value = { name: '', email: '', password: '', isProfessional: false }
+      signupForm.value = { name: '', email: '', password: '' }
     } else {
       signupError.value = authError.value || 'Registration failed'
     }

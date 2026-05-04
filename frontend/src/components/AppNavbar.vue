@@ -19,9 +19,8 @@
     <div class="collapse navbar-collapse" id="navbarMain">
 
       <ul v-if="!isAuthenticated" class="navbar-nav ms-auto align-items-center gap-2">
-        <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">For Professionals</a></li>
+        <li class="nav-item"><RouterLink class="nav-link" to="/#features">Features</RouterLink></li>
+        <li class="nav-item"><RouterLink class="nav-link" to="/register/professional">For Professionals</RouterLink></li>
         <li class="nav-item">
           <a href="#auth-section" class="btn btn-sm" style="background:transparent;color:#1a1a1a;border:1px solid #333333;border-radius:6px;padding:0.4rem 1rem;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">Log In</a>
         </li>

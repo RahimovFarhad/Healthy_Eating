@@ -11,6 +11,7 @@ import RecipesView from '../views/RecipesView.vue'
 import GoalsView from '../views/GoalsView.vue'
 import MessagesView from '../views/MessagesView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import ProfessionalRegisterView from '../views/ProfessionalRegisterView.vue'
 
 const DashboardSwitch = {
   name: 'DashboardSwitch',
@@ -23,6 +24,7 @@ const DashboardSwitch = {
 
 const routes = [
   { path: '/', component: HomeView },
+  { path: '/register/professional', component: ProfessionalRegisterView },
   { path: '/dashboard', component: DashboardSwitch, meta: { requiresAuth: true } },
   { path: '/diary', component: FoodDiaryView, meta: { requiresAuth: true, subscriberOnly: true } },
   { path: '/nutrition', component: NutritionView, meta: { requiresAuth: true, subscriberOnly: true } },
