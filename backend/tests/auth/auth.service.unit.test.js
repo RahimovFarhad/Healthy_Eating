@@ -36,7 +36,7 @@ jest.unstable_mockModule("../src/modules/goals/goals.service.js", () => ({
 }));
 
 const { authenticateUser, registerUser, generateRefreshToken,refreshAccessToken, AuthError, UserNotFoundError } = await import(
-  "../src/modules/auth/auth.service.js"
+  "../../src/modules/auth/auth.service.js"
 );
 
 describe("Authentication Service", () => {

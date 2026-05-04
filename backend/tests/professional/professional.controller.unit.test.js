@@ -1,5 +1,5 @@
 import { expect, jest } from "@jest/globals";
-import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
+import { ProfessionalError } from "../../src/modules/professional/professional.validator.js";
 
 const TEST_PROFESSIONAL_ID = 1; 
 const TEST_CLIENT_ID = 2;
@@ -45,7 +45,10 @@ const {
   listMessages,
   setGoal,
   listGoals,
-} = await import("../src/modules/professional/professional.controller.js");
+  listInvitations,
+  shareRecipe,
+  listSharedRecipes,
+} = await import("../../src/modules/professional/professional.controller.js");
 
 function createRes() {
   const res = {};
@@ -458,6 +461,138 @@ describe("Professional Controller", () => {
 
       mockGetClientGoalsForProfessional.mockRejectedValue(new Error("Unexpected error"));
       await listGoals(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
+  });
+
+  describe("listInvitations", () => {
+    test("Returns status code 200 and lists invited clients on succes", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID } };
+      const res = createRes();
+      const next = jest.fn();        
+
+      const invitations = [{ id: 1, subscriberId: TEST_CLIENT_ID, status: "invited" }];
+      mockGetProfessionalClients.mockResolvedValue(invitations);
+      await listInvitations(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetProfessionalClients).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, status: "invited" });
+      expect(res.json).toHaveBeenCalledWith({ invitations });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetProfessionalClients.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await listInvitations(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next when unexpected error happens that is not ProfessionalError", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetProfessionalClients.mockRejectedValue(new Error("Unexpected error"));
+      await listInvitations(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
+  });
+
+  describe("shareRecipe", () => {
+    test("Returns status code 200 and shares a recipe on success", async () => {
+      const req = {
+        user: { userId: TEST_PROFESSIONAL_ID },
+        params: { clientId: TEST_CLIENT_ID },
+        body: { recipeId: 10 },
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      const sharedRecipe = { id: 1, professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID, recipeId: 10 };
+      mockShareRecipeWithClient.mockResolvedValue(sharedRecipe);
+      await shareRecipe(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockShareRecipeWithClient).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID, recipeId: 10 });
+      expect(res.json).toHaveBeenCalledWith({ sharedRecipe });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = {
+        user: { userId: TEST_PROFESSIONAL_ID },
+        params: { clientId: TEST_CLIENT_ID },
+        body: { recipeId: 10 },
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockShareRecipeWithClient.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await shareRecipe(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next when unexpected error happens that is not ProfessionalError", async () => {
+      const req = {
+        user: { userId: TEST_PROFESSIONAL_ID },
+        params: { clientId: TEST_CLIENT_ID },
+        body: { recipeId: 10 },
+      };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockShareRecipeWithClient.mockRejectedValue(new Error("Unexpected error"));
+      await shareRecipe(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalledWith();
+      expect(res.json).not.toHaveBeenCalledWith();
+    });
+  });
+
+  describe("listSharedRecipes", () => {
+    test("Returns status code 200 and lists shared recipes on success", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      const sharedRecipes = [{ id: 1, recipeId: 10 }];
+      mockGetSharedRecipes.mockResolvedValue(sharedRecipes);
+      await listSharedRecipes(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(mockGetSharedRecipes).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, clientId: TEST_CLIENT_ID });
+      expect(res.json).toHaveBeenCalledWith({ sharedRecipes });
+    });
+    test("Returns error code 400 when ProfessionalError is thrown", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetSharedRecipes.mockRejectedValue(new ProfessionalError("Invalid professional ID"));
+      await listSharedRecipes(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid professional ID" });
+      expect(next).not.toHaveBeenCalledWith();
+    });
+    test("Passes to next when unexpected error happens that is not ProfessionalError", async () => {
+      const req = { user: { userId: TEST_PROFESSIONAL_ID }, params: { clientId: TEST_CLIENT_ID } };
+      const res = createRes();
+      const next = jest.fn();
+
+      mockGetSharedRecipes.mockRejectedValue(new Error("Unexpected error"));
+      await listSharedRecipes(req, res, next);
 
       expect(next).toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalledWith();

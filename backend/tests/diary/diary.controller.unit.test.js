@@ -1,6 +1,6 @@
 // tests/diary.controller.unit.test.js
 import { expect, jest } from "@jest/globals";
-import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
+import { DiaryEntryError } from "../../src/modules/diary/diary.validator.js";
 
 // Mocks
 const TEST_ID = 1;
@@ -50,7 +50,7 @@ const {
   getDashboard,
   createEntryWithRecipe,
   createRecipeAsDiaryEntryItem,
-} = await import("../src/modules/diary/diary.controller.js");
+} = await import("../../src/modules/diary/diary.controller.js");
 
 function createRes() {
   const res = {};

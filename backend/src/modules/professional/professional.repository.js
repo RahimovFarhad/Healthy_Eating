@@ -51,6 +51,7 @@ async function listProfessionalClients({ professionalId, includeDetails, status 
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {
             id: true,
+            professionalId: true,
             subscriberId: true,
             status: true,
             assignedAt: true,
@@ -160,41 +161,40 @@ async function listMessages({ professionalId, clientId }) {
 }
 
 async function createSharedRecipe({ professionalId, clientId, recipeId }) {
-    return prisma.sharedRecipe.create({
+    return prisma.recipeShare.create({
         data: {
             professionalId,
             subscriberId: clientId,
             recipeId,
         },
         select: {
-            sharedRecipeId: true,
+            id: true,
             professionalId: true,
             subscriberId: true,
             recipeId: true,
-            createdAt: true,
+            sharedAt: true,
         },  
     });
 }
 
 async function listSharedRecipes({ professionalId, clientId }) {
-    return prisma.sharedRecipe.findMany({
+    return prisma.recipeShare.findMany({
         where: {
             professionalId,
             subscriberId: clientId,
         },
-        orderBy: [{ createdAt: "desc" }, { sharedRecipeId: "desc" }],
+        orderBy: [{ sharedAt: "desc" }, { id: "desc" }],
         select: {
-            sharedRecipeId: true,
+            id: true,
             professionalId: true,
             subscriberId: true,
             recipeId: true,
-            createdAt: true,
+            sharedAt: true,
             recipe: {
                 select: {
                     recipeId: true,
-                    name: true,
-                    description: true,
-                    imageUrl: true,
+                    title: true,
+                    instructions: true,
                 },
             },
         },

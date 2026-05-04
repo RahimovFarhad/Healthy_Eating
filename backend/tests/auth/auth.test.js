@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import request from "supertest"
-import app from "../src/app.js";
-import { prisma } from "../src/db/prisma.js";
+import app from "../../src/app.js";
+import { prisma } from "../../src/db/prisma.js";
 
 const { sign } = jwt;
 

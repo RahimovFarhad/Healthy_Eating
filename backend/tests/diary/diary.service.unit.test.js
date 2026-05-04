@@ -1,6 +1,6 @@
 // tests/diary.service.unit.test.js
 import { expect, jest } from "@jest/globals";
-import { DiaryEntryError } from "../src/modules/diary/diary.validator.js";
+import { DiaryEntryError } from "../../src/modules/diary/diary.validator.js";
 
 // Mock the module(s) that the diary service depends on
 // const TEST_ID = 1;
@@ -91,7 +91,7 @@ const {
   deleteExistingDiaryEntry,
   deleteExistingDiaryEntryItem,
   getDashboardDataForSubscriber,
-} = await import("../src/modules/diary/diary.service.js");
+} = await import("../../src/modules/diary/diary.service.js");
 
 describe("Diary Service", () => {
   beforeEach(() => {

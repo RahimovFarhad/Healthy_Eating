@@ -1,5 +1,5 @@
 import { expect, jest } from "@jest/globals";
-import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
+import { ProfessionalError } from "../../src/modules/professional/professional.validator.js";
 
 const PROFESSIONAL_ID = 1;
 const SUBSCRIBER_ID = 2;
@@ -74,8 +74,10 @@ const {
     getMessagesWithClient,
     setGoalForClient,
     getClientGoalsForProfessional,
-    ensureProfessionalClientRelation
-} = await import("../src/modules/professional/professional.service.js");
+    ensureProfessionalClientRelation,
+    shareRecipeWithClient,
+    getSharedRecipes
+} = await import("../../src/modules/professional/professional.service.js");
 
 // now adding to dos
 describe("Professional Service", () => {
@@ -444,6 +446,84 @@ describe("Professional Service", () => {
                     throw new ProfessionalError("Professional ID and Client ID are required");
                 });
                 await ensureProfessionalClientRelation({ professionalId: null, clientId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Professional ID and Client ID are required");
+            }
+        });
+    });
+
+    describe("shareRecipeWithClient", () => {
+        test("when given valid professionalId, clientId and recipeId, it should share the recipe with the client", async () => {
+            const relationshipValidatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            const recipeValidatorRes = { recipeId: 10 };
+            mockValidateRelationshipInput.mockReturnValue(relationshipValidatorRes);
+            mockValidateRecipeId.mockReturnValue(recipeValidatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const sharedRecipe = { id: 1, professionalId: PROFESSIONAL_ID, subscriberId: SUBSCRIBER_ID, recipeId: 10 };
+            mockCreateSharedRecipe.mockReturnValue(sharedRecipe);
+
+            const result = await shareRecipeWithClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, recipeId: 10 });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockValidateRecipeId).toHaveBeenCalledWith({ recipeId: 10 });
+            expect(mockCreateSharedRecipe).toHaveBeenCalledWith({
+                professionalId: PROFESSIONAL_ID,
+                clientId: SUBSCRIBER_ID,
+                recipeId: 10,
+            });
+            expect(result).toEqual(sharedRecipe);
+        });
+        test("if recipeId is invalid, it should throw ProfessionalError", async () => {
+            const relationshipValidatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(relationshipValidatorRes);
+
+            try {
+                mockValidateRecipeId.mockImplementation(() => {
+                    throw new ProfessionalError("Recipe ID is required");
+                });
+                await shareRecipeWithClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, recipeId: null });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Recipe ID is required");
+            }
+        });
+        test("if client is not assigned to this professional, it should throw ProfessionalError", async () => {
+            const relationshipValidatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            const recipeValidatorRes = { recipeId: 10 };
+            mockValidateRelationshipInput.mockReturnValue(relationshipValidatorRes);
+            mockValidateRecipeId.mockReturnValue(recipeValidatorRes);
+            mockFindProfessionalClientLink.mockReturnValue(null);
+
+            try {
+                await shareRecipeWithClient({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, recipeId: 10 });
+            } catch (error) {
+                expect(error).toBeInstanceOf(ProfessionalError);
+                expect(error.message).toBe("Client is not assigned to this professional");
+            }
+        });
+    });
+
+    describe("getSharedRecipes", () => {
+        test("on valid input(professionalId and clientId), it should return list of shared recipes", async () => {
+            const validatorRes = { professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID };
+            mockValidateRelationshipInput.mockReturnValue(validatorRes);
+            mockFindProfessionalClientLink.mockReturnValue({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID, status: "active" });
+            const sharedRecipes = [{ id: 1, recipeId: 10 }];
+            mockListSharedRecipes.mockReturnValue(sharedRecipes);
+
+            const result = await getSharedRecipes({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+
+            expect(mockValidateRelationshipInput).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(mockListSharedRecipes).toHaveBeenCalledWith({ professionalId: PROFESSIONAL_ID, clientId: SUBSCRIBER_ID });
+            expect(result).toEqual(sharedRecipes);
+        });
+        test("if professionalId or clientId is invalid, it should throw ProfessionalError", async () => {
+            try {
+                mockValidateRelationshipInput.mockImplementation(() => {
+                    throw new ProfessionalError("Professional ID and Client ID are required");
+                });
+                await getSharedRecipes({ professionalId: null, clientId: null });
             } catch (error) {
                 expect(error).toBeInstanceOf(ProfessionalError);
                 expect(error.message).toBe("Professional ID and Client ID are required");

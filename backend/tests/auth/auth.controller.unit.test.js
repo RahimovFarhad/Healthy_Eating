@@ -1,5 +1,5 @@
 import {expect, jest} from "@jest/globals";
-import { AuthError } from "../src/modules/auth/auth.service";
+import { AuthError } from "../../src/modules/auth/auth.service.js";
 
 class mockAuthError extends Error {
     constructor(message) {
@@ -36,7 +36,7 @@ jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
   refreshAccessToken: mockRefreshToken,
 }));
 
-const { login, register, refreshToken } = await import("../src/modules/auth/auth.controller.js");
+const { login, register, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
 
 function createRes() {
   const res = {};

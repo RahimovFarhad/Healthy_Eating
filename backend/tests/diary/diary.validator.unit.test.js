@@ -14,7 +14,7 @@ import {
   validateCreateFoodItemInput,
   validateCreateFoodPortionInput,
   validateUserIdForDashboard,
-} from "../src/modules/diary/diary.validator.js";
+} from "../../src/modules/diary/diary.validator.js";
 
 describe("Diary Validator", () => {
   describe("getDiaryErrorStatus", () => {
