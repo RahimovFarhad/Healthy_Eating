@@ -46,7 +46,7 @@
             </svg>
             <div class="mt-2 text-start small text-muted">
               <div>Eaten: <strong>{{ nutrient('calories')?.totalAmount ?? 0 }} kcal</strong></div>
-              <div>Reference: <strong>2,000 kcal</strong></div>
+              <div>Reference: <strong>{{ scaledRefs.calories.label }}</strong></div>
             </div>
           </div>
         </div>
@@ -160,22 +160,62 @@
         </table>
       </div>
 
-      <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
+      <h6 class="fw-bold mb-2" style="color:#5a9e56;">Insights</h6>
       <div class="card border p-3 mb-4">
-        <div class="d-flex align-items-end gap-2 justify-content-center"
-             style="height:120px;position:relative;">
-          <div style="position:absolute;top:24%;left:0;right:0;border-top:1px dashed #e8a820;pointer-events:none;">
-            <small style="position:absolute;right:0;top:-14px;color:#e8a820;">Goal: 2,000</small>
-          </div>
-          <div v-for="bar in weekBars" :key="bar.day"
-               class="d-flex flex-column align-items-center" style="flex:1;max-width:80px;">
-            <small :style="`font-size:0.65rem;color:${bar.over ? '#d94f4f' : '#2a5a28'};`">{{ bar.val }}</small>
-            <div :style="`height:${bar.height}px;background:${bar.over ? '#e8b0a0' : '#d6e8d4'};border:1px solid ${bar.over ? '#d06050' : '#7aaa76'};width:100%;border-radius:2px 2px 0 0;margin-top:auto;`">
+        <div v-if="insights.length === 0" class="text-muted small">
+          Your intake looks balanced for this period. Keep it up!
+        </div>
+        <div v-else class="d-flex flex-column gap-2">
+          <div v-for="ins in insights" :key="ins.code"
+               class="d-flex align-items-start gap-2 p-2 rounded"
+               :style="`background:${ins.bg};`">
+            <div>
+              <div class="fw-semibold small" :style="`color:${ins.color};`">{{ ins.title }}</div>
+              <div class="small text-muted">{{ ins.message }}</div>
             </div>
-            <small style="font-size:0.65rem;color:#555;">{{ bar.day }}</small>
+            <span class="ms-auto badge align-self-center"
+                  :style="`background:${ins.color};font-size:0.65rem;`">
+              {{ ins.pctLabel }}
+            </span>
           </div>
         </div>
-        <small class="text-muted mt-2 d-block">* Today's count is still in progress</small>
+      </div>
+
+      <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
+      <div class="card border p-3 mb-4">
+        <div class="d-flex align-items-end gap-2 justify-content-center px-2"
+             style="height:140px;position:relative;">
+          <div v-for="bar in weekBars" :key="bar.day"
+               class="d-flex flex-column align-items-center gap-1" style="flex:1;max-width:72px;">
+            <small :style="`font-size:0.65rem;font-weight:600;color:${bar.over ? '#b8860b' : '#5a9e56'};`">
+              {{ bar.val }}
+            </small>
+            <div style="width:100%;flex:1;display:flex;align-items:flex-end;position:relative;">
+              <div style="position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;overflow:hidden;"
+                   :style="`height:${bar.goalHeight}px;background:#f5d87a;`">
+              </div>
+              <div v-if="bar.height > 0"
+                   style="position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;overflow:hidden;"
+                   :style="`height:${bar.height}px;`">
+                <div :style="`height:${bar.withinHeight}px;background:#5a9e56;`"></div>
+                <div v-if="bar.excessHeight > 0" :style="`height:${bar.excessHeight}px;background:#b8860b;`"></div>
+              </div>
+            </div>
+            <small style="font-size:0.65rem;color:#888;">{{ bar.day }}</small>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mt-2">
+          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f5d87a;"></span> Goal ({{ scaledRefs.calories.ref }} kcal)
+          </span>
+          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#5a9e56;"></span> Within goal
+          </span>
+          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#b8860b;"></span> Over goal
+          </span>
+        </div>
+        <small class="text-muted mt-1 d-block" style="font-size:0.7rem;">* Today's count is still in progress</small>
       </div>
 
     </template>
@@ -193,6 +233,18 @@ const PERIOD_OPTIONS = [
   { label: 'Month', value: 'monthly' },
 ]
 
+const PERIOD_DAYS = { daily: 1, weekly: 7, monthly: 30 }
+
+const FALLBACK_REFS = {
+  calories:      { ref: 2000, unit: 'kcal' },
+  protein:       { ref: 50,   unit: 'g' },
+  carbohydrates: { ref: 260,  unit: 'g' },
+  fat:           { ref: 70,   unit: 'g' },
+  fibre:         { ref: 30,   unit: 'g' },
+  sugar:         { ref: 30,   unit: 'g' },
+  salt:          { ref: 6,    unit: 'g' },
+}
+
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
 const period = ref('daily')
@@ -201,15 +253,56 @@ const loading = ref(true)
 const error = ref('')
 const nutrients = ref([])
 const weekBars = ref([])
+const goalRefs = ref({})
+
+function buildGoalRefs(goals) {
+  const map = {}
+  for (const goal of goals) {
+    if (!goal.nutrient?.code || goal.status !== 'active') continue
+    const code = goal.nutrient.code
+    map[code] = {
+      min: goal.targetMin != null ? Number(goal.targetMin) : null,
+      max: goal.targetMax != null ? Number(goal.targetMax) : null,
+      unit: goal.nutrient.unit,
+    }
+  }
+  return map
+}
+
+const scaledRefs = computed(() => {
+  const days = PERIOD_DAYS[period.value] ?? 1
+  const result = {}
+  for (const [code, fallback] of Object.entries(FALLBACK_REFS)) {
+    const goal = goalRefs.value[code]
+    const isMaxNutrient = OVER_WATCH.includes(code) && !UNDER_WATCH.includes(code)
+    const isMinNutrient = UNDER_WATCH.includes(code) && !OVER_WATCH.includes(code)
+    // calories and carbs appear in both use max if set, else min
+    let baseRef
+    if (goal) {
+      baseRef = isMaxNutrient ? (goal.max ?? goal.min ?? fallback.ref)
+              : isMinNutrient ? (goal.min ?? goal.max ?? fallback.ref)
+              : (goal.max ?? goal.min ?? fallback.ref)
+    } else {
+      baseRef = fallback.ref
+    }
+    const unit = goal?.unit ?? fallback.unit
+    const scaled = baseRef * days
+    const isMax = goal ? (goal.max != null && goal.min == null) : (code === 'fat' || code === 'sugar' || code === 'salt')
+    const label = `${isMax ? '≤ ' : '≥ '}${scaled % 1 === 0 ? scaled : scaled.toFixed(1)} ${unit}`
+    result[code] = { ref: scaled, unit, label }
+  }
+  return result
+})
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
     const params = new URLSearchParams({ period: period.value, endDate: endDate.value })
-    const [summaryRes, dashRes] = await Promise.all([
+    const [summaryRes, dashRes, goalsRes] = await Promise.all([
       apiFetch(`/api/diary/summary?${params}`),
       apiFetch('/api/diary/dashboard'),
+      apiFetch('/api/goals'),
     ])
 
     const summaryData = await summaryRes.json().catch(() => ({}))
@@ -218,6 +311,11 @@ async function load() {
       return
     }
     nutrients.value = summaryData.summary?.nutrients ?? []
+
+    const goalsData = await goalsRes.json().catch(() => ({}))
+    if (goalsRes.ok) {
+      goalRefs.value = buildGoalRefs(goalsData.goals ?? [])
+    }
 
     const dashData = await dashRes.json().catch(() => ({}))
     if (dashRes.ok) {
@@ -232,37 +330,33 @@ async function load() {
 }
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const MAX_BAR_H = 90
-const CALORIE_GOAL = 2000
+const MAX_BAR_H = 100
 
 function buildWeekBars(trend) {
+  const calorieGoal = goalRefs.value['calories']?.ref ?? FALLBACK_REFS.calories.ref
   if (!trend.length) {
-    return DAY_LABELS.map(day => ({ day, val: '-', height: 0, over: false }))
+    return DAY_LABELS.map(day => ({ day, val: '-', height: 0, goalHeight: MAX_BAR_H, withinHeight: 0, excessHeight: 0, over: false }))
   }
-  const maxCal = Math.max(...trend.map(d => d.calories), CALORIE_GOAL)
+  const maxCal = Math.max(...trend.map(d => d.calories), calorieGoal)
+  const goalHeight = Math.round((calorieGoal / maxCal) * MAX_BAR_H)
   const todayStr = todayIso()
   return trend.map((d, i) => {
     const cal = Math.round(d.calories)
+    const over = cal > calorieGoal
     const isToday = d.date === todayStr
+    const height = cal > 0 ? Math.max(3, Math.round((cal / maxCal) * MAX_BAR_H)) : 0
+    const withinHeight = over ? goalHeight : height
+    const excessHeight = over ? height - goalHeight : 0
     return {
       day: isToday ? 'Today' : DAY_LABELS[i] ?? d.date.slice(5),
       val: cal > 0 ? String(cal) : '-',
-      height: cal > 0 ? Math.max(2, Math.round((cal / maxCal) * MAX_BAR_H)) : 0,
-      over: cal > CALORIE_GOAL,
+      height,
+      goalHeight,
+      withinHeight,
+      excessHeight,
+      over,
     }
   })
-}
-
-// ── Charts ────────────────────────────────────────────────────────────────────
-
-const REFERENCES = {
-  calories:      { ref: 2000, unit: 'kcal', label: '2,000 kcal' },
-  protein:       { ref: 50,   unit: 'g',    label: '50 g' },
-  carbohydrates: { ref: 260,  unit: 'g',    label: '260 g' },
-  fat:           { ref: 70,   unit: 'g',    label: '70 g' },
-  fibre:         { ref: 30,   unit: 'g',    label: '30 g' },
-  sugar:         { ref: 30,   unit: 'g',    label: '≤ 30 g' },
-  salt:          { ref: 6,    unit: 'g',    label: '≤ 6 g' },
 }
 
 const NUTRIENT_COLORS = {
@@ -285,7 +379,7 @@ function nutrient(code) {
 
 const calorieOffset = computed(() => {
   const eaten = nutrient('calories')?.totalAmount ?? 0
-  const pct = Math.min(eaten / REFERENCES.calories.ref, 1)
+  const pct = Math.min(eaten / scaledRefs.value.calories.ref, 1)
   return SVG_CIRC * (1 - pct)
 })
 
@@ -303,7 +397,7 @@ function buildSegments(codes) {
 }
 
 function buildIdealSegments(codes) {
-  const amounts = codes.map(code => REFERENCES[code]?.ref ?? 0)
+  const amounts = codes.map(code => scaledRefs.value[code]?.ref ?? 0)
   const total = amounts.reduce((s, v) => s + v, 0) || 1
   let cumulative = 0
   return codes.map((code, i) => {
@@ -318,8 +412,8 @@ function buildIdealSegments(codes) {
 const macroSegs = computed(() => buildSegments(MACRO_CODES))
 const microSegs = computed(() => buildSegments(MICRO_CODES))
 
-const IDEAL_MACRO_SEGS = buildIdealSegments(MACRO_CODES)
-const IDEAL_MICRO_SEGS = buildIdealSegments(MICRO_CODES)
+const IDEAL_MACRO_SEGS = computed(() => buildIdealSegments(MACRO_CODES))
+const IDEAL_MICRO_SEGS = computed(() => buildIdealSegments(MICRO_CODES))
 
 function cap(str) {
   if (!str) return str
@@ -343,23 +437,112 @@ const macroLegend = computed(() => buildLegend(MACRO_CODES))
 const microLegend = computed(() => buildLegend(MICRO_CODES))
 
 const breakdown = computed(() => {
+  const overWatchSet = new Set(OVER_WATCH)
   return nutrients.value.map(n => {
-    const ref = REFERENCES[n.code]
-    const pct = ref ? Math.min((n.totalAmount / ref.ref) * 100, 100) : null
-    const color = pct == null ? '#aaa'
-      : pct < 50 ? '#e8a820'
-      : pct <= 100 ? '#5a9e56'
-      : '#d94f4f'
+    const ref = scaledRefs.value[n.code]
+    const rawPct = ref ? (n.totalAmount / ref.ref) * 100 : null
+    const isMaxNutrient = overWatchSet.has(n.code)
+    let color = '#aaa'
+    if (rawPct != null) {
+      if (isMaxNutrient) {
+        color = rawPct > 120 ? '#d94f4f'
+              : rawPct > 100 ? '#b8860b'
+              : rawPct >= 80 ? '#5a9e56'
+              : '#e8a820'
+      } else {
+        color = rawPct < 50 ? '#d94f4f'
+              : rawPct < 80 ? '#e8a820'
+              : '#5a9e56'
+      }
+    }
     return {
       code: n.code,
       name: cap(n.name),
       amount: n.totalAmount,
       unit: n.unit,
       reference: ref?.label ?? '-',
-      pct: pct ?? 50,
+      pct: rawPct != null ? Math.min(rawPct, 100) : 50,
       color,
     }
   })
+})
+
+// Nutrients that warn when over the max reference
+const OVER_WATCH = ['calories', 'carbohydrates', 'fat', 'sugar', 'salt']
+// Nutrients that warn when under the min reference
+const UNDER_WATCH = ['calories', 'protein', 'carbohydrates', 'fibre']
+
+const insights = computed(() => {
+  const refs = scaledRefs.value
+  const results = []
+
+  for (const code of OVER_WATCH) {
+    const n = nutrient(code)
+    const ref = refs[code]
+    if (!ref || !n) continue
+    const pct = (n.totalAmount / ref.ref) * 100
+    if (pct > 120) {
+      results.push({
+        code,
+        title: `High ${cap(n.name)}`,
+        message: `Your ${n.name} intake is ${Math.round(pct - 100)}% over the recommended limit of ${ref.label}.`,
+        pctLabel: `${Math.round(pct)}%`,
+        color: '#d94f4f',
+        bg: '#fdf2f2',
+        priority: 1,
+      })
+    } else if (pct > 100) {
+      results.push({
+        code,
+        title: `${cap(n.name)} slightly over`,
+        message: `Your ${n.name} intake is ${Math.round(pct - 100)}% above the recommended limit of ${ref.label}.`,
+        pctLabel: `${Math.round(pct)}%`,
+        color: '#e8a820',
+        bg: '#fffbf0',
+        priority: 2,
+      })
+    }
+  }
+
+  for (const code of UNDER_WATCH) {
+    const n = nutrient(code)
+    const ref = refs[code]
+    if (!ref || !n) continue
+    const pct = (n.totalAmount / ref.ref) * 100
+    if (pct < 50) {
+      results.push({
+        code,
+        title: `Low ${cap(n.name)}`,
+        message: `Your ${n.name} intake is only ${Math.round(pct)}% of the recommended ${ref.label}. Consider eating more ${n.name}-rich foods.`,
+        pctLabel: `${Math.round(pct)}%`,
+        color: '#d94f4f',
+        bg: '#fdf2f2',
+        priority: 1,
+      })
+    } else if (pct < 80) {
+      results.push({
+        code,
+        title: `${cap(n.name)} below target`,
+        message: `Your ${n.name} intake is at ${Math.round(pct)}% of the recommended ${ref.label}.`,
+        pctLabel: `${Math.round(pct)}%`,
+        color: '#e8a820',
+        bg: '#fffbf0',
+        priority: 2,
+      })
+    } else if (pct >= 80 && pct <= 100) {
+      results.push({
+        code,
+        title: `Good ${cap(n.name)} intake`,
+        message: `Your ${n.name} intake is on track at ${Math.round(pct)}% of the recommended ${ref.label}.`,
+        pctLabel: `${Math.round(pct)}%`,
+        color: '#5a9e56',
+        bg: '#f0f8f0',
+        priority: 3,
+      })
+    }
+  }
+
+  return results.sort((a, b) => a.priority - b.priority)
 })
 
 onMounted(load)

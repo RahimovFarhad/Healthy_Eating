@@ -120,13 +120,18 @@
               </div>
 
               <div class="d-flex flex-wrap gap-1 mt-2">
-                <button v-if="goal.status === 'active'"
+                <button v-if="goal.status === 'active' && !goal.nutrientId"
                         class="btn btn-sm"
                         :class="isDoneToday(goal) ? 'btn-gf' : 'btn-gf-outline'"
                         :disabled="goal._toggling"
                         @click="toggleDone(goal)">
                   {{ goal._toggling ? '…' : (isDoneToday(goal) ? '✓ Done Today' : 'Mark Today Done') }}
                 </button>
+                <span v-if="goal.status === 'active' && goal.nutrientId"
+                      class="badge align-self-center"
+                      :style="`background:${isDoneToday(goal) ? '#5a9e56' : '#aaa'};font-size:0.7rem;`">
+                  {{ isDoneToday(goal) ? '✓ Met today' : 'Not met yet' }}
+                </span>
                 <button v-if="goal.status === 'active'"
                         class="btn btn-sm"
                         style="background:#fde8e8;border:1px solid #d99;color:#c44;"
@@ -236,6 +241,10 @@
               </div>
             </div>
 
+            <div v-if="replacesGoalWarning" class="alert py-1 small mb-2"
+                 style="background:#fffbf0;border:1px solid #e8a820;color:#7a5800;">
+              This will replace your existing active {{ replacesGoalWarning }} goal.
+            </div>
             <div v-if="createError" class="alert alert-danger py-1 small mb-2">{{ createError }}</div>
 
             <button class="btn btn-gf" :disabled="creating" @click="saveCustomGoal">
@@ -313,6 +322,14 @@ const selectedNutrientUnit = computed(() => {
 })
 
 const activeGoals = computed(() => goals.value.filter(g => g.status === 'active'))
+
+const replacesGoalWarning = computed(() => {
+  if (!customGoal.value.nutrientCode) return null
+  const existing = activeGoals.value.find(
+    g => g.nutrient?.code === customGoal.value.nutrientCode
+  )
+  return existing ? existing.nutrient.name : null
+})
 const archivedGoals = computed(() => goals.value.filter(g => g.status === 'archived'))
 const proGoalsCount = computed(() => activeGoals.value.filter(g => g.source === 'professional_defined').length)
 const doneToday = computed(() => activeGoals.value.filter(isDoneToday).length)
@@ -341,7 +358,6 @@ const presets = [
   { title: 'Eat 30g of Fibre Daily', desc: 'Hit the NHS fibre recommendation', nutrientCode: 'fibre', direction: 'above', targetMin: 30, durationDays: 21, durationLabel: '21 days' },
   { title: 'Reduce Sugar to <30g/day', desc: 'Cut added sugars to under 30g', nutrientCode: 'sugar', direction: 'below', targetMax: 30, durationDays: 30, durationLabel: '30 days' },
   { title: 'Stay Under 6g Salt/day', desc: 'Lower salt intake for heart health', nutrientCode: 'salt', direction: 'below', targetMax: 6, durationDays: 30, durationLabel: '30 days' },
-  { title: 'Two-Week Logging Streak', desc: 'Just log every meal for 14 days', nutrientCode: '', direction: 'below', targetMax: null, durationDays: 14, durationLabel: '14 days' },
 ]
 
 onMounted(async () => {

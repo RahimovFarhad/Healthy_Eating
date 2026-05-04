@@ -16,17 +16,17 @@
     </div>
 
     <div v-if="showInvite" class="add-meal-panel mb-3">
-      <h6 class="fw-bold mb-2" style="color:#5a9e56;">Invite a Subscriber</h6>
+      <h6 class="fw-bold mb-2" style="color:#5a9e56;">Invite a Client</h6>
       <p class="text-muted small mb-2">
-        Ask the subscriber for their User ID (visible on their Profile page) and enter it below.
+        Enter the client's registered email address to send them an invitation.
       </p>
       <div class="d-flex gap-2 align-items-end">
-        <div style="flex:1;max-width:200px;">
-          <label class="form-label form-label-sm">Subscriber User ID</label>
-          <input type="number" class="form-control form-control-sm"
-                 v-model.number="inviteId" min="1" placeholder="e.g. 42">
+        <div style="flex:1;max-width:280px;">
+          <label class="form-label form-label-sm">Client Email Address</label>
+          <input type="email" class="form-control form-control-sm"
+                 v-model="inviteEmail" placeholder="client@example.com">
         </div>
-        <button class="btn btn-gf btn-sm" @click="sendInvite" :disabled="inviteLoading || !inviteId">
+        <button class="btn btn-gf btn-sm" @click="sendInvite" :disabled="inviteLoading || !inviteEmail">
           {{ inviteLoading ? '…' : 'Send Invite' }}
         </button>
       </div>
@@ -231,7 +231,7 @@
                       <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
                       <circle cx="80" cy="80" r="62" fill="none" stroke="#5a9e56" stroke-width="18"
                               stroke-dasharray="389.6"
-                              :stroke-dashoffset="calorieOffset(client.summary.data)"
+                              :stroke-dashoffset="calorieOffset(client)"
                               stroke-linecap="round"
                               transform="rotate(-90 80 80)"/>
                       <text x="80" y="74" text-anchor="middle" font-size="18" font-weight="bold" fill="#5a9e56">
@@ -241,7 +241,7 @@
                     </svg>
                     <div class="mt-2 text-start small text-muted">
                       <div>Eaten: <strong>{{ summaryNutrient(client.summary.data, 'calories')?.totalAmount ?? 0 }} kcal</strong></div>
-                      <div>Reference: <strong>2,000 kcal</strong></div>
+                      <div>Reference: <strong>{{ scaledRefsFor(client).calories.label }}</strong></div>
                     </div>
                   </div>
                 </div>
@@ -252,7 +252,7 @@
                     <div style="position:absolute;top:8px;right:8px;text-align:center;">
                       <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
                         <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
-                        <template v-for="seg in IDEAL_MACRO_SEGS" :key="seg.code">
+                        <template v-for="seg in buildIdealSegments(client, MACRO_CODES)" :key="seg.code">
                           <circle cx="80" cy="80" r="62" fill="none"
                                   :stroke="seg.color" stroke-width="18"
                                   :stroke-dasharray="`${seg.dash} ${seg.gap}`"
@@ -291,7 +291,7 @@
                     <div style="position:absolute;top:8px;right:8px;text-align:center;">
                       <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
                         <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
-                        <template v-for="seg in IDEAL_MICRO_SEGS" :key="seg.code">
+                        <template v-for="seg in buildIdealSegments(client, MICRO_CODES)" :key="seg.code">
                           <circle cx="80" cy="80" r="62" fill="none"
                                   :stroke="seg.color" stroke-width="18"
                                   :stroke-dasharray="`${seg.dash} ${seg.gap}`"
@@ -339,7 +339,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="row in summaryBreakdown(client.summary.data)" :key="row.code">
+                    <tr v-for="row in summaryBreakdown(client)" :key="row.code">
                       <td class="small fw-semibold">{{ row.name }}</td>
                       <td class="small">{{ row.amount }}</td>
                       <td class="small text-muted">{{ row.unit }}</td>
@@ -438,7 +438,11 @@
                            v-model="client.goalDraft.notes" placeholder="Why are you setting this goal?">
                   </div>
                 </div>
-                <button class="btn btn-gf btn-sm" @click="setGoal(client)"
+                <div v-if="replacesGoalWarningFor(client)" class="alert py-1 small mt-2 mb-0"
+                     style="background:#fffbf0;border:1px solid #e8a820;color:#7a5800;">
+                  This will replace the client's existing active {{ replacesGoalWarningFor(client) }} goal.
+                </div>
+                <button class="btn btn-gf btn-sm mt-2" @click="setGoal(client)"
                         :disabled="client.goalDraft.saving">
                   {{ client.goalDraft.saving ? '…' : 'Save Goal' }}
                 </button>
@@ -486,7 +490,7 @@ const goalPresets = [
 ]
 
 const showInvite = ref(false)
-const inviteId = ref(null)
+const inviteEmail = ref('')
 const inviteLoading = ref(false)
 const inviteError = ref('')
 const inviteSuccess = ref('')
@@ -495,10 +499,61 @@ const pendingInvitations = ref([])
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
+const PERIOD_DAYS = { daily: 1, weekly: 7, monthly: 30 }
+
+const FALLBACK_REFS = {
+  calories:      { ref: 2000, unit: 'kcal' },
+  protein:       { ref: 50,   unit: 'g' },
+  carbohydrates: { ref: 260,  unit: 'g' },
+  fat:           { ref: 70,   unit: 'g' },
+  fibre:         { ref: 30,   unit: 'g' },
+  sugar:         { ref: 30,   unit: 'g' },
+  salt:          { ref: 6,    unit: 'g' },
+}
+
+function buildGoalRefs(goals) {
+  const map = {}
+  for (const goal of goals) {
+    if (!goal.nutrient?.code || goal.status !== 'active') continue
+    const code = goal.nutrient.code
+    map[code] = {
+      min: goal.targetMin != null ? Number(goal.targetMin) : null,
+      max: goal.targetMax != null ? Number(goal.targetMax) : null,
+      unit: goal.nutrient.unit,
+    }
+  }
+  return map
+}
+
+function scaledRefsFor(client) {
+  const days = PERIOD_DAYS[client.summary.period] ?? 1
+  const goalRefs = client.summary.goalRefs ?? {}
+  const result = {}
+  for (const [code, fallback] of Object.entries(FALLBACK_REFS)) {
+    const goal = goalRefs[code]
+    const isMaxNutrient = ['calories', 'carbohydrates', 'fat', 'sugar', 'salt'].includes(code)
+    const isMinNutrient = ['calories', 'carbohydrates', 'protein', 'fibre'].includes(code)
+    let baseRef
+    if (goal) {
+      baseRef = (isMaxNutrient && !isMinNutrient) ? (goal.max ?? goal.min ?? fallback.ref)
+              : (isMinNutrient && !isMaxNutrient) ? (goal.min ?? goal.max ?? fallback.ref)
+              : (goal.max ?? goal.min ?? fallback.ref)
+    } else {
+      baseRef = fallback.ref
+    }
+    const unit = goal?.unit ?? fallback.unit
+    const scaled = baseRef * days
+    const isMax = goal ? (goal.max != null && goal.min == null) : (code === 'fat' || code === 'sugar' || code === 'salt')
+    const label = `${isMax ? '≤ ' : '≥ '}${scaled % 1 === 0 ? scaled : scaled.toFixed(1)} ${unit}`
+    result[code] = { ref: scaled, unit, label }
+  }
+  return result
+}
+
 function blankClientState() {
   return {
     dashboard: { loading: false, error: '', data: null },
-    summary: { loading: false, error: '', data: null, period: 'daily', endDate: todayIso() },
+    summary: { loading: false, error: '', data: null, period: 'daily', endDate: todayIso(), goalRefs: {} },
     goals: { loading: false, error: '', data: null },
     goalDraft: {
       nutrientId: null, targetMin: null, targetMax: null,
@@ -537,6 +592,15 @@ async function loadNutrients() {
 function nutrientUnitFor(nutrientId) {
   if (!nutrientId) return ''
   return nutrients.value.find(n => n.nutrientId === nutrientId)?.unit ?? ''
+}
+
+function replacesGoalWarningFor(client) {
+  const nutrientId = client.goalDraft.nutrientId
+  if (!nutrientId) return null
+  const existing = (client.goals.data ?? []).find(
+    g => g.status === 'active' && g.nutrient?.nutrientId === nutrientId
+  )
+  return existing ? existing.nutrient.name : null
 }
 
 function nutrientIdByCode(code) {
@@ -616,14 +680,14 @@ async function sendInvite() {
   try {
     const { ok, message } = await fetchJson('/api/professional/client-invitations', {
       method: 'POST',
-      body: JSON.stringify({ subscriberId: Number(inviteId.value) }),
+      body: JSON.stringify({ email: inviteEmail.value }),
     })
     if (!ok) {
       inviteError.value = message || 'Invitation failed'
       return
     }
-    inviteSuccess.value = `Invitation sent to user #${inviteId.value}.`
-    inviteId.value = null
+    inviteSuccess.value = `Invitation sent to ${inviteEmail.value}.`
+    inviteEmail.value = ''
     await loadPendingInvitations()
   } catch {
     inviteError.value = 'Network error - could not send invitation'
@@ -687,12 +751,18 @@ async function loadSummary(client) {
     period: client.summary.period,
     endDate: client.summary.endDate,
   })
-  await loadResource(
-    client.summary,
-    `/api/professional/clients/${client.subscriberId}/summary?${params}`,
-    d => d.summary ?? d,
-    'Failed to load summary',
-  )
+  const [, goalsRes] = await Promise.all([
+    loadResource(
+      client.summary,
+      `/api/professional/clients/${client.subscriberId}/summary?${params}`,
+      d => d.summary ?? d,
+      'Failed to load summary',
+    ),
+    fetchJson(`/api/professional/clients/${client.subscriberId}/goals`),
+  ])
+  if (goalsRes.ok) {
+    client.summary.goalRefs = buildGoalRefs(goalsRes.data.goals ?? [])
+  }
 }
 
 function loadGoals(client) {
@@ -775,16 +845,6 @@ function goalSourceColor(source) {
   return '#888'
 }
 
-// NHS reference intakes used for progress bars
-const REFERENCES = {
-  calories:      { ref: 2000, unit: 'kcal', label: '2,000 kcal' },
-  protein:       { ref: 50,   unit: 'g',    label: '50 g' },
-  carbohydrates: { ref: 260,  unit: 'g',    label: '260 g' },
-  fat:           { ref: 70,   unit: 'g',    label: '70 g' },
-  fibre:         { ref: 30,   unit: 'g',    label: '30 g' },
-  sugar:         { ref: 30,   unit: 'g',    label: '≤ 30 g' },
-  salt:          { ref: 6,    unit: 'g',    label: '≤ 6 g' },
-}
 
 const MACRO_CODES = ['carbohydrates', 'protein', 'fat']
 const MICRO_CODES = ['fibre', 'sugar', 'salt']
@@ -804,9 +864,9 @@ function summaryNutrient(data, code) {
 
 const SVG_CIRC = 2 * Math.PI * 62  // ≈ 389.6
 
-function calorieOffset(data) {
-  const eaten = summaryNutrient(data, 'calories')?.totalAmount ?? 0
-  const pct = Math.min(eaten / REFERENCES.calories.ref, 1)
+function calorieOffset(client) {
+  const eaten = summaryNutrient(client.summary.data, 'calories')?.totalAmount ?? 0
+  const pct = Math.min(eaten / scaledRefsFor(client).calories.ref, 1)
   return SVG_CIRC * (1 - pct)
 }
 
@@ -826,8 +886,9 @@ function buildSegments(data, codes) {
 function macroSegments(data) { return buildSegments(data, MACRO_CODES) }
 function microSegments(data) { return buildSegments(data, MICRO_CODES) }
 
-function buildIdealSegments(codes) {
-  const amounts = codes.map(code => REFERENCES[code]?.ref ?? 0)
+function buildIdealSegments(client, codes) {
+  const refs = scaledRefsFor(client)
+  const amounts = codes.map(code => refs[code]?.ref ?? 0)
   const total = amounts.reduce((s, v) => s + v, 0) || 1
   let cumulative = 0
   return codes.map((code, i) => {
@@ -838,9 +899,6 @@ function buildIdealSegments(codes) {
     return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
   })
 }
-
-const IDEAL_MACRO_SEGS = buildIdealSegments(MACRO_CODES)
-const IDEAL_MICRO_SEGS = buildIdealSegments(MICRO_CODES)
 
 function donutLegend(data, codes) {
   return codes.map(code => {
@@ -855,10 +913,11 @@ function donutLegend(data, codes) {
   })
 }
 
-function summaryBreakdown(data) {
-  const nutrients = data?.nutrients ?? []
+function summaryBreakdown(client) {
+  const refs = scaledRefsFor(client)
+  const nutrients = client.summary.data?.nutrients ?? []
   return nutrients.map(n => {
-    const ref = REFERENCES[n.code]
+    const ref = refs[n.code]
     const pct = ref ? Math.min((n.totalAmount / ref.ref) * 100, 100) : null
     const color = pct == null ? '#aaa'
       : pct < 50 ? '#e8a820'
