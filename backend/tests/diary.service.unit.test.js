@@ -37,6 +37,8 @@ const mockInsertFoodPortion = jest.fn();
 const mockFetchWeeklyCalorieTrend = jest.fn();
 const mockCheckExistingFoodItemByExternalId = jest.fn();
 const mockFindRecipePortionForDiary = jest.fn();
+const mockSearchFoodById = jest.fn();
+const mockParseFoodResponse = jest.fn();
 
 jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
   DiaryEntryError: DiaryEntryError,
@@ -73,12 +75,18 @@ jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
   findRecipePortionForDiary: mockFindRecipePortionForDiary,
 }));
 
+jest.unstable_mockModule("../src/utils/searchFood.js", () => ({
+  searchFoodById: mockSearchFoodById,
+  parseFoodResponse: mockParseFoodResponse,
+}));
+
 const {
   createDiaryEntry,
   getNutritionSummary,
   listDiaryEntries,
   getDiaryEntryById,
   createDiaryEntryItem,
+  createRecipeAsDiaryEntryItemService,
   updateDiaryEntryItem,
   deleteExistingDiaryEntry,
   deleteExistingDiaryEntryItem,
@@ -116,6 +124,96 @@ describe("Diary Service", () => {
       expect(mockValidateCreateDiaryEntryInput).toHaveBeenCalled();
       expect(mockInsertDiaryEntry).toHaveBeenCalledWith(validatedInput);
       });
+    test("creates a diary entry with items and returns the full entry from findDiaryEntryById", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        consumedAt: new Date("2026-04-18"),
+        mealType: "lunch",
+        notes: "entry with items",
+        items: [
+          { portionId: 11, quantity: 1.5, customFood: null, fatSecret: null },
+          { portionId: 12, quantity: 2, customFood: null, fatSecret: null },
+        ],
+      };
+
+      const fullEntry = {
+        diaryEntryId: TEST_ENTRYID,
+        subscriberId: TEST_USERID,
+        items: [
+          { diaryEntryItemId: 1001, portionId: 11, quantity: 1.5 },
+          { diaryEntryItemId: 1002, portionId: 12, quantity: 2 },
+        ],
+      };
+
+      mockValidateCreateDiaryEntryInput.mockReturnValue(validatedInput);
+      mockInsertDiaryEntry.mockResolvedValue({
+        diaryEntryId: TEST_ENTRYID,
+      });
+      mockValidateNewEntryDetails.mockImplementation((data) => data);
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockCreateDiaryEntryItem
+        .mockResolvedValueOnce({ diaryEntryItemId: 1001 })
+        .mockResolvedValueOnce({ diaryEntryItemId: 1002 });
+      mockFindDiaryEntryById.mockResolvedValue(fullEntry);
+
+      const result = await createDiaryEntry({
+        subscriberId: TEST_USERID,
+        consumedAt: "2026-04-18",
+        mealType: "lunch",
+        notes: "entry with items",
+        items: [
+          { portionId: 11, quantity: 1.5, customFood: null, fatSecret: null },
+          { portionId: 12, quantity: 2, customFood: null, fatSecret: null },
+        ],
+      });
+
+      expect(mockInsertDiaryEntry).toHaveBeenCalledWith(validatedInput);
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledTimes(2);
+      expect(mockCreateDiaryEntryItem).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        portionId: 11,
+        quantity: 1.5,
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenNthCalledWith(2, expect.objectContaining({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        portionId: 12,
+        quantity: 2,
+      }));
+      expect(mockFindDiaryEntryById).toHaveBeenCalledWith({ diaryEntryId: TEST_ENTRYID });
+      expect(result).toEqual(fullEntry);
+    });
+    test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
+      mockValidateCreateDiaryEntryInput.mockImplementation(() => {
+        throw new DiaryEntryError("Subscriber ID is required");
+      });
+
+      await expect(createDiaryEntry({
+        subscriberId: null,
+        consumedAt: "2026-04-18",
+        mealType: "breakfast",
+        notes: "test",
+        items: [],
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Subscriber ID is required",
+      }));
+    });
+    test("throws DiaryEntryError when mealType is missing or invalid", async () => {
+      mockValidateCreateDiaryEntryInput.mockImplementation(() => {
+        throw new DiaryEntryError("Meal type is required");
+      });
+
+      await expect(createDiaryEntry({
+        subscriberId: TEST_USERID,
+        consumedAt: "2026-04-18",
+        mealType: null,
+        notes: "test",
+        items: [],
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Meal type is required",
+      }));
+    });
   });
 
   describe("getNutritionSummary (unit)", () => {
@@ -138,6 +236,79 @@ describe("Diary Service", () => {
       expect(mockValidateSummaryInput).toHaveBeenCalled();
       expect(mockFetchSummaryData).toHaveBeenCalled();
       expect(result).toBeDefined();
+    });
+    test("returns aggregated and sorted nutrients for daily period with mixed quantity types", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateSummaryInput.mockReturnValue(validatedInput);
+      mockFetchSummaryData.mockResolvedValue([{
+        items: [
+          {
+            quantity: 2,
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 1, code: "protein" }, amount: 10 }] },
+          },
+          {
+            quantity: "1.5",
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 2, code: "fat" }, amount: 5 }] },
+          },
+          {
+            quantity: { toNumber: () => 3 },
+            portion: { portionNutrients: [{ nutrient: { nutrientId: 3, code: "fibre" }, amount: 2 }] },
+          },
+        ],
+      }]);
+
+
+      const result = await getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+
+      expect(result.period).toBe("daily");
+      expect(result.nutrients).toEqual([
+        expect.objectContaining({ code: "protein", totalAmount: 20 }),
+        expect.objectContaining({ code: "fat", totalAmount: 7.5 }),
+        expect.objectContaining({ code: "fibre", totalAmount: 6 }),
+      ]);
+    });
+    test("returns summary for monthly period", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+        period: "monthly",
+        endDate: "2026-04-18",
+      };
+
+      mockValidateSummaryInput.mockReturnValue(validatedInput);
+      mockFetchSummaryData.mockResolvedValue([]);
+
+      const result = await getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "monthly",
+        endDate: "2026-04-18",
+      });
+
+      expect(result.period).toBe("monthly");
+      expect(result).toBeDefined();
+    });
+    test("throws error when period is unsupported", async () => {
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "yearly",
+        endDate: "2026-04-18",
+      });
+
+      await expect(getNutritionSummary({
+        subscriberId: TEST_USERID,
+        period: "yearly",
+        endDate: "2026-04-18",
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Unsupported period: yearly",
+      }));
     });
   });
 
@@ -162,6 +333,15 @@ describe("Diary Service", () => {
       expect(mockValidateListDisplay).toHaveBeenCalled();
       expect(mockListDiaryEntries).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entries);
+    });
+    test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
+      mockValidateListDisplay.mockImplementationOnce(() => { throw new Error("Invalid subscriberId"); });
+
+      await expect(listDiaryEntries({
+        subscriberId: null,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid subscriberId",
+      }));
     });
   });
 
@@ -188,7 +368,17 @@ describe("Diary Service", () => {
       expect(mockFindDiaryEntryById).toHaveBeenCalledWith(validatedInput);
       expect(result).toEqual(entry);
     });
-  });
+    test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
+      mockValidateEntryDetails.mockImplementationOnce(() => { throw new Error("Invalid subscriberId"); });
+
+      await expect(getDiaryEntryById({
+        subscriberId: null,
+        diaryEntryId: TEST_ENTRYID,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid subscriberId",
+        }));
+      });
+    });
 
   describe("createDiaryEntryItem (unit)", () => {
     test("creates entry item when valid", async () => {
@@ -212,6 +402,233 @@ describe("Diary Service", () => {
       expect(result).toEqual({
         diaryEntryItemId: TEST_ENTRYITEMID,
       });
+    });
+    test("throws DiaryEntryError when portionId is missing and neither customFood nor fatSecret was provided", async () => {
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+      });
+
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+
+      await expect(createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+        customFood: null,
+        fatSecret: null,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Must provide either portionId, customFood, or fatSecret",
+      }));
+    });
+    test("creates entry item when portionId is missing but customFood was provided", async () => {
+      const customFoodInput = {
+        name: "Greek yoghurt",
+        brand: "Test Brand",
+        portions: [{
+          description: "100g",
+          weight_g: 100,
+          nutrients: [{ nutrientId: 1, amount: 10 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockInsertFoodItem.mockResolvedValue({ foodItemId: 101 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 202 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: null,
+        customFood: customFoodInput,
+        fatSecret: null,
+      });
+
+      expect(mockValidateCreateFoodItemInput).toHaveBeenCalled();
+      expect(mockInsertFoodItem).toHaveBeenCalledWith(expect.objectContaining({
+        name: "Greek yoghurt",
+        source: "user",
+      }));
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 101,
+        description: "100g",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 2,
+        portionId: 202,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("creates entry item when portionId is missing but fatSecret was provided and external food already exists", async () => {
+      const fatSecretInput = { externalId: "fs_123" };
+      const parsedFood = {
+        name: "Apple",
+        brand: "Generic",
+        portions: [{
+          description: "1 medium",
+          weight_g: 182,
+          nutrients: [{ nutrientId: 2, amount: 95 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockSearchFoodById.mockResolvedValue({ ok: true });
+      mockParseFoodResponse.mockReturnValue(parsedFood);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockCheckExistingFoodItemByExternalId.mockResolvedValue({ foodItemId: 303 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 404 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 1,
+        portionId: null,
+        customFood: null,
+        fatSecret: fatSecretInput,
+      });
+
+      expect(mockSearchFoodById).toHaveBeenCalledWith("fs_123");
+      expect(mockParseFoodResponse).toHaveBeenCalled();
+      expect(mockCheckExistingFoodItemByExternalId).toHaveBeenCalledWith("fs_123");
+      expect(mockInsertFoodItem).not.toHaveBeenCalled();
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 303,
+        description: "1 medium",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        portionId: 404,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("creates entry item when portionId is missing but fatSecret was provided and external food does not exist", async () => {
+      const fatSecretInput = { externalId: "fs_999" };
+      const parsedFood = {
+        name: "Banana",
+        brand: "Generic",
+        portions: [{
+          description: "1 banana",
+          weight_g: 118,
+          nutrients: [{ nutrientId: 3, amount: 105 }],
+        }],
+      };
+
+      mockValidateNewEntryDetails.mockReturnValue({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 3,
+        portionId: null,
+      });
+      mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+      mockSearchFoodById.mockResolvedValue({ ok: true });
+      mockParseFoodResponse.mockReturnValue(parsedFood);
+      mockValidateCreateFoodItemInput.mockImplementation((data) => data);
+      mockCheckExistingFoodItemByExternalId.mockResolvedValue(null);
+      mockInsertFoodItem.mockResolvedValue({ foodItemId: 505 });
+      mockValidateCreateFoodPortionInput.mockImplementation((data) => data);
+      mockInsertFoodPortion.mockResolvedValue({ portionId: 606 });
+      mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+      const result = await createDiaryEntryItem({
+        userId: TEST_USERID,
+        diaryEntryId: TEST_ENTRYID,
+        quantity: 3,
+        portionId: null,
+        customFood: null,
+        fatSecret: fatSecretInput,
+      });
+
+      expect(mockCheckExistingFoodItemByExternalId).toHaveBeenCalledWith("fs_999");
+      expect(mockInsertFoodItem).toHaveBeenCalledWith(expect.objectContaining({
+        name: "Banana",
+        source: "fatsecret",
+        externalId: "fs_999",
+      }));
+      expect(mockInsertFoodPortion).toHaveBeenCalledWith(expect.objectContaining({
+        foodItemId: 505,
+        description: "1 banana",
+      }));
+      expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+        portionId: 606,
+      }));
+      expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+  });
+
+  describe("Recipe to Diary Entry Item (unit)", () => {
+    test("creates diary entry item from recipe portion when valid", async () => {
+        const validatedInput = {
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 123,
+          servings: 2,
+        };
+
+        mockValidateCreateRecipeAsDiaryEntryItemInput.mockReturnValue(validatedInput);
+        mockValidateNewEntryDetails.mockImplementation((data) => data);
+        mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+        mockFindRecipePortionForDiary.mockResolvedValue({
+          portions: [{ portionId: 1 }],
+        });
+        mockCreateDiaryEntryItem.mockResolvedValue({ diaryEntryItemId: TEST_ENTRYITEMID });
+
+        const result = await createRecipeAsDiaryEntryItemService({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 123,
+          servings: 2,
+        });
+
+        expect(mockValidateCreateRecipeAsDiaryEntryItemInput).toHaveBeenCalled();
+        expect(mockFindRecipePortionForDiary).toHaveBeenCalledWith({ recipeId: 123 });
+        expect(mockCreateDiaryEntryItem).toHaveBeenCalledWith(expect.objectContaining({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          portionId: 1,
+          quantity: 2,
+        }));
+        expect(result).toEqual({ diaryEntryItemId: TEST_ENTRYITEMID });
+    });
+    test("throws DiaryEntryError when recipe portion is not found for the diary entry", async () => {
+        mockValidateCreateRecipeAsDiaryEntryItemInput.mockReturnValue({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 999,
+          servings: 2,
+        });
+        mockCheckDiaryEntryOwnership.mockResolvedValue(true);
+        mockFindRecipePortionForDiary.mockResolvedValue(null);
+        
+        await expect(createRecipeAsDiaryEntryItemService({
+          userId: TEST_USERID,
+          diaryEntryId: TEST_ENTRYID,
+          recipeId: 999,
+          servings: 2,
+        })).rejects.toEqual(expect.objectContaining({
+          message: "Recipe portion not found for diary entry item"
+        }));
     });
   });
 
@@ -591,6 +1008,11 @@ describe("Diary Service", () => {
       };
 
       mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
       mockGetDaysLogged.mockResolvedValue(5);
       mockFetchWeeklyCalorieTrend.mockResolvedValue([
         { date: "2026-04-13", calories: 100 },
@@ -606,6 +1028,60 @@ describe("Diary Service", () => {
 
       expect(mockValidateUserIdForDashboard).toHaveBeenCalled();
       expect(result).toBeDefined();
+    });
+    test("returns weekly trend with seven days and fills missing days with zero calories", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+      };
+
+      mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+      mockGetDaysLogged.mockResolvedValue(2);
+      mockFetchSummaryData.mockResolvedValue([
+        { items: [] },
+      ]);
+      mockListDiaryEntries.mockResolvedValue([{ diaryEntryId: 1 }]);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([
+        { date: "2026-04-14T00:00:00.000Z", calories: 200 },
+        { date: "2026-04-16T00:00:00.000Z", calories: 350 },
+      ]);
+
+      const result = await getDashboardDataForSubscriber({
+        subscriberId: TEST_USERID,
+      });
+
+      expect(result.weeklyCaloryTrend).toHaveLength(7);
+      expect(result.weeklyCaloryTrend.some((d) => d.calories === 0)).toBe(true);
+    });
+    test("throws error when weekly calorie trend contains invalid date values", async () => {
+      const validatedInput = {
+        subscriberId: TEST_USERID,
+      };
+
+      mockValidateUserIdForDashboard.mockReturnValue(validatedInput);
+      mockValidateSummaryInput.mockReturnValue({
+        subscriberId: TEST_USERID,
+        period: "daily",
+        endDate: "2026-04-18",
+      });
+      mockGetDaysLogged.mockResolvedValue(0);
+      mockFetchSummaryData.mockResolvedValue([
+        { items: [] },
+      ]);
+      mockListDiaryEntries.mockResolvedValue([]);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([
+        { date: 12345, calories: 150 },
+      ]);
+
+      await expect(getDashboardDataForSubscriber({
+        subscriberId: TEST_USERID,
+      })).rejects.toEqual(expect.objectContaining({
+        message: "Invalid date value: 12345",
+      }));
     });
   });
 });
