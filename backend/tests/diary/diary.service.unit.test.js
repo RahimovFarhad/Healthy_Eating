@@ -39,6 +39,7 @@ const mockCheckExistingFoodItemByExternalId = jest.fn();
 const mockFindRecipePortionForDiary = jest.fn();
 const mockSearchFoodById = jest.fn();
 const mockParseFoodResponse = jest.fn();
+const mockEvaluateGoalsForToday = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/diary/diary.validator.js", () => ({
   DiaryEntryError: DiaryEntryError,
@@ -80,6 +81,10 @@ jest.unstable_mockModule("../../src/utils/searchFood.js", () => ({
   parseFoodResponse: mockParseFoodResponse,
 }));
 
+jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
+  evaluateGoalsForToday: mockEvaluateGoalsForToday,
+}));
+
 const {
   createDiaryEntry,
   getNutritionSummary,
@@ -96,6 +101,8 @@ const {
 describe("Diary Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockValidateSummaryInput.mockImplementation((input) => input);
+    mockFetchSummaryData.mockResolvedValue([]);
   });
 
   describe("createDiaryEntry (unit)", () => {
@@ -181,7 +188,7 @@ describe("Diary Service", () => {
         portionId: 12,
         quantity: 2,
       }));
-      expect(mockFindDiaryEntryById).toHaveBeenCalledWith({ diaryEntryId: TEST_ENTRYID });
+      expect(mockFindDiaryEntryById).toHaveBeenCalledWith({ diaryEntryId: TEST_ENTRYID, subscriberId: TEST_USERID });
       expect(result).toEqual(fullEntry);
     });
     test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {

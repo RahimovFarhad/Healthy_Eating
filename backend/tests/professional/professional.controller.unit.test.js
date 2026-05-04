@@ -111,7 +111,7 @@ describe("Professional Controller", () => {
       await inviteClient(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(mockInviteClientToProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID });
+      expect(mockInviteClientToProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID, email: null });
       expect(res.json).toHaveBeenCalledWith({ invitation: { invitationId: 123 } });
     });
     test("Returns error code 400 when ProfessionalError is thrown", async () => {

@@ -14,6 +14,7 @@ const mockUpdateUserGoal = jest.fn();
 const mockArchiveUserGoal = jest.fn();
 const mockCreateUserGoal = jest.fn();
 const mockToggleGoalDoneForToday = jest.fn();
+const mockListNutrientsService = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
     getGoalsService: mockGetGoalsService,
@@ -21,6 +22,7 @@ jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
     archiveUserGoal: mockArchiveUserGoal,
     createUserGoal: mockCreateUserGoal, 
     toggleGoalDoneForToday: mockToggleGoalDoneForToday,
+    listNutrientsService: mockListNutrientsService,
 }));
 
 const {
@@ -67,7 +69,7 @@ describe("Goals Controller", () => {
 
       expect(mockGetGoalsService).toHaveBeenCalledWith({
         subscriberId: TEST_USERID,
-        effective: req.query.effective,
+        effective: true,
         include: req.query.include
       });
       expect(res.status).toHaveBeenCalledWith(200);
@@ -111,12 +113,12 @@ describe("Goals Controller", () => {
       };
       const res = createRes();
       const next = jest.fn();
-      const updateGoal = {
+      const updatedGoalResult = {
         goalId: TEST_GOALID,
         notes: "updated"
       };
 
-      mockUpdateUserGoal.mockResolvedValue(updateGoal);
+      mockUpdateUserGoal.mockResolvedValue(updatedGoalResult);
 
       await updateGoal(req,res,next);
 
@@ -125,7 +127,7 @@ describe("Goals Controller", () => {
         goal: req.body.goal
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ updateGoal });
+      expect(res.json).toHaveBeenCalledWith({ updatedGoal: updatedGoalResult });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 400 when subscriberId is missing", async () => {
@@ -168,7 +170,7 @@ describe("Goals Controller", () => {
       await updateGoal(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "goal is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "goalId is required and must be a positive integer" });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 403 when goal doesn't belong to user", async () => {
@@ -201,7 +203,7 @@ describe("Goals Controller", () => {
         },
         body: {
           goal: {
-            goalId: TEST_GOALID_FAIL,
+            goalId: TEST_GOALID,
             notes: "updated"
           }
         }
@@ -224,7 +226,7 @@ describe("Goals Controller", () => {
         },
         body: {
           goal: {
-            goalId: TEST_GOALID_FAIL,
+            goalId: TEST_GOALID,
             notes: "updated"
           }
         }
@@ -255,11 +257,11 @@ describe("Goals Controller", () => {
       };
       const res = createRes();
       const next = jest.fn();
-      const deleteGoal = {
+      const deletedGoalResult = {
         goalId: TEST_GOALID
       };
 
-      mockArchiveUserGoal.mockResolvedValue(deleteGoal);
+      mockArchiveUserGoal.mockResolvedValue(deletedGoalResult);
 
       await deleteGoal(req,res,next);
 
@@ -268,7 +270,7 @@ describe("Goals Controller", () => {
         goalId: TEST_GOALID
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ deleteGoal });
+      expect(res.json).toHaveBeenCalledWith({ deletedGoal: deletedGoalResult });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 400 when subscriberId is missing", async () => {
@@ -307,7 +309,7 @@ describe("Goals Controller", () => {
       await deleteGoal(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "goal is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Goal ID must be a positive integer" });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 403 when goal doesn't belong to user", async () => {
@@ -337,7 +339,7 @@ describe("Goals Controller", () => {
           userId: TEST_USERID
         },
         params: {
-          goalId: TEST_GOALID_FAIL,
+          goalId: TEST_GOALID,
           status: "active"
         }
       };
@@ -390,12 +392,12 @@ describe("Goals Controller", () => {
       };
       const res = createRes();
       const next = jest.fn();
-      const createGoal = {
+      const createdGoalResult = {
         subscriberId: TEST_USERID,
         goal: req.body.goal
       };
 
-      mockCreateUserGoal.mockResolvedValue(createGoal);
+      mockCreateUserGoal.mockResolvedValue(createdGoalResult);
 
       await createGoal(req,res,next);
 
@@ -404,7 +406,7 @@ describe("Goals Controller", () => {
         goal: req.body.goal
       });
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({ createGoal });
+      expect(res.json).toHaveBeenCalledWith({ createdGoal: createdGoalResult });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 400 when subscriberId is missing", async () => {
@@ -459,7 +461,7 @@ describe("Goals Controller", () => {
           userId: TEST_USERID,
         },
         params: {
-          goalId: TEST_USERID
+          goalId: TEST_GOALID
         }
       };
       const res = createRes();
@@ -479,7 +481,7 @@ describe("Goals Controller", () => {
         goalId: TEST_GOALID
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ checkOffGoal });
+      expect(res.json).toHaveBeenCalledWith({ checkIn: checkOffGoal });
       expect(next).not.toHaveBeenCalled();
     });
     test("Returns error code 400 when subscriberId is missing", async () => {
