@@ -1,5 +1,5 @@
 import { expect, jest } from "@jest/globals";
-import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
+import { ProfessionalError } from "../../src/modules/professional/professional.validator.js";
 
 const PROFESSIONAL_ID = 1;
 const SUBSCRIBER_ID = 2;
@@ -77,7 +77,7 @@ const {
     ensureProfessionalClientRelation,
     shareRecipeWithClient,
     getSharedRecipes
-} = await import("../src/modules/professional/professional.service.js");
+} = await import("../../src/modules/professional/professional.service.js");
 
 // now adding to dos
 describe("Professional Service", () => {

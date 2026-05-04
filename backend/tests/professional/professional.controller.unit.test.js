@@ -1,5 +1,5 @@
 import { expect, jest } from "@jest/globals";
-import { ProfessionalError } from "../src/modules/professional/professional.validator.js";
+import { ProfessionalError } from "../../src/modules/professional/professional.validator.js";
 
 const TEST_PROFESSIONAL_ID = 1; 
 const TEST_CLIENT_ID = 2;
@@ -48,7 +48,7 @@ const {
   listInvitations,
   shareRecipe,
   listSharedRecipes,
-} = await import("../src/modules/professional/professional.controller.js");
+} = await import("../../src/modules/professional/professional.controller.js");
 
 function createRes() {
   const res = {};
