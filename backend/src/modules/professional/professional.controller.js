@@ -21,7 +21,8 @@ async function inviteClient(req, res, next) {
         const professionalId = req.user?.userId ?? null;
         const invitation = await inviteClientToProfessional({
             professionalId,
-            subscriberId: req.body?.subscriberId,
+            subscriberId: req.body?.subscriberId ?? null,
+            email: req.body?.email ?? null,
         });
 
         return res.status(201).json({ invitation });

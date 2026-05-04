@@ -160,6 +160,14 @@ async function insertGoal({
   });
 }
 
+// archives all currently active goals for a given subscriber and nutrient
+async function archiveGoalsForNutrient({ subscriberId, nutrientId }) {
+  return prisma.nutritionGoal.updateMany({
+    where: { subscriberId, nutrientId, status: "active" },
+    data: { status: "archived", endDate: new Date() },
+  });
+}
+
 async function findGuidelinesByDemographic(demographic, tx) {
   const client = tx ?? prisma;
   return client.guideline.findMany({
@@ -236,6 +244,7 @@ export {
   listNutrients,
   findGoalByIdForSubscriber,
   archiveGoal,
+  archiveGoalsForNutrient,
   updateGoal,
   insertGoal,
   findGuidelinesByDemographic,

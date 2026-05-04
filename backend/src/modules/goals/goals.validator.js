@@ -7,7 +7,7 @@ class GoalError extends Error {
 
 const GOAL_SOURCES = new Set(["system_default", "user_defined", "professional_defined"]);
 const GOAL_STATUSES = new Set(["active", "archived"]);
-const GOAL_INCLUDE_OPTIONS = new Set(["today", "all"]);
+const GOAL_INCLUDE_OPTIONS = new Set(["today", "all", "none"]);
 
 function normalizePositiveInteger(value) {
   const parsed = typeof value === "string" ? Number(value) : value;
