@@ -106,6 +106,7 @@ export async function loadDiary() {
     const end = new Date(d)
     end.setHours(23, 59, 59, 999)
 
+
     const [entriesRes, summaryRes] = await Promise.all([
       apiFetch(`/api/diary/entries?start=${start.toISOString()}&end=${end.toISOString()}`),
       apiFetch(`/api/diary/summary?period=daily&endDate=${end.toISOString()}`),
