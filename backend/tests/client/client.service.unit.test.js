@@ -1,6 +1,5 @@
 import { expect, jest } from "@jest/globals";
 import { ClientError } from "../../src/modules/client/client.validator.js";
-import { listSharedRecipes } from "../../src/modules/client/client.repository.js";
 
 // Mocks
 const TEST_PROFESSIONALID = 1;
