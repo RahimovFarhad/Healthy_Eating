@@ -2,7 +2,10 @@ import { expect, jest } from "@jest/globals";
 
 const mockFindUnique = jest.fn();
 const mockFindFirst = jest.fn();
+const mockPendingUpsert = jest.fn();
 const mockVerifyPassword = jest.fn();
+const mockHashPassword = jest.fn();
+const mockSendVerificationEmail = jest.fn();
 const mockSign = jest.fn();
 const mockVerify = jest.fn();
 const mockTx = jest.fn();
@@ -15,13 +18,20 @@ jest.unstable_mockModule("../../src/db/prisma.js", () => ({
       findUnique: mockFindUnique,
       findFirst: mockFindFirst,
     },
+    pendingRegistration: {
+      upsert: mockPendingUpsert,
+    },
     $transaction: mockTx,
   },
 }));
 
 jest.unstable_mockModule("../../src/utils/hash.js", () => ({
-  hashPassword: jest.fn(),
+  hashPassword: mockHashPassword,
   verifyPassword: mockVerifyPassword,
+}));
+
+jest.unstable_mockModule("../../src/utils/email.js", () => ({
+  sendVerificationEmail: mockSendVerificationEmail,
 }));
 
 jest.unstable_mockModule("jsonwebtoken", () => ({
@@ -149,25 +159,22 @@ describe("Authentication Service", () => {
       }
     });
 
-    test("returns newUser for valid credentials", async () => {
+    test("stores pending registration and sends verification code for valid credentials", async () => {
       mockFindFirst.mockResolvedValue(null);
-      mockTx.mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockResolvedValue({
-              userId: 42,
-              email: TEST_USER.email,
-              fullName: TEST_USER.username,
-            }),
-          },
-        });
-      });
+      mockHashPassword
+        .mockResolvedValueOnce("hashed-password")
+        .mockResolvedValueOnce("hashed-code");
+      mockPendingUpsert.mockResolvedValue({});
+      mockSendVerificationEmail.mockResolvedValue({});
       
       const newUser = await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password); 
       expect(newUser).toEqual({
-        userId: 42,
         email: TEST_USER.email,
-        fullName: TEST_USER.username,
+      });
+      expect(mockPendingUpsert).toHaveBeenCalled();
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+        to: TEST_USER.email,
+        code: expect.stringMatching(/^\d{6}$/),
       });
     });
 
