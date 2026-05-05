@@ -1,9 +1,11 @@
 import axios from "axios";
 
-// Needs to be kept in .env file, so I will reset those values after the test.
+const CLIENT_ID = process.env.FATSECRET_CLIENT_ID;
+const CLIENT_SECRET = process.env.FATSECRET_CLIENT_SECRET;
 
-const CLIENT_ID = "076a443326144c08b59af2bb20c7aee8" 
-const CLIENT_SECRET = "b59e9d423497469584f0dd4648014c18"
+if (!CLIENT_ID || !CLIENT_SECRET) {
+    throw new Error("FATSECRET_CLIENT_ID and FATSECRET_CLIENT_SECRET must be set in the environment");
+}
 
 let cachedToken = null;
 let tokenExpiry = null;

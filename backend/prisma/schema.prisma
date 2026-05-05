@@ -125,6 +125,21 @@ model User {
   @@map("user")
 }
 
+model PendingRegistration {
+  id                   Int      @id @default(autoincrement())
+  email                String   @unique
+  fullName             String   @map("full_name")
+  passwordHash         String   @map("password_hash")
+  verificationCodeHash String   @map("verification_code_hash")
+  codeExpiresAt        DateTime @map("code_expires_at")
+  attemptCount         Int      @default(0) @map("attempt_count")
+  resendCount          Int      @default(0) @map("resend_count")
+  lastSentAt           DateTime @map("last_sent_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@map("pending_registration")
+}
+
 model ProfessionalClient {
   id             Int                      @id @default(autoincrement())
   professionalId Int                      @map("professional_id")

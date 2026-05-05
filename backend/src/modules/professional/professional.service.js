@@ -1,3 +1,4 @@
+import { prisma } from "../../db/prisma.js";
 import { getDashboardDataForSubscriber, getNutritionSummary } from "../diary/diary.service.js";
 import { createGoalForSubscriber, getGoalsService } from "../goals/goals.service.js";
 import { createProfessionalClientLink, deleteProfessionalClientLink, findProfessionalClientLink, insertMessage, listMessages, listProfessionalClients, updateRoleToProfessional, createSharedRecipe, listSharedRecipes } from "./professional.repository.js";
@@ -9,7 +10,16 @@ async function setUserAsProfessional({ professionalId }) {
     return updateRoleToProfessional(validated);
 }
 
-async function inviteClientToProfessional({ professionalId, subscriberId }) {
+async function inviteClientToProfessional({ professionalId, subscriberId, email }) {
+    // this lets professionals invite by email address instead of requiring user ID
+    if (email && !subscriberId) {
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select: { userId: true },
+        });
+        if (!user) throw new ProfessionalError("No account found with that email address");
+        subscriberId = user.userId;
+    }
     const validated = validateInviteClientInput({ professionalId, subscriberId });
 
     const existing = await findProfessionalClientLink({
@@ -143,7 +153,7 @@ async function getClientGoalsForProfessional({ professionalId, clientId }) {
 
 async function shareRecipeWithClient({ professionalId, clientId, recipeId }) {
     const validated = validateRelationshipInput({ professionalId, clientId });
-    const validatedRecipeId = validateRecipeId({ recipeId }); 
+    const { recipeId: validatedRecipeId } = validateRecipeId({ recipeId });
     validated.recipeId = validatedRecipeId;
 
     await ensureProfessionalClientRelation(validated);

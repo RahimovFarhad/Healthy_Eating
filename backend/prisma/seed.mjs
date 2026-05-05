@@ -47,7 +47,7 @@ const guidelines = [
   // fat: no DRV set for under-5s
   ["fibre",         "child_1_3", 15,    null],
   ["sugar",         "child_1_3", null,  14],
-  ["sodium",        "child_1_3", null,  800],
+  ["salt",          "child_1_3", null,  2],
 
   // ── child_4_6 (ages 4–6) ──
   ["calories",      "child_4_6", null,  1430],
@@ -56,7 +56,7 @@ const guidelines = [
   ["fat",           "child_4_6", null,  56],
   ["fibre",         "child_4_6", 17.5,  null],
   ["sugar",         "child_4_6", null,  19],
-  ["sodium",        "child_4_6", null,  1200],
+  ["salt",          "child_4_6", null,  3],
 
   // ── child_7_10 (ages 7–10) ──
   ["calories",      "child_7_10", null, 1760],
@@ -65,7 +65,7 @@ const guidelines = [
   ["fat",           "child_7_10", null, 69],
   ["fibre",         "child_7_10", 20,   null],
   ["sugar",         "child_7_10", null, 24],
-  ["sodium",        "child_7_10", null, 2000],
+  ["salt",          "child_7_10", null, 5],
 
   // ── teen (ages 11–18) ──
   ["calories",      "teen", null,  2250],
@@ -74,16 +74,16 @@ const guidelines = [
   ["fat",           "teen", null,  88],
   ["fibre",         "teen", 27.5,  null],
   ["sugar",         "teen", null,  30],
-  ["sodium",        "teen", null,  2400],
+  ["salt",          "teen", null,  6],
 
   // ── adult (ages 19–64) ──
-  ["calories",      "adult", null,  2250],
-  ["protein",       "adult", 50.3,  null],
-  ["carbohydrates", "adult", 300,   null],
-  ["fat",           "adult", null,  88],
+  ["calories",      "adult", null,  2000],
+  ["protein",       "adult", 50,    null],
+  ["carbohydrates", "adult", 260,   null],
+  ["fat",           "adult", null,  70],
   ["fibre",         "adult", 30,    null],
   ["sugar",         "adult", null,  30],
-  ["sodium",        "adult", null,  2400],
+  ["salt",          "adult", null,  6],
 
   // ── older_adult (ages 65–74) ──
   ["calories",      "older_adult", null,  2127],
@@ -92,7 +92,7 @@ const guidelines = [
   ["fat",           "older_adult", null,  83],
   ["fibre",         "older_adult", 30,    null],
   ["sugar",         "older_adult", null,  29],
-  ["sodium",        "older_adult", null,  2400],
+  ["salt",          "older_adult", null,  6],
 ];
 
 async function readJSON(fileName) {
@@ -149,7 +149,7 @@ async function upsertRecipeAsSystemFood({ recipe, nutrientMap }) {
     { code: "carbohydrates", amount: recipe.carbs ?? 0 },
     { code: "fat", amount: recipe.fat ?? 0 },
     { code: "sugar", amount: recipe.sugars ?? 0 },
-    { code: "sodium", amount: (recipe.salt ?? 0) * 400 }
+    { code: "salt", amount: recipe.salt ?? 0 }
   ];
 
   for (const n of nutrientValues) {
@@ -243,7 +243,12 @@ async function main() {
   for (const r of recipes) {
     const recipe = await prisma.recipe.create({
       data: {
-        title: r.title,
+        title:        r.title,
+        category:     r.category ?? null,
+        cuisine:      r.cuisine ?? null,
+        servings:     r.servings ?? null,
+        cookTime:     r.time ?? null,
+        image:        r.image ?? null,
         instructions: r.steps.join('\n\n'),
         kcal:         r.kcal,
         protein:      r.protein,
@@ -252,6 +257,7 @@ async function main() {
         fat:          r.fat,
         saturatedFat: r.saturatedFat,
         salt:         r.salt,
+        fibre:        r.fibre ?? null,
       }
     });
 

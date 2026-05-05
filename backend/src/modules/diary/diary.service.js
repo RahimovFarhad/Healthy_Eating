@@ -1,8 +1,8 @@
 import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId, findRecipePortionForDiary } from "./diary.repository.js";
+import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
-import { get } from "http";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
@@ -26,8 +26,9 @@ async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, ite
         })));
     }
 
-    return findDiaryEntryById({ diaryEntryId: entry.diaryEntryId }); // return the full entry with items after creation
-
+    const result = await findDiaryEntryById({ diaryEntryId: entry.diaryEntryId, subscriberId: data.subscriberId });
+    await triggerGoalEvaluation(data.subscriberId);
+    return result;
 }
 
 function toNumber(value) {
@@ -46,7 +47,8 @@ function toNumber(value) {
     return Number(value ?? 0);
 }
 
-// Returns a date range for the given period and end date. It sets end date to the end of the day, and start date to the beginning of the day (for daily), or the beginning of Monday of the current week (for weekly), or the first day of the month (for monthly).
+// Returns a rolling date range for the given period ending on endDate.
+// weekly = last 7 days, monthly = last 30 days.
 function getSummaryRange(period, endDate) {
     const toDate = new Date(endDate);
     toDate.setUTCHours(23, 59, 59, 999); // normalize to end of the day in UTC
@@ -57,16 +59,19 @@ function getSummaryRange(period, endDate) {
             fromDate = new Date(toDate);
             fromDate.setUTCHours(0, 0, 0, 0);
             break;
-        case "weekly": // current week's Monday until endDate
-            fromDate = new Date(endDate);
+        case "weekly":
+            fromDate = new Date(toDate);
             fromDate.setUTCHours(0, 0, 0, 0);
-            const dayOfWeek = toDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
-            const daysSinceMonday = (dayOfWeek + 6) % 7; // Convert to 0 (Mon) - 6 (Sun)
-            fromDate.setUTCDate(fromDate.getUTCDate() - daysSinceMonday);
-            toDate.setUTCDate(fromDate.getUTCDate() + 6); // set to Sunday of the same week
+            const dayOfWeek = fromDate.getUTCDay();
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // calculate how many days to go back to get to Monday (treat Sunday as 6)
+            fromDate.setUTCDate(fromDate.getUTCDate() - daysToMonday);
+            toDate.setUTCDate(fromDate.getUTCDate() + 6); // extend to the end of Sunday
             break;
         case "monthly":
-            fromDate = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
+            fromDate = new Date(toDate);
+            fromDate.setUTCHours(0, 0, 0, 0);
+            fromDate.setUTCDate(fromDate.getUTCDate() - 29);
+            toDate.setUTCDate(fromDate.getUTCDate() + 29); // extend to the end of the 30-day period
             break;
         default:
             throw new Error(`Unsupported period: ${period}`);
@@ -113,7 +118,7 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
         period: validated.period,
         fromDate,
         toDate,
-        nutrients: nutrients.map(n => ({ name: n.name, code: n.code, unit: n.unit, type: n.type, totalAmount: n.totalAmount })),
+        nutrients: nutrients.map(n => ({ nutrientId: n.nutrientId, name: n.name, code: n.code, unit: n.unit, type: n.type, totalAmount: n.totalAmount })),
     };
 }
 
@@ -170,7 +175,7 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
     }
 
     const entryCheck = await createDiaryEntryItemRepository(validatedEntries);
-
+    await triggerGoalEvaluation(validatedEntries.userId);
     return entryCheck;
 }
 
@@ -233,6 +238,15 @@ async function createFoodPortion({ foodItemId, description, weightG, nutrients }
     return insertFoodPortion(data);
 }
 
+// this function will compute todays nutrition summary and forwards it to goal evaluation.
+// this will call after any diary edit so goal check-ins are always up to date.
+async function triggerGoalEvaluation(subscriberId) {
+    const today = new Date();
+    today.setUTCHours(23, 59, 59, 999);
+    const summary = await getNutritionSummary({ subscriberId, period: "daily", endDate: today.toISOString() });
+    await evaluateGoalsForToday({ subscriberId, nutritionSummary: summary.nutrients });
+}
+
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
     const validatedEntries = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
@@ -248,12 +262,13 @@ async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quant
         throw new DiaryEntryError("Diary entry item is not found");
     }
 
+    await triggerGoalEvaluation(validatedEntries.userId);
     return entryCheck;
 }
 
 async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
     const validatedEntries = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
-    
+
     const ownershipCheck = await checkDiaryEntryOwnership({ userId: validatedEntries.userId, diaryEntryId: validatedEntries.diaryEntryId });
 
     if (!ownershipCheck) {
@@ -266,6 +281,7 @@ async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
         throw new DiaryEntryError("Diary entry is not found");
     }
 
+    await triggerGoalEvaluation(validatedEntries.userId);
     return entryCheck;
 }
 
@@ -284,10 +300,11 @@ async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
         throw new DiaryEntryError("Diary entry item is not found");
     }
 
+    await triggerGoalEvaluation(validatedEntries.userId);
     return entryCheck;
 }
 
-async function getDashboardDataForSubscriber({ subscriberId }) {
+async function getDashboardDataForSubscriber({ subscriberId, date }) {
     // Needs to implement:
     // 1. Fetch today's meals 
     // 2. Fetch today's nutrient summary (can reuse getNutritionSummary with daily period and today's date)
@@ -295,21 +312,19 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
     // 4. Fetch recent messages (from messaging module) - this will be implemented only after messaging module is ready, so can be left as a placeholder for now
     // 5. Fetch recent recipes (from recipe module) - this will also be implemented only after recipe module is ready, so can be left as a placeholder for now
 
-    const entry = validateUserIdForDashboard({ subscriberId }); // validation check
+    const entry = validateUserIdForDashboard({ subscriberId, date }); // validation check
 
     // as we can use previous functions, let's try reuse them as much as possible
-    const todayStart = new Date();
+    // Use the date provided by client (their local "today"), or fall back to server time
+    const today = entry.date ? new Date(entry.date) : new Date();
+    const todayStart = new Date(today);
     todayStart.setUTCHours(0, 0, 0, 0);
 
-    const todayEnd = new Date();
+    const todayEnd = new Date(today);
     todayEnd.setUTCHours(23, 59, 59, 999);
 
-    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: todayEnd.toISOString() });
+    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: today.toISOString() });
     const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
-
-    
-    // we can calculate weekly calory trend based on daily summaries for each day of the week, but for simplicity let's just return total calories for the week for now
-    
         
     return {
         quickStats: {
@@ -339,7 +354,6 @@ async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recip
     }
 
     return createDiaryEntryItem({ userId: entryCheck.userId, diaryEntryId: entryCheck.diaryEntryId, portionId, quantity: entryCheck.servings, customFood: null, fatSecret: null });
-
 }
 
 export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService };

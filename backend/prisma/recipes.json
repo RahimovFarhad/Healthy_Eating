@@ -11,6 +11,7 @@
     "fat": 11,
     "saturatedFat": 3,
     "salt": 0.7,
+    "fibre": 2.6,
     "time": "22 min",
     "ingredients": [
       "2 teaspoons vegetable oil",
@@ -28,6 +29,7 @@
       "Remove from the heat and let the frittata cool for 3 or 4 minutes.",
       "Toast the slices of bread. Slice the frittata into wedges and serve with the toast."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/27.-Veggie-Fritatta-.width-320.jpg",
     "ingredientNames": [
       "vegetable oil",
       "eggs",
@@ -50,6 +52,7 @@
     "fat": 3.5,
     "saturatedFat": 1.6,
     "salt": 0.3,
+    "fibre": 3.8,
     "time": "75 min",
     "ingredients": [
       "4 baking potatoes, scrubbed clean",
@@ -70,6 +73,7 @@
       "Add the onion and garlic, cook for 1 minute, then add the mushrooms, stock and tomato purée. Stir well until hot, then simmer, part-covered, for 20 to 25 minutes.",
       "Once everything's ready, split the baked potatoes open and divide the filling between them. Serve with the lettuce, onion and tomato side salad."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Baked_potatoes_with_mince_CkDF3kp.width-320.png",
     "ingredientNames": [
       "potatoes",
       "minced beef",
@@ -95,6 +99,7 @@
     "fat": 3.5,
     "saturatedFat": 1,
     "salt": 0.7,
+    "fibre": 4.5,
     "time": "140 min",
     "ingredients": [
       "240g lean braising steak, cut into chunks",
@@ -116,6 +121,7 @@
       "Add the curry powder and stir well, then add the tomatoes, mango chutney, 300ml water and the tomato purée. Cover and simmer gently for 90 minutes to 2 hours.",
       "About 15 minutes before serving, cook the rice according to packet instructions. Serve with the curry."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-beef-curry.width-320.jpg",
     "ingredientNames": [
       "braising steak",
       "onion",
@@ -142,6 +148,7 @@
     "fat": 12,
     "saturatedFat": 4,
     "salt": 0.6,
+    "fibre": 5.0,
     "time": "20 min",
     "ingredients": [
       "4 soft wholewheat flour tortillas",
@@ -161,6 +168,7 @@
       "Layer 1 tortilla with the cooked egg, a quarter of the tomato mixture and 10g of cheese. Grill to further set the egg and melt the cheese.",
       "Roll up the tortilla and slice in half. Repeat to make the other 3 tortillas."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Breakfast-burritos_CRIO3JA.width-320.jpg",
     "ingredientNames": [
       "flour tortillas",
       "eggs",
@@ -185,6 +193,7 @@
     "fat": 1,
     "saturatedFat": 0.5,
     "salt": 0.2,
+    "fibre": 2.1,
     "time": "10 min",
     "ingredients": [
       "4 kiwis, peeled and sliced",
@@ -198,6 +207,7 @@
       "In a separate bowl, mix together the low-fat yoghurt and ginger (if using).",
       "Share the fruit between 4 serving bowls and spoon the yoghurt mixture on top."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/A_freshnfruity_start_xOzdcM7.width-320.png",
     "ingredientNames": [
       "kiwi",
       "grapes",
@@ -218,6 +228,7 @@
     "fat": 7,
     "saturatedFat": 1,
     "salt": 0.9,
+    "fibre": 7.4,
     "time": "20 min",
     "ingredients": [
       "4 soft flour tortillas (wholewheat, if possible)",
@@ -239,6 +250,7 @@
       "Add a quarter of the vegetable mixture to one side of the tortilla, then fold it in half. Cook for a few moments, then slide onto a warm serving plate.",
       "Repeat with the remaining tortillas. Serve with the salad leaves, grated carrot and celery."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/2.-Cheats-Pizza-Calzone.width-320.jpg",
     "ingredientNames": [
       "flour tortillas",
       "tomatoes",
@@ -264,6 +276,7 @@
     "fat": 3,
     "saturatedFat": 1.3,
     "salt": 0.5,
+    "fibre": 0.8,
     "time": "20 min",
     "ingredients": [
       "0.5 teaspoon vegetable oil",
@@ -278,6 +291,7 @@
       "Arrange the fish fillets on the baking sheet and spread 1 tablespoon of the tomato purée over each one. Top with the tomatoes, season and scatter the cheese on top.",
       "Grill for 6 to 8 minutes, until the fish is cooked. Serve with green vegetables and cooked rice or boiled potatoes."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheese-and-tomato-grilled-fish_R0dMpwM.width-320.jpg",
     "ingredientNames": [
       "vegetable oil",
       "haddock",
@@ -299,6 +313,7 @@
     "fat": 8.5,
     "saturatedFat": 3.2,
     "salt": 0.5,
+    "fibre": 2.0,
     "time": "35 min",
     "ingredients": [
       "100g pasta shapes (or 300g cooked potato, in chunks)",
@@ -319,6 +334,7 @@
       "Put the frying pan under the grill and cook for 4 to 5 minutes until golden brown.",
       "Leave to cool for a minute, then cut into 4 slices and serve with vegetables or salad."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Cheesy_veggie_wedges.width-320.png",
     "ingredientNames": [
       "pasta shapes",
       "vegetable oil",
@@ -343,6 +359,7 @@
     "fat": 3,
     "saturatedFat": 1,
     "salt": 0.2,
+    "fibre": 1.1,
     "time": "50 min",
     "ingredients": [
       "4 uncooked skinless, boneless chicken breasts",
@@ -361,6 +378,7 @@
       "Check that the chicken is properly cooked by inserting a sharp knife into the thickest part — the juices should run clear.",
       "Serve the chicken in the parcels, along with vegetables and noodles, rice or potatoes."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/7.-Chicken-veg-parcels.width-320.jpg",
     "ingredientNames": [
       "chicken",
       "spring onion",
@@ -384,6 +402,7 @@
     "fat": 2.4,
     "saturatedFat": 0.7,
     "salt": 0,
+    "fibre": 4.7,
     "time": "30 min",
     "ingredients": [
       "4 baking potatoes (each around 225g)",
@@ -401,6 +420,7 @@
       "Chop the tomatoes into chunks, discarding the seeds. Mix together the chicken, tomatoes, spring onions and yoghurt. Add pesto if you wish.",
       "Serve the jacket potatoes with a portion of the chicken mixture."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken__tomato_jacket_potato.width-320.png",
     "ingredientNames": [
       "potatoes",
       "chicken",
@@ -423,6 +443,7 @@
     "fat": 7.9,
     "saturatedFat": 6,
     "salt": 1.25,
+    "fibre": 3.3,
     "time": "40 min",
     "ingredients": [
       "30ml rapeseed oil",
@@ -448,6 +469,7 @@
       "Add the chicken pieces back to the pan, stir well and cook for a couple of minutes. Add the green chillies and pour in the water. Cover and simmer on low heat for 10 to 15 minutes.",
       "Once the chicken is tender and the sauce has thickened, turn off the heat and scatter over the chopped coriander."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/28.-Chicken-Jalfrezi.width-320.jpg",
     "ingredientNames": [
       "rapeseed oil",
       "chicken",
@@ -478,6 +500,7 @@
     "fat": 5.4,
     "saturatedFat": 2.2,
     "salt": 0.8,
+    "fibre": 3.1,
     "time": "20 min",
     "ingredients": [
       "4 spring onions, chopped",
@@ -498,6 +521,7 @@
       "Arrange the naan on a baking sheet, divide the tomato mixture between them. Add the chicken, then sprinkle over the cheese. Bake for 5 to 6 minutes.",
       "Meanwhile, mix together the salad ingredients, and serve with the naan once ready."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pizza_naan_gTs3oNh.width-320.png",
     "ingredientNames": [
       "spring onion",
       "chopped tomatoes",
@@ -524,6 +548,7 @@
     "fat": 5,
     "saturatedFat": 1.5,
     "salt": 0.9,
+    "fibre": 9.7,
     "time": "35 min",
     "ingredients": [
       "300g extra-lean minced beef",
@@ -546,6 +571,7 @@
       "Meanwhile, cook the rice according to pack instructions.",
       "Season the chilli with pepper and serve with the boiled rice."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chilli-con-carne_x7m8d91.width-320.jpg",
     "ingredientNames": [
       "minced beef",
       "onion",
@@ -573,6 +599,7 @@
     "fat": 5.3,
     "saturatedFat": 1.7,
     "salt": 0.5,
+    "fibre": 1.5,
     "time": "40 min",
     "ingredients": [
       "15g lower-fat spread",
@@ -591,6 +618,7 @@
       "Add the sweetcorn (drained if tinned), milk and chicken, and cook gently for 3 or 4 minutes.",
       "Add the cornflour mixture and stir until thickened. Add the parsley and cook for another few moments. Ladle into bowls and serve."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chunky_chicken_and_sweetcorn_soup_9FhxNXq.width-320.png",
     "ingredientNames": [
       "spread",
       "onion",
@@ -615,6 +643,7 @@
     "fat": 5.3,
     "saturatedFat": 2.6,
     "salt": 0.8,
+    "fibre": 5.4,
     "time": "45 min",
     "ingredients": [
       "1kg potatoes, chopped into chunks",
@@ -636,6 +665,7 @@
       "Add the sweetcorn to the mince, sprinkle in the gravy granules and stir until thickened. Tip into the baking dish. Spoon the mash on top and pop under the grill.",
       "Once the top has browned, remove from the grill and leave to cool for a couple of minutes before serving."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_cottage_pie_PbLklZn.width-320.png",
     "ingredientNames": [
       "potatoes",
       "minced beef",
@@ -661,6 +691,7 @@
     "fat": 1.5,
     "saturatedFat": 0.6,
     "salt": 0.4,
+    "fibre": 4.3,
     "time": "40 min",
     "ingredients": [
       "1 teaspoon vegetable oil",
@@ -682,6 +713,7 @@
       "Lower the heat and simmer for 15 minutes or until the pasta is cooked, stirring frequently.",
       "Turn off the heat and leave to cool for a few minutes. Ladle into bowls and serve with a slice of wholemeal bread."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Classic_vegetable_soup.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "onion",
@@ -709,6 +741,7 @@
     "fat": 3,
     "saturatedFat": 0.7,
     "salt": 0.1,
+    "fibre": 3.4,
     "time": "20 min",
     "ingredients": [
       "50g plain couscous",
@@ -721,6 +754,7 @@
       "Put the couscous in a large bowl and cover with boiling water. Leave for 10 to 15 minutes to swell and cool, then stir with a fork to fluff up the grains.",
       "Add the chicken and tomatoes, squeeze over the lemon juice, stir to combine."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/4.-Couscous-with-chicken-and-peas.width-320.jpg",
     "ingredientNames": [
       "couscous",
       "chicken",
@@ -741,6 +775,7 @@
     "fat": 3.1,
     "saturatedFat": 0.6,
     "salt": 0.1,
+    "fibre": 4.6,
     "time": "20 min",
     "ingredients": [
       "200g porridge oats",
@@ -755,6 +790,7 @@
       "Meanwhile, mash the bananas in a bowl. Stir half into the porridge. Add the raspberries to the rest of the banana and squash them a little.",
       "Share the porridge between 6 warm bowls and top each portion with the yoghurt and the raspberry mixture."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Creamy_banana_porridge.width-320.jpg",
     "ingredientNames": [
       "porridge oats",
       "milk",
@@ -776,6 +812,7 @@
     "fat": 1.9,
     "saturatedFat": 0.6,
     "salt": 0.1,
+    "fibre": 3.2,
     "time": "30 min",
     "ingredients": [
       "500g potato, grated",
@@ -795,6 +832,7 @@
       "Meanwhile, make the salsa by mixing the tomatoes, sweetcorn, red onion, oil and vinegar.",
       "Once the fritters are cooked, serve immediately with the salsa and a simple green salad."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crispy_potato_fritters_with_salsa_jmVZj2V.width-320.png",
     "ingredientNames": [
       "potatoes",
       "onion",
@@ -819,6 +857,7 @@
     "fat": 2,
     "saturatedFat": 1,
     "salt": 0.5,
+    "fibre": 7.3,
     "time": "60 min",
     "ingredients": [
       "4 tablespoons vegetable oil",
@@ -836,6 +875,7 @@
       "When the potatoes have been in the oven for 25 minutes, turn them over. At the same time, put the fish fingers in the oven. Cook for 20 minutes, until crisp and golden.",
       "Cook the vegetables in boiling water 5 minutes before ready. Drain and serve everything together."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Crunchy_fish_fingers_with_wedges_rZnY29b.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "sweet potatoes",
@@ -858,6 +898,7 @@
     "fat": 4,
     "saturatedFat": 4,
     "salt": 0.2,
+    "fibre": 6.2,
     "time": "10 min",
     "ingredients": [
       "150g high-fibre porridge oats",
@@ -874,6 +915,7 @@
       "In the morning, share the soaked mixture between 4 cereal bowls.",
       "Spoon 2 tablespoons of natural yoghurt onto each portion, and share the berries between the bowls."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Easy_overnight_oats_BS4xSKi.width-320.png",
     "ingredientNames": [
       "porridge oats",
       "cranberries",
@@ -897,6 +939,7 @@
     "fat": 2.1,
     "saturatedFat": 0.8,
     "salt": 1,
+    "fibre": 3.4,
     "time": "40 min",
     "ingredients": [
       "1 large onion, chopped",
@@ -912,6 +955,7 @@
       "Blend the soup to a purée using a handheld stick blender. Add most of the soft cheese and blend again.",
       "Reheat gently, then serve garnished with the remaining cheese, a little black pepper and coriander. Enjoy with wholemeal bread."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/1-2-3_carrot_soup.width-320.png",
     "ingredientNames": [
       "onion",
       "carrots",
@@ -933,6 +977,7 @@
     "fat": 0.1,
     "saturatedFat": 0,
     "salt": 0,
+    "fibre": 1.3,
     "time": "5 min",
     "ingredients": [
       "4 very ripe bananas"
@@ -942,6 +987,7 @@
       "Freeze for at least 2 hours, or overnight.",
       "Add to a food processor and blend until smooth and creamy. Scoop into bowls and serve!"
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/easy-banana-ice-cream.width-320.jpg",
     "ingredientNames": [
       "bananas"
     ]
@@ -958,6 +1004,7 @@
     "fat": 7.9,
     "saturatedFat": 2.1,
     "salt": 1.5,
+    "fibre": 0.6,
     "time": "10 min",
     "ingredients": [
       "4 English muffins, sliced in half",
@@ -973,6 +1020,7 @@
       "Meanwhile, beat the eggs and milk together. Heat the vegetable oil in a non-stick saucepan and add the eggs. Cook and stir to scramble them.",
       "Spread half the toasted muffins with reduced-fat soft cheese and top with a slice of ham. Share the scrambled egg between the muffins, season with black pepper, then top with the remaining muffin halves."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/English_breakfast_muffins.width-320.png",
     "ingredientNames": [
       "english muffins",
       "eggs",
@@ -995,6 +1043,7 @@
     "fat": 8.5,
     "saturatedFat": 2,
     "salt": 0.6,
+    "fibre": 3.3,
     "time": "25 min",
     "ingredients": [
       "4 eggs",
@@ -1010,6 +1059,7 @@
       "Add the tomatoes and paprika to the onions, and cook for another 5 to 8 minutes.",
       "Shell the eggs and cut each into 4. Toast the bread, then top each slice with a quarter of the tomato mixture and 4 egg quarters. Sprinkle with extra paprika."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Eggs_paprika_p4dOu1V.width-320.png",
     "ingredientNames": [
       "eggs",
       "wholemeal bread",
@@ -1031,6 +1081,7 @@
     "fat": 5,
     "saturatedFat": 2,
     "salt": 0.5,
+    "fibre": 3.7,
     "time": "35 min",
     "ingredients": [
       "400g lean minced turkey breast",
@@ -1052,6 +1103,7 @@
       "Meanwhile, cook the tagliatelle for 10 to 12 minutes in gently boiling water.",
       "Share the tagliatelle between 4 serving plates. Serve with the meatballs and sauce, topping each meatball with a mozzarella ball and cherry tomato half."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes_-_Main_image_-_Eyeball_meatballs.width-320.png",
     "ingredientNames": [
       "turkey mince",
       "onion",
@@ -1077,6 +1129,7 @@
     "fat": 6.3,
     "saturatedFat": 0.9,
     "salt": 0.9,
+    "fibre": 9.7,
     "time": "40 min",
     "ingredients": [
       "400g tinned chickpeas in water, rinsed and drained",
@@ -1100,6 +1153,7 @@
       "Place tray into a preheated 200°C oven (180°C fan, gas mark 6) and bake for about 25 minutes, turning the falafel to prevent sticking.",
       "To assemble, fill each pitta with lettuce, sliced tomatoes and cucumber, falafel and some yoghurt."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Falafels_xs1TXeg.width-320.jpg",
     "ingredientNames": [
       "chickpeas",
       "onion",
@@ -1128,6 +1182,7 @@
     "fat": 4,
     "saturatedFat": 1,
     "salt": 0.5,
+    "fibre": 2.3,
     "time": "10 min",
     "ingredients": [
       "125g dried egg noodles (medium or fine)",
@@ -1143,6 +1198,7 @@
       "Heat for 1 to 2 minutes, then ladle into bowls.",
       "Serve each portion sprinkled with a few drops of soy sauce."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/fast-chicken-noodle-soup.width-320.png",
     "ingredientNames": [
       "noodles",
       "vegetable stock",
@@ -1163,6 +1219,7 @@
     "fat": 4,
     "saturatedFat": 0.7,
     "salt": 0.7,
+    "fibre": 4.4,
     "time": "25 min",
     "ingredients": [
       "2 tablespoons low-fat natural yoghurt",
@@ -1180,6 +1237,7 @@
       "Put the marinated chicken pieces into the heated pan and stir-fry over a medium heat until cooked but still juicy (about 5 to 8 minutes).",
       "Warm and split open the pitta breads and fill them with shredded lettuce. Add the cooked chicken, then serve with cherry tomatoes."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Chicken_pittas_9F2k6G8.width-320.png",
     "ingredientNames": [
       "natural yoghurt",
       "tomato purée",
@@ -1203,6 +1261,7 @@
     "fat": 5.1,
     "saturatedFat": 2.1,
     "salt": 0.7,
+    "fibre": 1.8,
     "time": "25 min",
     "ingredients": [
       "One 23cm pizza base",
@@ -1222,6 +1281,7 @@
       "Arrange the ham over a quarter of the pizza with the pineapple. Arrange the mushrooms over a second quarter. Put the cooked chicken over a third quarter. Leave the last quarter plain.",
       "Sprinkle the rest of the mozzarella over the whole pizza, then bake for 12 to 15 minutes until the cheese is bubbling."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/9.-Four-seasons-pizza.width-320.jpg",
     "ingredientNames": [
       "pizza base",
       "tomato purée",
@@ -1246,6 +1306,7 @@
     "fat": 3.2,
     "saturatedFat": 1.5,
     "salt": 0.1,
+    "fibre": 2.8,
     "time": "15 min",
     "ingredients": [
       "50g porridge oats",
@@ -1259,6 +1320,7 @@
       "Divide the whole raspberries between 4 serving glasses, saving 4 for decoration.",
       "Add the yoghurt and cooled oats to the bowl of crushed raspberries and stir gently. Spoon into the serving glasses and top each with a whole raspberry. Chill until ready to serve."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Raspberry_toasted_oat_treat.width-320.png",
     "ingredientNames": [
       "porridge oats",
       "raspberries",
@@ -1277,6 +1339,7 @@
     "fat": 6,
     "saturatedFat": 1,
     "salt": 1,
+    "fibre": 5.2,
     "time": "50 min",
     "ingredients": [
       "4 potatoes, scrubbed, each cut into 8 wedges",
@@ -1293,6 +1356,7 @@
       "Sprinkle the breadcrumbs onto a large plate. Dip each fish fillet in the beaten egg, then coat in the breadcrumbs. Place on the baking sheet, then transfer to the oven when you turn the potatoes, for 15 to 20 minutes.",
       "Heat the mushy peas in a saucepan, then serve with the fish and chips."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-healthy-fish-and-chips.width-320.jpg",
     "ingredientNames": [
       "potatoes",
       "vegetable oil",
@@ -1314,6 +1378,7 @@
     "fat": 9.4,
     "saturatedFat": 2.8,
     "salt": 0.7,
+    "fibre": 1.1,
     "time": "10 min",
     "ingredients": [
       "Juice of half a lemon",
@@ -1331,6 +1396,7 @@
       "Combine the salad vegetables, olives and dressing, mix well and put in a serving bowl.",
       "Crumble the cheese over the top."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/6.-Greek-style-salad.width-320.jpg",
     "ingredientNames": [
       "lemon",
       "olive oil",
@@ -1355,6 +1421,7 @@
     "fat": 13,
     "saturatedFat": 3,
     "salt": 1.7,
+    "fibre": 6.2,
     "time": "25 min",
     "ingredients": [
       "4 lean back bacon rashers, fat trimmed",
@@ -1373,6 +1440,7 @@
       "Heat the vegetable oil in a non-stick frying pan and crack in the eggs. Cook over a medium heat for about 2 minutes, then transfer to the grill to set the surface.",
       "Share the bacon and tomatoes between 4 warm serving plates. Share out the baked beans and mushrooms, then place 1 egg on each plate."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Food_Smart_full_English_MHJ9FBq.width-320.png",
     "ingredientNames": [
       "bacon",
       "tomatoes",
@@ -1395,6 +1463,7 @@
     "fat": 1.4,
     "saturatedFat": 0.4,
     "salt": 0.5,
+    "fibre": 6.9,
     "time": "40 min",
     "ingredients": [
       "1 large onion, chopped",
@@ -1412,6 +1481,7 @@
       "Blend the soup using a hand-held stick blender. Season to taste with pepper.",
       "Ladle the soup into 4 bowls and swirl the yoghurt on top. Serve with wholemeal rolls if you like."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Hearty_homemade_soup_p4BKS6s.width-320.png",
     "ingredientNames": [
       "onion",
       "carrots",
@@ -1435,6 +1505,7 @@
     "fat": 5.1,
     "saturatedFat": 0.8,
     "salt": 0.2,
+    "fibre": 2.4,
     "time": "30 min",
     "ingredients": [
       "4 wooden skewers, soaked in water for 30 minutes",
@@ -1453,6 +1524,7 @@
       "Cook on the barbecue for 8 to 10 minutes, turning frequently. Alternatively, cook under a preheated grill.",
       "Meanwhile cook the sweetcorn cobettes in boiling water, or on the barbecue for 6 to 8 minutes."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jerk-style-chicken-skewers_5ZjGZMv.width-320.jpg",
     "ingredientNames": [
       "garlic",
       "lemon",
@@ -1476,6 +1548,7 @@
     "fat": 0.8,
     "saturatedFat": 0,
     "salt": 0.3,
+    "fibre": 2.5,
     "time": "45 min",
     "ingredients": [
       "400g plum tomatoes (fresh or tinned)",
@@ -1496,6 +1569,7 @@
       "Allow to simmer over a low heat for 15 to 20 minutes, or until the rice is tender. Check and stir occasionally, adding a little extra water if needed.",
       "Once the rice is cooked, turn off the heat and leave to cool for a minute or two before serving."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Jollof_rice_70Ex6Iz.width-320.png",
     "ingredientNames": [
       "tomatoes",
       "onion",
@@ -1521,6 +1595,7 @@
     "fat": 14.3,
     "saturatedFat": 5.8,
     "salt": 0.8,
+    "fibre": 3.0,
     "time": "50 min",
     "ingredients": [
       "300g macaroni",
@@ -1542,6 +1617,7 @@
       "Add the hot cheese sauce to the pan with the cooked pasta and mix well. Tip into a baking dish, top with the tomato slices and sprinkle the remaining cheese on top.",
       "Bake for 15 to 20 minutes until piping hot and the cheese on top is starting to brown."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Recipes-square-macaroni-tomatoes.width-320.jpg",
     "ingredientNames": [
       "macaroni",
       "spread",
@@ -1566,6 +1642,7 @@
     "fat": 16.4,
     "saturatedFat": 1.9,
     "salt": 0.1,
+    "fibre": 6.1,
     "time": "35 min",
     "ingredients": [
       "800g salad potatoes, thickly sliced",
@@ -1583,6 +1660,7 @@
       "Drizzle with the oil and toss to coat. Bake for 20 minutes, or until tender.",
       "Add the pesto, if using, and bake for another 5 minutes. Serve immediately."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/15.-Mediterranean-potato-bake.width-320.jpg",
     "ingredientNames": [
       "potatoes",
       "pine nuts",
@@ -1606,6 +1684,7 @@
     "fat": 8,
     "saturatedFat": 0.5,
     "salt": 0.2,
+    "fibre": 4.1,
     "time": "50 min",
     "ingredients": [
       "1 medium onion, finely chopped",
@@ -1626,6 +1705,7 @@
       "Add the tomatoes, tomato purée, herbs, mushrooms and peppers to the pan with 150ml water. Bring to the boil, then add the meatballs. Reduce the heat, cover and simmer for 30 minutes.",
       "About 10 minutes before serving, put the pasta on to cook. Serve with the meatballs and tomato sauce."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/14.-Meatballs-n-sauce.width-320.jpg",
     "ingredientNames": [
       "onion",
       "garlic",
@@ -1651,6 +1731,7 @@
     "fat": 3,
     "saturatedFat": 0.3,
     "salt": 0.7,
+    "fibre": 5.3,
     "time": "35 min",
     "ingredients": [
       "2 teaspoons vegetable oil",
@@ -1671,6 +1752,7 @@
       "Bring to the boil then turn the heat down and simmer, uncovered, for 15 to 20 minutes.",
       "Add the coriander or parsley (if using) and season with some pepper. Ladle into warm bowls and serve with a wholemeal roll."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mexican_bean_and_tomato_soup_hkYx8B4.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "garlic",
@@ -1696,6 +1778,7 @@
     "fat": 2.2,
     "saturatedFat": 0.3,
     "salt": 0.4,
+    "fibre": 2.9,
     "time": "45 min",
     "ingredients": [
       "1 teaspoon vegetable oil",
@@ -1713,6 +1796,7 @@
       "Pour in about half the hot stock and stir well. Cook over a medium heat for 20 to 25 minutes, stirring often and slowly adding the remaining stock a little at a time.",
       "Add the peas, stirring gently. Cook for another couple of minutes to allow them to warm through. Check the seasoning and serve."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Mushroom_risotto_JWslYeN.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "spring onion",
@@ -1735,6 +1819,7 @@
     "fat": 5,
     "saturatedFat": 1,
     "salt": 0.8,
+    "fibre": 5.3,
     "time": "45 min",
     "ingredients": [
       "4 carrots (about 300g), chopped",
@@ -1754,6 +1839,7 @@
       "Pour in the stock and water, add the herbs, then simmer for 4 to 5 minutes. Add the blended cornflour and stir until thickened. Keep hot over a low heat.",
       "Drain and mash the vegetables, seasoning with black pepper. Serve 2 sausages per person with the red onion gravy."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Old-school-sausage-n-mash_x4Qkqw9.width-320.jpg",
     "ingredientNames": [
       "carrots",
       "swede",
@@ -1778,6 +1864,7 @@
     "fat": 6.5,
     "saturatedFat": 2,
     "salt": 0.15,
+    "fibre": 6.3,
     "time": "65 min",
     "ingredients": [
       "200g macaroni",
@@ -1799,6 +1886,7 @@
       "Combine the pasta and vegetables, and season with black pepper. Transfer to a baking dish and sprinkle the cheese on top.",
       "Bake for 30 to 35 minutes."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/19.-Pasta-Ratatouille-Bake.width-320.jpg",
     "ingredientNames": [
       "macaroni",
       "olive oil",
@@ -1825,6 +1913,7 @@
     "fat": 3,
     "saturatedFat": 0.6,
     "salt": 0.1,
+    "fibre": 4.1,
     "time": "55 min",
     "ingredients": [
       "4 peppers, any colour, deseeded and cut in half",
@@ -1845,6 +1934,7 @@
       "Drain the rice, stir it into the tomato mixture and season. Spoon the filling into the pepper halves.",
       "Cover with foil, bake for 20 to 25 minutes and then serve."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/20.-Peppers-with-spicey-turkey-stuffing.width-320.jpg",
     "ingredientNames": [
       "pepper",
       "rice",
@@ -1870,6 +1960,7 @@
     "fat": 20.9,
     "saturatedFat": 3.5,
     "salt": 0.6,
+    "fibre": 5.5,
     "time": "40 min",
     "ingredients": [
       "1 tablespoon vegetable oil",
@@ -1889,6 +1980,7 @@
       "Once the vegetables have been cooking for 15 minutes, stir to prevent sticking. Return to the oven, along with the salmon, and bake for another 15 to 20 minutes.",
       "When the fish goes in the oven, cook the potatoes in boiling water for 15 minutes or until soft. Serve with the salmon and oven-roasted mixed vegetables."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pesto__parmesan_salmon_2zD3yEn.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "salmon",
@@ -1914,6 +2006,7 @@
     "fat": 5.5,
     "saturatedFat": 1.5,
     "salt": 0.5,
+    "fibre": 10.6,
     "time": "100 min",
     "ingredients": [
       "1 teaspoon vegetable oil",
@@ -1936,6 +2029,7 @@
       "Add the tomatoes, beans, tomato purée, Worcestershire sauce, mixed herbs and stock. Season with some pepper and stir well.",
       "Put the lid on and transfer to the oven to cook for 90 minutes. Serve, sprinkled with the chopped parsley."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Pork_and_bean_casserole_pD00hWj.width-320.png",
     "ingredientNames": [
       "vegetable oil",
       "pork shoulder",
@@ -1964,6 +2058,7 @@
     "fat": 4.2,
     "saturatedFat": 0.9,
     "salt": 0.5,
+    "fibre": 1.9,
     "time": "20 min",
     "ingredients": [
       "200g couscous",
@@ -1978,6 +2073,7 @@
       "Put the couscous into a large mixing bowl and cover with the hot stock. Leave for 10 to 15 minutes to swell and cool, then stir to fluff up the grains.",
       "Add the chicken, sweetcorn, tomatoes, cucumber, lemon juice and black pepper. Stir well to mix and divide between 4 bowls."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Quick_chicken_couscous_1IZBGkV.width-320.png",
     "ingredientNames": [
       "couscous",
       "vegetable stock",
@@ -2000,6 +2096,7 @@
     "fat": 4,
     "saturatedFat": 1,
     "salt": 0.25,
+    "fibre": 7.3,
     "time": "80 min",
     "ingredients": [
       "4 baking potatoes, scrubbed",
@@ -2021,6 +2118,7 @@
       "Pour in the stock, then cover the dish. Put in the oven when the potatoes have been baking for 30 minutes. Bake for 35 minutes.",
       "Around 10 minutes before the chicken and potatoes are ready, cook the broccoli in boiling water for 8 to 10 minutes. Drain and serve with the rest of the meal."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/Roast_chicken_breasts_with_peppers.width-320.png",
     "ingredientNames": [
       "potatoes",
       "vegetable oil",
@@ -2047,6 +2145,7 @@
     "fat": 16,
     "saturatedFat": 3,
     "salt": 0.3,
+    "fibre": 5.2,
     "time": "45 min",
     "ingredients": [
       "1kg potatoes, peeled and cut into chunks",
@@ -2064,6 +2163,7 @@
       "Drain the potatoes and spring onions and mash thoroughly. Beat in the milk and parsley. Reheat on the hob for 1 minute.",
       "Share the mash between 4 warmed plates and arrange the salmon fillets on top. Serve with the broccoli."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/21.-Salmon-With-Spring-Onion-Mash.width-320.jpg",
     "ingredientNames": [
       "potatoes",
       "spring onion",
@@ -2086,6 +2186,7 @@
     "fat": 18,
     "saturatedFat": 3.8,
     "salt": 1.4,
+    "fibre": 10.7,
     "time": "45 min",
     "ingredients": [
       "1 tablespoon vegetable oil",
@@ -2110,6 +2211,7 @@
       "Using a wooden spoon, create 6 wells in the mixture and crack 1 egg into each. Cover the pan and cook for about 6 to 8 minutes on low, until the egg whites set.",
       "Take the mixture off the heat and leave to cool for a few minutes. Scatter with chopped coriander and serve."
     ],
+    "image": "https://assets.nhs.uk/campaigns-cms-prod/images/23.-Shakshuka-.width-320.jpg",
     "ingredientNames": [
       "vegetable oil",
       "yellow onion",

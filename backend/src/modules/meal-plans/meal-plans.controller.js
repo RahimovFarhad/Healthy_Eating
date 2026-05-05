@@ -9,7 +9,7 @@ async function createMealPlan(req, res, next) {
       subscriberId,
       startDate,
       endDate,
-      planType: "manual",
+      planType: planType ?? "manual",
       items,
     });
 

@@ -7,7 +7,7 @@ import {
     sendMessageToProfessional,
     listSharedRecipesService
 } from "./client.service.js";
-import { ClientError } from "./client.validator.js";
+import { ClientError, getClientErrorStatus } from "./client.validator.js";
 
 async function acceptInvitation(req, res, next) {
     try {
@@ -22,7 +22,7 @@ async function acceptInvitation(req, res, next) {
         }
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -42,7 +42,7 @@ async function rejectInvitation(req, res, next) {
         }
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -53,10 +53,11 @@ async function listProfessionals(req, res, next) {
     try {
         const clientId = req.user?.userId ?? null;
         const professionals = await listProfessionalsService({ clientId });
+
         return res.status(200).json({ professionals });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -76,7 +77,7 @@ async function removeProfessional(req, res, next) {
         }
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -93,7 +94,7 @@ async function sendMessage(req, res, next) {
         return res.status(200).json({ message: "Message sent successfully", sentMessage });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -109,7 +110,7 @@ async function listMessages(req, res, next) {
         return res.status(200).json({ messages });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -120,10 +121,11 @@ async function listInvitations(req, res, next) {
     try {
         const clientId = req.user?.userId ?? null;
         const invitations = await listProfessionalsService({ clientId, status: "invited" });
+
         return res.status(200).json({ invitations });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -139,7 +141,7 @@ async function listSharedRecipes(req, res, next) {
         return res.status(200).json({ sharedRecipes });
     } catch (error) {
         if (error instanceof ClientError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);

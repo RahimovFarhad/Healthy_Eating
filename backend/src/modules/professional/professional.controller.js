@@ -1,5 +1,5 @@
 import { getClientDashboardForProfessional, getClientGoalsForProfessional, getClientSummaryForProfessional, getMessagesWithClient, getProfessionalClients, inviteClientToProfessional, removeProfessionalClient, sendMessageToClient, setGoalForClient, setUserAsProfessional, shareRecipeWithClient, getSharedRecipes } from "./professional.service.js";
-import { ProfessionalError } from "./professional.validator.js";
+import { ProfessionalError, getProfessionalErrorStatus } from "./professional.validator.js";
 
 async function setAsProfessional(req, res, next) {
     try {
@@ -9,7 +9,7 @@ async function setAsProfessional(req, res, next) {
         return res.status(200).json({ professional });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -21,13 +21,14 @@ async function inviteClient(req, res, next) {
         const professionalId = req.user?.userId ?? null;
         const invitation = await inviteClientToProfessional({
             professionalId,
-            subscriberId: req.body?.subscriberId,
+            subscriberId: req.body?.subscriberId ?? null,
+            email: req.body?.email ?? null,
         });
 
         return res.status(201).json({ invitation });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -45,7 +46,7 @@ async function listClients(req, res, next) {
         return res.status(200).json({ clients });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -63,7 +64,7 @@ async function removeClient(req, res, next) {
         return res.status(200).json({ removedClient });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -83,7 +84,7 @@ async function getClientSummary(req, res, next) {
         return res.status(200).json({ summary });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -101,7 +102,7 @@ async function getClientDashboard(req, res, next) {
         return res.status(200).json({ dashboardData });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -120,7 +121,7 @@ async function sendMessage(req, res, next) {
         return res.status(201).json({ message });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -138,7 +139,7 @@ async function listMessages(req, res, next) {
         return res.status(200).json({ messages });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -157,7 +158,7 @@ async function setGoal(req, res, next) {
         return res.status(201).json({ createdGoal });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -175,7 +176,7 @@ async function listGoals(req, res, next) {
         return res.status(200).json({ goals });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -193,7 +194,7 @@ async function listInvitations(req, res, next) {
         return res.status(200).json({ invitations });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -215,7 +216,7 @@ async function shareRecipe(req, res, next) {
         return res.status(200).json({ sharedRecipe: result });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
@@ -235,7 +236,7 @@ async function listSharedRecipes(req, res, next) {
         return res.status(200).json({ sharedRecipes });
     } catch (error) {
         if (error instanceof ProfessionalError) {
-            return res.status(400).json({ error: error.message });
+            return res.status(getProfessionalErrorStatus(error.message)).json({ error: error.message });
         }
 
         return next(error);
