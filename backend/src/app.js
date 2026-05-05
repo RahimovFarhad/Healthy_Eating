@@ -25,8 +25,12 @@ app.use("/api/recipes", recipesRouter);
 app.use("/api/meal-plans", requireAuth, mealPlansRouter);
 
 app.get("/health", async (_req, res) => {
-  await prisma.$queryRaw`SELECT 1`;
-  res.json({ ok: true, db: "ok" });
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true, db: "ok" });
+  } catch {
+    res.status(503).json({ ok: false, db: "error" });
+  }
 });
 
 app.get("/api/search", requireAuth, async (req, res) => {

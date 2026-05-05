@@ -8,9 +8,9 @@ async function login(req, res) {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const token = await authenticateUser(email, password);
+        const { token, userId } = await authenticateUser(email, password);
 
-        const refreshToken = await generateRefreshToken(email); 
+        const refreshToken = generateRefreshToken(userId);
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

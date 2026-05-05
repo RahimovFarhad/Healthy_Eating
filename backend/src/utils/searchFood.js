@@ -4,25 +4,27 @@ import { XMLParser } from "fast-xml-parser";
 
 import { createClient } from "redis";
 const redis = createClient();
-let redisConnectPromise;
+let redisReady = false;
 
-async function ensureRedisConnected() {
-    if (redis.isOpen) return;
-    if (!redisConnectPromise) {
-        redisConnectPromise = redis.connect().catch((error) => {
-            redisConnectPromise = undefined;
-            throw error;
-        });
-    }
-    await redisConnectPromise;
+redis.connect()
+    .then(() => { redisReady = true; })
+    .catch(() => { console.warn("Redis unavailable — search results will not be cached"); });
+
+async function cacheGet(key) {
+    if (!redisReady) return null;
+    try { return await redis.get(key); } catch { return null; }
+}
+
+async function cacheSet(key, value) {
+    if (!redisReady) return;
+    try { await redis.setEx(key, 60 * 60 * 24 * 7, value); } catch { /* ignore */ }
 }
 
 async function searchFood(query) {
-    await ensureRedisConnected();
-
     const cacheKey = `search:${query}`;
-    const cached = await redis.get(cacheKey);
+    const cached = await cacheGet(cacheKey);
     if (cached) return JSON.parse(cached);
+
     const token = await getToken();
     const response = await axios.get("https://platform.fatsecret.com/rest/foods/search/v1", {
         headers: {
@@ -35,15 +37,13 @@ async function searchFood(query) {
         }
     });
 
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(response.data)); // 7 days TTL
+    await cacheSet(cacheKey, JSON.stringify(response.data)); // 7 days TTL
     return response.data;
 }
 
 async function searchFoodById(id) {
-    await ensureRedisConnected();
-
     const cacheKey = `food:${id}`;
-    const cached = await redis.get(cacheKey);
+    const cached = await cacheGet(cacheKey);
     if (cached) return JSON.parse(cached);
 
     const token = await getToken();
@@ -58,7 +58,7 @@ async function searchFoodById(id) {
     });
 
     const parsed = parseFoodResponse(response.data);
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(parsed)); // 7 days TTL
+    await cacheSet(cacheKey, JSON.stringify(parsed)); // 7 days TTL
     return parsed;
 }
 
