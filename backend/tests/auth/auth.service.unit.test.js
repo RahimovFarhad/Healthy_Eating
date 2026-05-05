@@ -2,7 +2,10 @@ import { expect, jest } from "@jest/globals";
 
 const mockFindUnique = jest.fn();
 const mockFindFirst = jest.fn();
+const mockPendingUpsert = jest.fn();
 const mockVerifyPassword = jest.fn();
+const mockHashPassword = jest.fn();
+const mockSendVerificationEmail = jest.fn();
 const mockSign = jest.fn();
 const mockVerify = jest.fn();
 const mockTx = jest.fn();
@@ -15,13 +18,20 @@ jest.unstable_mockModule("../../src/db/prisma.js", () => ({
       findUnique: mockFindUnique,
       findFirst: mockFindFirst,
     },
+    pendingRegistration: {
+      upsert: mockPendingUpsert,
+    },
     $transaction: mockTx,
   },
 }));
 
 jest.unstable_mockModule("../../src/utils/hash.js", () => ({
-  hashPassword: jest.fn(),
+  hashPassword: mockHashPassword,
   verifyPassword: mockVerifyPassword,
+}));
+
+jest.unstable_mockModule("../../src/utils/email.js", () => ({
+  sendVerificationEmail: mockSendVerificationEmail,
 }));
 
 jest.unstable_mockModule("jsonwebtoken", () => ({
@@ -114,7 +124,7 @@ describe("Authentication Service", () => {
     const TEST_USER = {
       email: `auth-int-${TEST_ID}@example.com`,
       username: `auth_integration_user_${TEST_ID}`,
-      password: "Password123!",
+      password: "Password123!", // has both uppercase, lowercase, number, and special char, and is between 8-30 chars
     };
 
     test("throws AuthError when email already exists", async () => {
@@ -133,6 +143,34 @@ describe("Authentication Service", () => {
       }
     });
 
+    test("throws AuthError when email format is invalid", async () => {
+      await expect(
+        registerUser("invalid-email", TEST_USER.username, TEST_USER.password)
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Please enter a valid email address",
+      }));
+    });
+
+    test("throws AuthError when password is shorter than 8 chars", async () => {
+      await expect(
+        registerUser(TEST_USER.email, TEST_USER.username, "short1")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Password must be at least 8 characters",
+      }));
+    });
+
+    test("throws AuthError when password is longer than 30 chars", async () => {
+      await expect(
+        registerUser(
+          TEST_USER.email,
+          TEST_USER.username,
+          "12345678901234567890123456789012345678901234567890!"
+        )
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Password must be 30 characters or fewer",
+      }));
+    });
+
     test("throws AuthError when username already exists", async () => {
       expect.assertions(2);
       mockFindFirst.mockResolvedValue({
@@ -149,25 +187,35 @@ describe("Authentication Service", () => {
       }
     });
 
-    test("returns newUser for valid credentials", async () => {
+    test("stores pending registration and sends verification code for valid credentials", async () => {
       mockFindFirst.mockResolvedValue(null);
-      mockTx.mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockResolvedValue({
-              userId: 42,
-              email: TEST_USER.email,
-              fullName: TEST_USER.username,
-            }),
-          },
-        });
-      });
+      mockHashPassword
+        .mockResolvedValueOnce("hashed-password")
+        .mockResolvedValueOnce("hashed-code");
+      mockPendingUpsert.mockResolvedValue({});
+      mockSendVerificationEmail.mockResolvedValue({});
       
       const newUser = await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password); 
       expect(newUser).toEqual({
-        userId: 42,
         email: TEST_USER.email,
-        fullName: TEST_USER.username,
+      });
+      expect(mockPendingUpsert).toHaveBeenCalled();
+      expect(mockPendingUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { email: TEST_USER.email },
+          create: expect.objectContaining({
+            email: TEST_USER.email,
+            fullName: TEST_USER.username,
+            attemptCount: 0,
+          }),
+          update: expect.objectContaining({
+            attemptCount: 0,
+          }),
+        })
+      );
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+        to: TEST_USER.email,
+        code: expect.stringMatching(/^\d{6}$/),
       });
     });
 

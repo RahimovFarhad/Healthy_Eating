@@ -26,6 +26,8 @@ const mockAuthenticateUser = jest.fn();
 const mockGenerateRefreshToken = jest.fn();
 const mockRegisterUser = jest.fn();
 const mockRefreshToken = jest.fn();
+const mockVerifyRegistrationCode = jest.fn();
+const mockResendRegistrationCode = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   authenticateUser: mockAuthenticateUser,
@@ -33,6 +35,8 @@ jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   AuthError: mockAuthError,
   UserNotFoundError: mockUserNotFoundError,
   registerUser: mockRegisterUser,
+  verifyRegistrationCode: mockVerifyRegistrationCode,
+  resendRegistrationCode: mockResendRegistrationCode,
   refreshAccessToken: mockRefreshToken,
 }));
 
@@ -199,7 +203,7 @@ describe("Authentication Controller", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
     });
-    test("Returns userId on success", async () => {
+    test("Returns verification message on success", async () => {
       const req = {
         body: {
           email: TEST_USER.email,
@@ -209,15 +213,14 @@ describe("Authentication Controller", () => {
       };
       const res = createRes();
 
-      mockRegisterUser.mockResolvedValue({ userId: 123 });
+      mockRegisterUser.mockResolvedValue({ email: TEST_USER.email });
       
       await register(req, res);
       
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: "User registered successfully",
-        userId: 123
-      }));
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Verification code sent. Complete verification to finish registration."
+      });
     });
 
     test("Resturns error code 409 when email already in use", async () => {

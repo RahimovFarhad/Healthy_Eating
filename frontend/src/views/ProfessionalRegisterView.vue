@@ -92,9 +92,31 @@
                 <input type="password" class="form-control form-control-sm"
                        placeholder="Min. 8 characters"
                        v-model="form.password"
-                       minlength="8"
-                       maxlength="72"
+                       maxlength="30"
                        required>
+                
+                <div v-if="form.password" class="mt-2" style="font-size:0.75rem;">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">8-30 characters</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">One uppercase letter</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">One lowercase letter</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">One number</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">One special character (!@#$%^&*...)</span>
+                  </div>
+                </div>
               </div>
 
               <div v-if="error" class="alert alert-danger small py-2 mb-3">{{ error }}</div>
@@ -117,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { register, authError } from '../auth.js'
 
@@ -127,6 +149,21 @@ const form = ref({ name: '', email: '', password: '' })
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
+
+const passwordValidation = computed(() => {
+  const pwd = form.value.password
+  return {
+    length: pwd.length >= 8 && pwd.length <= 30,
+    uppercase: /[A-Z]/.test(pwd),
+    lowercase: /[a-z]/.test(pwd),
+    number: /[0-9]/.test(pwd),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
+  }
+})
+
+const isPasswordValid = computed(() => {
+  return Object.values(passwordValidation.value).every(v => v === true)
+})
 
 function isValidEmail(email) {
   const atIndex = email.indexOf('@')
@@ -139,15 +176,15 @@ async function handleSubmit() {
     error.value = 'Please enter a valid email address'
     return
   }
-  if (form.value.password.length < 8) {
-    error.value = 'Password must be at least 8 characters'
+  if (!isPasswordValid.value) {
+    error.value = 'Please meet all password requirements'
     return
   }
   loading.value = true
   try {
-    const ok = await register(form.value.email, form.value.name, form.value.password, true)
+    const ok = await register(form.value.email, form.value.name, form.value.password)
     if (ok) {
-      router.push('/dashboard')
+      router.push(`/verify-email/professional?email=${encodeURIComponent(form.value.email)}&password=${encodeURIComponent(form.value.password)}`)
     } else {
       error.value = authError.value || 'Registration failed'
     }

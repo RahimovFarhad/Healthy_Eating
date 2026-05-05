@@ -1,9 +1,9 @@
 :root {
-  --gf-green: #5a9e56;
-  --gf-green-dark: #5a9e56;
-  --gf-green-light: #d6e8d4;
-  --gf-nav: #5a9e56;
-  --gf-section-bg: #5a9e56;
+  --gf-green: #2e7d32;
+  --gf-green-dark: #1b4d1b;
+  --gf-green-light: #d4e7d4;
+  --gf-nav: #2e7d32;
+  --gf-section-bg: #2e7d32;
   --gf-amber: #e8a820;
   --gf-red: #d94f4f;
 }
@@ -60,23 +60,24 @@ body {
 }
 
 .card-gf {
-  border: 1.5px solid var(--gf-green);
+  border: 1px solid var(--gf-green-light);
   border-radius: 8px;
 }
 .card-gf .card-header {
-  background-color: var(--gf-green-light);
-  border-bottom: 1px solid var(--gf-green);
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--gf-green-light);
   font-weight: 600;
+  color: #1b4d1b;
 }
 
 .section-header {
-  background-color: var(--gf-section-bg);
-  border: 1px solid var(--gf-green);
+  background-color: #ffffff;
+  border: 1px solid var(--gf-green-light);
   padding: 8px 20px;
   margin-bottom: 16px;
 }
 .section-header h5 {
-  color: #fff;
+  color: #1b4d1b;
   margin: 0;
   font-weight: 700;
 }
@@ -87,16 +88,17 @@ body {
 
 .stat-card {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #d4e7d4;
   border-radius: 6px;
   padding: 12px 16px;
 }
-.stat-card .stat-label { font-size: 0.8rem; color: var(--gf-green); }
-.stat-card .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--gf-green); }
+.stat-card .stat-label { font-size: 0.8rem; color: #2d5a2d; }
+.stat-card .stat-value { font-size: 1.1rem; font-weight: 700; color: #1b4d1b; }
 
 .meal-section-header {
-  background-color: var(--gf-green);
-  color: #fff;
+  background-color: #ffffff;
+  color: #1b4d1b;
+  border-bottom: 1px solid #d4e7d4;
   padding: 6px 24px;
   font-weight: 700;
   margin-left: -24px;
@@ -112,15 +114,15 @@ body {
 }
 
 .add-meal-panel {
-  background: #f0f7ef;
-  border: 1.5px solid var(--gf-green);
+  background: #fffaf5;
+  border: 1px solid var(--gf-green-light);
   border-radius: 6px;
   padding: 16px;
   margin-bottom: 12px;
 }
 
 .recipe-card {
-  border: 1.5px solid var(--gf-green);
+  border: 1px solid var(--gf-green-light);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -145,26 +147,27 @@ body {
 .status-low  { color: var(--gf-amber); }
 .status-high { color: var(--gf-red); }
 
-.goal-card { border: 1.5px solid var(--gf-green); border-radius: 8px; }
+.goal-card { border: 1px solid var(--gf-green-light); border-radius: 8px; }
 .goal-card .goal-header {
-  background-color: var(--gf-green-light);
-  border-bottom: 1px solid var(--gf-green);
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--gf-green-light);
   padding: 10px 16px;
   border-radius: 6px 6px 0 0;
   font-weight: 600;
+  color: #1b4d1b;
 }
 
 .chat-mine {
-  background: var(--gf-green-light);
-  border: 1px solid #9acc96;
+  background: #fffaf5;
+  border: 1px solid var(--gf-green-light);
   border-radius: 8px;
   padding: 8px 12px;
   margin-bottom: 8px;
 }
 
 .chat-pro {
-  background: #f0f7ef;
-  border: 1px solid var(--gf-green);
+  background: #f9fdf9;
+  border: 1px solid var(--gf-green-light);
   border-radius: 8px;
   padding: 8px 12px;
   margin-bottom: 8px;

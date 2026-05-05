@@ -1,7 +1,18 @@
 import jwt from "jsonwebtoken";
+import { jest } from "@jest/globals";
 import request from "supertest"
-import app from "../../src/app.js";
-import { prisma } from "../../src/db/prisma.js";
+
+const sentCodesByEmail = new Map();
+const mockSendVerificationEmail = jest.fn(async ({ to, code }) => {
+  sentCodesByEmail.set(to, code);
+});
+
+jest.unstable_mockModule("../../src/utils/email.js", () => ({
+  sendVerificationEmail: mockSendVerificationEmail,
+}));
+
+const { default: app } = await import("../../src/app.js");
+const { prisma } = await import("../../src/db/prisma.js");
 
 const { sign } = jwt;
 
@@ -39,33 +50,13 @@ describe("Auth API", () => {
   });
 
   describe("Register", () => {
-    test("Register creates user", async () => {
+    test("Register starts verification flow", async () => {
       const res = await request(app).post("/api/auth/register").send(TEST_USER);
 
-      expect(res.statusCode).toBe(201);
+      expect(res.statusCode).toBe(200);
       expect(res.body).toMatchObject({
-        message: "User registered successfully",
+        message: "Verification code sent. Complete verification to finish registration.",
       });
-      expect(typeof res.body.userId).toBe("number");
-      createdUserId = res.body.userId;
-    });
-
-    test("Register rejects duplicate email", async () => {
-      const res = await request(app).post("/api/auth/register").send(TEST_USER);
-
-      expect(res.statusCode).toBe(409);
-      expect(res.body).toHaveProperty("message");
-    });
-
-    test("Register rejects duplicate username", async () => {
-      const res = await request(app).post("/api/auth/register").send({
-        email: `another-${Date.now()}@example.com`,
-        username: TEST_USER.username,
-        password: TEST_USER.password,
-      });
-
-      expect(res.statusCode).toBe(409);
-      expect(res.body).toHaveProperty("message");
     });
 
     test("Register rejects missing username", async () => {
@@ -111,6 +102,25 @@ describe("Auth API", () => {
 
       expect(res.statusCode).toBe(400)
     })
+
+    test("Verify creates user after code check", async () => {
+      const code = sentCodesByEmail.get(TEST_USER.email);
+      expect(typeof code).toBe("string");
+
+      const res = await request(app)
+        .post("/api/auth/register/verify")
+        .send({
+          email: TEST_USER.email,
+          code,
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toMatchObject({
+        message: "User registered successfully",
+      });
+      expect(typeof res.body.userId).toBe("number");
+      createdUserId = res.body.userId;
+    });
   });
 
   describe("Login", () => {
