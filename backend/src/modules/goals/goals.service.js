@@ -24,6 +24,12 @@ async function updateUserGoal({ subscriberId, goal }) {
   if (!existingGoal) {
     throw new GoalError("Goal not found");
   }
+  if (existingGoal.status === "archived") {
+    throw new GoalError("Goal is archived");
+  }
+  if (existingGoal.subscriber.userId != subscriberId) {
+    throw new GoalError("Unauthorized to archive this goal");
+  }
 
   return updateGoal({
     goalId: validatedUpdate.goalId,
@@ -46,7 +52,7 @@ async function archiveUserGoal({ subscriberId, goalId }) {
   if (existingGoal.status === "archived") {
     throw new GoalError("Goal is already archived");
   }
-  if (existingGoal.subscriber.userId != subscriberId){
+  if (existingGoal.subscriber.userId != subscriberId) {
     throw new GoalError("Unauthorized to archive this goal");
   }
 

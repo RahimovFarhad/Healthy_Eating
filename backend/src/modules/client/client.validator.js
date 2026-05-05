@@ -5,6 +5,20 @@ class ClientError extends Error {
     }
 }
 
+// handles the error status code
+function getClientErrorStatus(message) {
+    if (message.toLowerCase().includes("not in invited status") || message.toLowerCase().includes("not assigned")) {
+        return 403; // forbidden access
+    }
+    if (message.toLowerCase().includes("not found")) {
+        return 404; // not found
+    }
+    if (message.toLowerCase().includes("already active") || message.toLowerCase().includes("already disabled")) {
+        return 409; // conflict 
+    }
+    return 400; // bad request - for otherwise and general error cases
+}
+
 function normalizePositiveInteger(value) {
     const parsedValue = typeof value === "string" ? Number(value) : value;
 
@@ -60,9 +74,10 @@ function validateMessageInput({ professionalId, clientId, message }) {
 }
 
 export {
+    ClientError,
+    getClientErrorStatus,
     validateClientId,
     validateProfessionalId,
     validateClientProfessionalInput,
-    validateMessageInput,
-    ClientError,
+    validateMessageInput
 };

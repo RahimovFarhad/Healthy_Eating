@@ -2,7 +2,7 @@ import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntrie
 import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
-import {searchFoodById} from "../../utils/searchFood.js"
+import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
@@ -62,12 +62,16 @@ function getSummaryRange(period, endDate) {
         case "weekly":
             fromDate = new Date(toDate);
             fromDate.setUTCHours(0, 0, 0, 0);
-            fromDate.setUTCDate(fromDate.getUTCDate() - 6);
+            const dayOfWeek = fromDate.getUTCDay();
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // calculate how many days to go back to get to Monday (treat Sunday as 6)
+            fromDate.setUTCDate(fromDate.getUTCDate() - daysToMonday);
+            toDate.setUTCDate(fromDate.getUTCDate() + 6); // extend to the end of Sunday
             break;
         case "monthly":
             fromDate = new Date(toDate);
             fromDate.setUTCHours(0, 0, 0, 0);
             fromDate.setUTCDate(fromDate.getUTCDate() - 29);
+            toDate.setUTCDate(fromDate.getUTCDate() + 29); // extend to the end of the 30-day period
             break;
         default:
             throw new Error(`Unsupported period: ${period}`);
@@ -176,10 +180,11 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
 }
 
 async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }) {
-    let parsed = null;
+    var parsed = null;
     
     if (fatSecret != null) {
-        parsed = await searchFoodById(fatSecret.externalId);
+        const foodDetails = await searchFoodById(fatSecret.externalId);
+        parsed = parseFoodResponse(foodDetails);
     }
     
     const foodItem = await createFoodItem({
@@ -299,7 +304,7 @@ async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
     return entryCheck;
 }
 
-async function getDashboardDataForSubscriber({ subscriberId }) {
+async function getDashboardDataForSubscriber({ subscriberId, date }) {
     // Needs to implement:
     // 1. Fetch today's meals 
     // 2. Fetch today's nutrient summary (can reuse getNutritionSummary with daily period and today's date)
@@ -307,21 +312,19 @@ async function getDashboardDataForSubscriber({ subscriberId }) {
     // 4. Fetch recent messages (from messaging module) - this will be implemented only after messaging module is ready, so can be left as a placeholder for now
     // 5. Fetch recent recipes (from recipe module) - this will also be implemented only after recipe module is ready, so can be left as a placeholder for now
 
-    const entry = validateUserIdForDashboard({ subscriberId }); // validation check
+    const entry = validateUserIdForDashboard({ subscriberId, date }); // validation check
 
     // as we can use previous functions, let's try reuse them as much as possible
-    const todayStart = new Date();
+    // Use the date provided by client (their local "today"), or fall back to server time
+    const today = entry.date ? new Date(entry.date) : new Date();
+    const todayStart = new Date(today);
     todayStart.setUTCHours(0, 0, 0, 0);
 
-    const todayEnd = new Date();
+    const todayEnd = new Date(today);
     todayEnd.setUTCHours(23, 59, 59, 999);
 
-    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: todayEnd.toISOString() });
+    const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: today.toISOString() });
     const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
-
-    
-    // we can calculate weekly calory trend based on daily summaries for each day of the week, but for simplicity let's just return total calories for the week for now
-    
         
     return {
         quickStats: {

@@ -1,4 +1,4 @@
-import { authenticateUser, AuthError, UserNotFoundError, registerUser, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
+import { authenticateUser, AuthError, UserNotFoundError, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
 
 async function login(req, res) {
     const { email, password } = req.body;
@@ -38,13 +38,53 @@ async function register(req, res) {
             return res.status(400).json({ message: "Email, username, and password are required" });
         }
 
-        const user = await registerUser(email, username, password);
-        return res.status(201).json({ message: "User registered successfully", userId: user.userId });
+        await registerUser(email, username, password);
+        return res.status(200).json({ message: "Verification code sent. Complete verification to finish registration." });
     } catch (error) {
         if (error instanceof AuthError) {
             if (error.message.includes("already in use")) { // even though currently only possible errors are email or username already in use, this is a safeguard for future error messages
                 return res.status(409).json({ message: error.message });
             }
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function verifyRegistration(req, res) {
+    const { email, code } = req.body;
+
+    try {
+        if (!email || !code) {
+            return res.status(400).json({ message: "Email and code are required" });
+        }
+
+        const user = await verifyRegistrationCode(email, code);
+        return res.status(201).json({ message: "User registered successfully", userId: user.userId });
+    } catch (error) {
+        console.error("Error in verifyRegistration:", error);
+        if (error instanceof AuthError) {
+            if (error.message.includes("already in use")) {
+                return res.status(409).json({ message: error.message });
+            }
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+async function resendVerificationCode(req, res) {
+    const { email } = req.body;
+
+    try {
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        await resendRegistrationCode(email);
+        return res.status(200).json({ message: "Verification code resent successfully." });
+    } catch (error) {
+        if (error instanceof AuthError) {
             return res.status(400).json({ message: error.message });
         }
         return res.status(500).json({ message: "Internal server error" });
@@ -80,4 +120,4 @@ async function logoutController(_req, res) {
     return res.json({ message: "Logged out successfully" });
 }
 
-export { login, register, refreshToken, logoutController };
+export { login, register, verifyRegistration, resendVerificationCode, refreshToken, logoutController };

@@ -53,6 +53,7 @@ async function listProfessionalClients({ professionalId, includeDetails, status 
         orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
         select: {
             id: true,
+            professionalId: true,
             subscriberId: true,
             status: true,
             assignedAt: true,

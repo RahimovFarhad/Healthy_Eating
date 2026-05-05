@@ -23,6 +23,14 @@ async function acceptInvitationService({ professionalId, clientId }) {
         throw new ClientError("Invitation not found");
     }
 
+    if (invitation.status === "active") {
+        throw new ClientError("Invitation already active");
+    } 
+
+    if (invitation.status === "disabled") {
+        throw new ClientError("Invitation already disabled");
+    }
+
     if (invitation.status !== "invited") {
         throw new ClientError("Invitation is not in invited status");
     }
@@ -36,6 +44,14 @@ async function rejectInvitationService({ professionalId, clientId }) {
     const invitation = await findProfessionalClientLink(validated);
     if (!invitation) {
         throw new ClientError("Invitation not found");
+    }
+
+    if (invitation.status === "active") {
+        throw new ClientError("Invitation already active");
+    } 
+
+    if (invitation.status === "disabled") {
+        throw new ClientError("Invitation already disabled");
     }
 
     if (invitation.status !== "invited") {
@@ -97,7 +113,6 @@ async function listSharedRecipesService({ professionalId, clientId }) {
     await ensureProfessionalClientRelation(validated);
 
     return listSharedRecipes(validated);
-
 
 }
 

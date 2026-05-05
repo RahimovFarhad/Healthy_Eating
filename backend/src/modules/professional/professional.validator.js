@@ -5,6 +5,20 @@ class ProfessionalError extends Error {
     }
 }
 
+// handles error status codes in professional module
+function getProfessionalErrorStatus(message) {
+    if (message.toLowerCase().includes("not assigned")) {
+        return 403; // forbidden access
+    }
+    if (message.toLowerCase().includes("not found")) {
+        return 404; // not found
+    }
+    if (message.toLowerCase().includes("already assigned")) {
+        return 409; // conflict 
+    }
+    return 400; // bad request - for otherwise and general cases
+}
+
 function normalizePositiveInteger(value) {
     const parsedValue = typeof value === "string" ? Number(value) : value;
 
@@ -144,6 +158,7 @@ function validateRecipeId({ recipeId }) {
 
 export {
     ProfessionalError,
+    getProfessionalErrorStatus,
     validateProfessionalId,
     validateClientId,
     validateInviteClientInput,

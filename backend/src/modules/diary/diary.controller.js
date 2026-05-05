@@ -69,7 +69,7 @@ async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
             diaryEntryId: Number(req.params?.id),
-            userId: req.user?.userId ?? null,
+            subscriberId: req.user?.userId ?? null,
         });
 
         return res.status(200).json({ entry });
@@ -169,7 +169,10 @@ async function getDashboard(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
         // call a service function that aggregates all the necessary data for the dashboard
-        const dashboardData = await getDashboardDataForSubscriber({subscriberId});
+        const dashboardData = await getDashboardDataForSubscriber({
+            subscriberId,
+            date: req.query?.date // optional: client can send their local date so there will be no timezone issue will be
+        });
 
         return res.status(200).json({ dashboardData });
     } catch (error) {

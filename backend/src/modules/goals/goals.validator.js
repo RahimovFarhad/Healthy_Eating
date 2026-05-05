@@ -5,6 +5,21 @@ class GoalError extends Error {
   }
 }
 
+function getGoalErrorStatus(message) {
+  if (message.toLowerCase().includes("unauthorized")) {
+    return 403; // forbidden access/action
+  }
+  if (message.toLowerCase().includes("not found")) {
+    return 404; // not found
+  }
+  if (message.toLowerCase().includes("is already archived") ||
+    message.toLowerCase().includes("is archived")) {
+      return 409; // conflict cases
+    }
+  
+  return 400; // bad request - for otherwise and general error cases
+}
+
 const GOAL_SOURCES = new Set(["system_default", "user_defined", "professional_defined"]);
 const GOAL_STATUSES = new Set(["active", "archived"]);
 const GOAL_INCLUDE_OPTIONS = new Set(["today", "all", "none"]);
@@ -247,6 +262,7 @@ function validateCreateGoalInput(goal, options = {}) {
 
 export {
   GoalError,
+  getGoalErrorStatus,
   normalizeSubscriberId,
   normalizeGoalId,
   normalizeBooleanQuery,

@@ -151,6 +151,7 @@ async function findDiaryEntryById({ diaryEntryId, subscriberId }) {
                     },
                 },
             },
+            diaryEntryId: true,
         }
     });
 

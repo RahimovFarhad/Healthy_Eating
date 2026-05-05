@@ -2,6 +2,8 @@ import { prisma } from "../../db/prisma.js";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../../utils/hash.js";
 import { ensureDefaultGoalsForUser } from "../goals/goals.service.js";
+import { randomInt } from "node:crypto";
+import { sendVerificationEmail } from "../../utils/email.js";
 
 const { sign, verify } = jwt;
 
@@ -41,13 +43,14 @@ async function authenticateUser(email, password) {
     };
 
     const token = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-    return { token, userId: user.userId };
+    return token;
 }
 
 async function registerUser(email, username, password) {
     // this is a basic email format check: must contain @ with characters on both sides and end with .com
+    console.log("Registering user with email:", email);
     const atIndex = email?.indexOf("@") ?? -1;
-    if (atIndex <= 0 || !email.endsWith(".com") || atIndex >= email.length - 1) {
+    if (atIndex <= 0 || atIndex >= email.length - 1) {
         throw new AuthError("Please enter a valid email address");
     }
 
@@ -57,6 +60,25 @@ async function registerUser(email, username, password) {
     }
     if (password.length > 30) {
         throw new AuthError("Password must be 30 characters or fewer");
+    }
+
+    // by regex system enforces to have at least one uppercase, one lowercase, one number and one special character
+    const uppercaseRegex = /[A-Z]/;
+    const lowercaseRegex = /[a-z]/;
+    const numberRegex = /[0-9]/;
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (!uppercaseRegex.test(password)) {
+        throw new AuthError("Password must contain at least one uppercase letter");
+    }
+    if (!lowercaseRegex.test(password)) {
+        throw new AuthError("Password must contain at least one lowercase letter");
+    }
+    if (!numberRegex.test(password)) {
+        throw new AuthError("Password must contain at least one number");
+    }
+    if (!specialCharRegex.test(password)) {
+        throw new AuthError("Password must contain at least one special character");
     }
 
     const existingUser = await prisma.user.findFirst({
@@ -82,18 +104,106 @@ async function registerUser(email, username, password) {
     }
 
     const passwordHash = await hashPassword(password);
+    const verificationCode = String(randomInt(0, 1000000)).padStart(6, "0");
+    const verificationCodeHash = await hashPassword(verificationCode);
+    const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
+
+    await prisma.pendingRegistration.upsert({
+        where: { email },
+        create: {
+            email,
+            fullName: username,
+            passwordHash,
+            verificationCodeHash,
+            codeExpiresAt,
+            lastSentAt: new Date(),
+            resendCount: 0,
+            attemptCount: 0
+        },
+        update: {
+            fullName: username,
+            passwordHash,
+            verificationCodeHash,
+            codeExpiresAt,
+            lastSentAt: new Date(),
+            attemptCount: 0,
+            resendCount: { increment: 1 }
+        }
+    });
+
+    await sendVerificationEmail({ to: email, code: verificationCode });
+
+    return { email };
+}
+
+async function verifyRegistrationCode(email, code) {
+    if (!code || !/^\d{6}$/.test(code)) {
+        throw new AuthError("Verification code must be a 6-digit number");
+    }
+
+    const pendingRegistration = await prisma.pendingRegistration.findUnique({
+        where: { email }
+    });
+
+    if (!pendingRegistration) {
+        throw new AuthError("No pending registration found for this email");
+    }
+
+    if (pendingRegistration.codeExpiresAt < new Date()) {
+        throw new AuthError("Invalid or expired verification code");
+    }
+
+    if (pendingRegistration.attemptCount >= 5) {
+        throw new AuthError("Too many verification attempts. Please request a new code.");
+    }
+
+    const isCodeValid = await verifyPassword(code, pendingRegistration.verificationCodeHash);
+    if (!isCodeValid) {
+        await prisma.pendingRegistration.update({
+            where: { email },
+            data: { attemptCount: { increment: 1 } }
+        });
+        throw new AuthError("Invalid or expired verification code");
+    }
+
+    const existingUser = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { email: pendingRegistration.email },
+                { fullName: pendingRegistration.fullName }
+            ]
+        },
+        select: {
+            userId: true,
+            email: true,
+            fullName: true
+        }
+    });
+
+    if (existingUser) {
+        if (existingUser.email === pendingRegistration.email) {
+            throw new AuthError("Email already in use");
+        }
+        if (existingUser.fullName === pendingRegistration.fullName) {
+            throw new AuthError("Username already in use");
+        }
+    }
 
     const newUser = await prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-        data: {
-            email,
-            fullName: username,
-            passwordHash: passwordHash,
-            role: "default",
-        },
+            data: {
+                email: pendingRegistration.email,
+                fullName: pendingRegistration.fullName,
+                passwordHash: pendingRegistration.passwordHash,
+                role: "default"
+            }
         });
 
         await ensureDefaultGoalsForUser({ userId: user.userId, demographic: "adult", tx });
+
+        await tx.pendingRegistration.delete({
+            where: { email: pendingRegistration.email }
+        });
 
         return user;
     });
@@ -101,12 +211,63 @@ async function registerUser(email, username, password) {
     return newUser;
 }
 
-function generateRefreshToken(userId) {
-    const payload = {
-        userId,
+async function resendRegistrationCode(email) {
+    const pendingRegistration = await prisma.pendingRegistration.findUnique({
+        where: { email }
+    });
+
+    if (!pendingRegistration) {
+        throw new AuthError("No pending registration found for this email");
+    }
+
+    const now = new Date();
+    const cooldownMs = 10 * 1000;
+    const msSinceLastSent = now.getTime() - pendingRegistration.lastSentAt.getTime();
+    if (msSinceLastSent < cooldownMs) {
+        throw new AuthError("Please wait before requesting a new code");
+    }
+
+    const verificationCode = String(randomInt(0, 1000000)).padStart(6, "0");
+    const verificationCodeHash = await hashPassword(verificationCode);
+    const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.pendingRegistration.update({
+        where: { email },
+        data: {
+            verificationCodeHash,
+            codeExpiresAt,
+            lastSentAt: now,
+            attemptCount: 0,
+            resendCount: { increment: 1 }
+        }
+    });
+
+    await sendVerificationEmail({ to: email, code: verificationCode });
+
+    return { email };
+}
+
+async function generateRefreshToken(email) {
+    //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
+
+    const user = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!user) {
+        throw new UserNotFoundError();
+    }
+
+    // This implementation is enough for now, but we will store the refreshtoken in the database later, so we can invalidate it if needed. 
+    // That means we will also include a unique identifier for the token in the payload, so we can find it in the database later.
+    const payload = { 
+        userId: user.userId,
         tokenType: "refresh"
     };
-    return sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    const refreshToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+    // Optionally, you can store the refresh token in the database for later validation.
+    return refreshToken;
 }
 
 async function refreshAccessToken(refreshToken) {
@@ -142,4 +303,4 @@ async function refreshAccessToken(refreshToken) {
     }
 }
 
-export { authenticateUser, registerUser, generateRefreshToken, refreshAccessToken };
+export { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken };

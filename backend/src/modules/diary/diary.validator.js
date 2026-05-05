@@ -126,9 +126,9 @@ function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
         if (Number.isNaN(parsedStart.getTime())) {
             throw new DiaryEntryError("Start date must be a valid date");
         }
-        if (parsedStart > new Date()) {
-            throw new DiaryEntryError("Start date cannot be in the future");
-        }
+        // if (parsedStart > new Date()) { 
+        //     throw new DiaryEntryError("Start date cannot be in the future");
+        // }
     }
     if (end) {
         const parsedEnd = new Date(end);
@@ -335,14 +335,24 @@ function validateCreateFoodPortionInput({ foodItemId, description, weightG, nutr
     };
 }
 
-function validateUserIdForDashboard({ subscriberId }) {
+function validateUserIdForDashboard({ subscriberId, date }) {
     const normalizedSubscriberId = normalizePositiveInteger(subscriberId);
     if (!normalizedSubscriberId) {
         throw new DiaryEntryError("Subscriber ID is required");
     }
 
+    let normalizedDate = null;
+    if (date) {
+        const parsedDate = new Date(date);
+        if (Number.isNaN(parsedDate.getTime())) {
+            throw new DiaryEntryError("Date must be a valid date");
+        }
+        normalizedDate = parsedDate;
+    }
+
     return {
-        subscriberId: normalizedSubscriberId
+        subscriberId: normalizedSubscriberId,
+        date: normalizedDate
      }; 
 }
 
