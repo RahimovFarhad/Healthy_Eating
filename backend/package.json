@@ -10,19 +10,22 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watchman=false --runInBand"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "axios": "^1.15.2",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.3.1",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.5.9",
     "fs": "^0.0.1-security",
+    "googleapis": "^171.4.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.19.0",
-    "redis": "^5.11.0"
+    "redis": "^5.11.0",
+    "resend": "^6.12.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
