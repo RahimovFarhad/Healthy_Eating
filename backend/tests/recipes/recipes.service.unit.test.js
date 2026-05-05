@@ -81,30 +81,23 @@ describe("Recipes Service", () => {
         ingredients: ["tomato", "pasta"],
       });
 
-      expect(result).toEqual([
+      expect(result).toHaveLength(1);
+      expect(result[0].recipeId).toBe(1);
+      expect(result[0].title).toBe("Tomato Pasta");
+      expect(result[0].ingredients).toEqual(["pasta", "tomato"]);
+      expect(result[0].ingredientDetails).toEqual([
         {
-          recipeId: 1,
-          title: "Tomato Pasta",
-          instructions: "Cook pasta and add tomato sauce.",
-          kcal: 500,
-          protein: 20,
-          carbs: 70,
-          sugars: 8,
-          fat: 12,
-          saturatedFat: 3,
-          salt: 1,
-          reviews: [
-            {
-              rating: 4,
-            },
-            {
-              rating: 5,
-            },
-          ],
-          averageRating: 4.5,
-          ingredients: ["pasta", "tomato"],
+          name: "pasta",
+          quantity: "100g",
+        },
+        {
+          name: "tomato",
+          quantity: "50g",
         },
       ]);
+      expect(result[0].averageRating).toBe(4.5);
+      expect(result[0].reviewCount).toBe(2);
+      expect(result[0].isFavorited).toBe(false);
     });
 
     test("returns averageRating null when recipe has no reviews", async () => {

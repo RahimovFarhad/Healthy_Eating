@@ -64,6 +64,7 @@ describe("Recipes Controller", () => {
         category: "Dinner",
         cuisine: "Italian",
         ingredients: ["tomato", "pasta"],
+        subscriberId: null,
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ recipes });
@@ -85,6 +86,7 @@ describe("Recipes Controller", () => {
         category: undefined,
         cuisine: undefined,
         ingredients: [],
+        subscriberId: null,
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ recipes: [] });
@@ -145,6 +147,7 @@ describe("Recipes Controller", () => {
 
       expect(getRecipeByIdService).toHaveBeenCalledWith({
         recipeId: "1",
+        subscriberId: null,
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ recipe });
@@ -418,7 +421,7 @@ describe("Recipes Controller", () => {
         subscriberId: 2,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ favRecipes });
+      expect(res.json).toHaveBeenCalledWith({ recipes: favRecipes });
       expect(next).not.toHaveBeenCalled();
     });
 
@@ -435,7 +438,7 @@ describe("Recipes Controller", () => {
         subscriberId: null,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ favRecipes: [] });
+      expect(res.json).toHaveBeenCalledWith({ recipes: [] });
     });
 
     test("returns 400 when service throws RecipeError", async () => {
