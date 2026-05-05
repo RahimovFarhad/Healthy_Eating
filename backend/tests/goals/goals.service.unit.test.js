@@ -639,4 +639,4 @@ describe("Goals service", () => {
             })).rejects.toThrow("Goal is archived");
         });
     });
-})
+});
