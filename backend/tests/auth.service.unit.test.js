@@ -12,7 +12,7 @@ const mockTx = jest.fn();
 
 const TEST_ID = Math.floor(Math.random() * 100000);
 
-jest.unstable_mockModule("../../src/db/prisma.js", () => ({
+jest.unstable_mockModule("../src/db/prisma.js", () => ({
   prisma: {
     user: {
       findUnique: mockFindUnique,
@@ -25,12 +25,12 @@ jest.unstable_mockModule("../../src/db/prisma.js", () => ({
   },
 }));
 
-jest.unstable_mockModule("../../src/utils/hash.js", () => ({
+jest.unstable_mockModule("../src/utils/hash.js", () => ({
   hashPassword: mockHashPassword,
   verifyPassword: mockVerifyPassword,
 }));
 
-jest.unstable_mockModule("../../src/utils/email.js", () => ({
+jest.unstable_mockModule("../src/utils/email.js", () => ({
   sendVerificationEmail: mockSendVerificationEmail,
 }));
 
@@ -41,12 +41,12 @@ jest.unstable_mockModule("jsonwebtoken", () => ({
   },
 }));
 
-jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
+jest.unstable_mockModule("../src/modules/goals/goals.service.js", () => ({
   ensureDefaultGoalsForUser: jest.fn(),
 }));
 
 const { authenticateUser, registerUser, generateRefreshToken,refreshAccessToken, AuthError, UserNotFoundError } = await import(
-  "../../src/modules/auth/auth.service.js"
+  "../src/modules/auth/auth.service.js"
 );
 
 describe("Authentication Service", () => {
@@ -124,7 +124,7 @@ describe("Authentication Service", () => {
     const TEST_USER = {
       email: `auth-int-${TEST_ID}@example.com`,
       username: `auth_integration_user_${TEST_ID}`,
-      password: "Password123!", // has both uppercase, lowercase, number, and special char, and is between 8-30 chars
+      password: "Password123!",
     };
 
     test("throws AuthError when email already exists", async () => {
@@ -164,7 +164,7 @@ describe("Authentication Service", () => {
         registerUser(
           TEST_USER.email,
           TEST_USER.username,
-          "12345678901234567890123456789012345678901234567890!"
+          "ThisPasswordIsDefinitelyLongerThan30Chars123!"
         )
       ).rejects.toEqual(expect.objectContaining({
         message: "Password must be 30 characters or fewer",
@@ -217,6 +217,19 @@ describe("Authentication Service", () => {
         to: TEST_USER.email,
         code: expect.stringMatching(/^\d{6}$/),
       });
+    });
+
+    test("propagates email send failures", async () => {
+      mockFindFirst.mockResolvedValue(null);
+      mockHashPassword
+        .mockResolvedValueOnce("hashed-password")
+        .mockResolvedValueOnce("hashed-code");
+      mockPendingUpsert.mockResolvedValue({});
+      mockSendVerificationEmail.mockRejectedValue(new Error("provider down"));
+
+      await expect(
+        registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password)
+      ).rejects.toThrow("provider down");
     });
 
   });
