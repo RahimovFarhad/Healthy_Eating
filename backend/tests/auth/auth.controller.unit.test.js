@@ -40,7 +40,7 @@ jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   refreshAccessToken: mockRefreshToken,
 }));
 
-const { login, register, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
+const { login, register, verifyRegistration, resendVerificationCode, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
 
 function createRes() {
   const res = {};
@@ -338,6 +338,66 @@ describe("Authentication Controller", () => {
       }));
     });
     
+  });
+
+  describe("Verify Registration", () => {
+    test("Returns error code 400 when email is missing", async () => {
+      const req = { body: { code: "123456" } };
+      const res = createRes();
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email and code are required" });
+    });
+
+    test("Returns status 201 and userId on success", async () => {
+      const req = { body: { email: TEST_USER.email, code: "123456" } };
+      const res = createRes();
+      mockVerifyRegistrationCode.mockResolvedValue({ userId: 321 });
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "User registered successfully",
+        userId: 321,
+      });
+    });
+
+    test("Returns error code 409 when email already in use", async () => {
+      const req = { body: { email: TEST_USER.email, code: "123456" } };
+      const res = createRes();
+      mockVerifyRegistrationCode.mockRejectedValue(new mockAuthError("Email already in use"));
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email already in use" });
+    });
+  });
+
+  describe("Resend Verification Code", () => {
+    test("Returns error code 400 when email is missing", async () => {
+      const req = { body: {} };
+      const res = createRes();
+
+      await resendVerificationCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email is required" });
+    });
+
+    test("Returns success when resend is accepted", async () => {
+      const req = { body: { email: TEST_USER.email } };
+      const res = createRes();
+      mockResendRegistrationCode.mockResolvedValue({ email: TEST_USER.email });
+
+      await resendVerificationCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ message: "Verification code resent successfully." });
+    });
   });
 
 });

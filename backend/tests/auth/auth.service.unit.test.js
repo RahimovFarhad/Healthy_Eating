@@ -3,12 +3,15 @@ import { expect, jest } from "@jest/globals";
 const mockFindUnique = jest.fn();
 const mockFindFirst = jest.fn();
 const mockPendingUpsert = jest.fn();
+const mockPendingFindUnique = jest.fn();
+const mockPendingUpdate = jest.fn();
 const mockVerifyPassword = jest.fn();
 const mockHashPassword = jest.fn();
 const mockSendVerificationEmail = jest.fn();
 const mockSign = jest.fn();
 const mockVerify = jest.fn();
 const mockTx = jest.fn();
+const mockEnsureDefaultGoalsForUser = jest.fn();
 
 const TEST_ID = Math.floor(Math.random() * 100000);
 
@@ -20,6 +23,8 @@ jest.unstable_mockModule("../../src/db/prisma.js", () => ({
     },
     pendingRegistration: {
       upsert: mockPendingUpsert,
+      findUnique: mockPendingFindUnique,
+      update: mockPendingUpdate,
     },
     $transaction: mockTx,
   },
@@ -42,10 +47,10 @@ jest.unstable_mockModule("jsonwebtoken", () => ({
 }));
 
 jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
-  ensureDefaultGoalsForUser: jest.fn(),
+  ensureDefaultGoalsForUser: mockEnsureDefaultGoalsForUser,
 }));
 
-const { authenticateUser, registerUser, generateRefreshToken,refreshAccessToken, AuthError, UserNotFoundError } = await import(
+const { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken,refreshAccessToken, AuthError, UserNotFoundError } = await import(
   "../../src/modules/auth/auth.service.js"
 );
 
@@ -258,6 +263,214 @@ describe("Authentication Service", () => {
         { expiresIn: "7d" }
       );
       expect(token).toBe("mock.refresh.token");
+    });
+  });
+
+  describe("verifyRegistrationCode (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("throws AuthError when code format is invalid", async () => {
+      await expect(
+        verifyRegistrationCode("user@example.com", "12ab")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Verification code must be a 6-digit number",
+      }));
+    });
+
+    test("throws AuthError when pending registration is not found", async () => {
+      mockPendingFindUnique.mockResolvedValue(null);
+
+      await expect(
+        verifyRegistrationCode("missing@example.com", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "No pending registration found for this email",
+      }));
+    });
+
+    test("throws AuthError when validation code is expired", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        codeExpiresAt: new Date(Date.now() - 60 * 1000), // expired 1 minute ago
+        attemptCount: 0,
+        verificationCodeHash: "hashed-code",
+      });
+
+      await expect(
+        verifyRegistrationCode("user@example.com", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Invalid or expired verification code",
+      }));
+    });
+
+    test("throws AuthError when validation code attempt limit reached", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        codeExpiresAt: new Date(Date.now() + 60 * 1000),
+        attemptCount: 5,
+        verificationCodeHash: "hashed-code",
+      });
+
+      await expect(
+        verifyRegistrationCode("user@example.com", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Too many verification attempts. Please request a new code.",
+      }));
+    });
+
+    test("increments attemptCount when code is invalid", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        codeExpiresAt: new Date(Date.now() + 60 * 1000),
+        attemptCount: 0,
+        verificationCodeHash: "hashed-code",
+      });
+      mockVerifyPassword.mockResolvedValue(false);
+
+      await expect(
+        verifyRegistrationCode("user@example.com", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Invalid or expired verification code",
+      }));
+
+      expect(mockPendingUpdate).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+        data: { attemptCount: { increment: 1 } },
+      });
+    });
+
+    test("throws AuthError when existing email already exists", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        passwordHash: "hash",
+        codeExpiresAt: new Date(Date.now() + 60 * 1000),
+        attemptCount: 0,
+        verificationCodeHash: "hash",
+      });
+      mockVerifyPassword.mockResolvedValue(true);
+      mockFindFirst.mockResolvedValue({
+        userId: 1,
+        email: "user@example.com",
+        fullName: "someone-else",
+      });
+
+      await expect(
+        verifyRegistrationCode("user@example.com", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Email already in use",
+      }));
+    });
+
+    test("successfully creates user, seeds goals and deletes pending registration on success", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        passwordHash: "stored-password-hash",
+        codeExpiresAt: new Date(Date.now() + 60 * 1000),
+        attemptCount: 0,
+        verificationCodeHash: "hashed-code",
+      });
+      mockVerifyPassword.mockResolvedValue(true);
+      mockFindFirst.mockResolvedValue(null);
+      const txUserCreate = jest.fn().mockResolvedValue({
+        userId: 42,
+        email: "user@example.com",
+        fullName: "user",
+      });
+      const txPendingDelete = jest.fn().mockResolvedValue({});
+      mockTx.mockImplementation(async (callback) =>
+        callback({
+          user: { create: txUserCreate },
+          pendingRegistration: { delete: txPendingDelete },
+        })
+      );
+
+      const result = await verifyRegistrationCode("user@example.com", "123456");
+
+      expect(result).toEqual({
+        userId: 42,
+        email: "user@example.com",
+        fullName: "user",
+      });
+      expect(mockEnsureDefaultGoalsForUser).toHaveBeenCalled();
+      expect(txPendingDelete).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+      });
+    });
+  });
+
+  describe("resendRegistrationCode (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("throws AuthError when pending registration is not found", async () => {
+      mockPendingFindUnique.mockResolvedValue(null);
+
+      await expect(
+        resendRegistrationCode("missing@example.com")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "No pending registration found for this email",
+      }));
+    });
+
+    test("throws AuthError when resend cooldown has not passed", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        lastSentAt: new Date(),
+      });
+
+      await expect(
+        resendRegistrationCode("user@example.com")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Please wait before requesting a new code",
+      }));
+    });
+
+    test("updates pending registration and sends email on success", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        lastSentAt: new Date(Date.now() - 61_000),
+      });
+      mockHashPassword.mockResolvedValueOnce("new-code-hash");
+      mockPendingUpdate.mockResolvedValue({});
+      mockSendVerificationEmail.mockResolvedValue({});
+
+      const result = await resendRegistrationCode("user@example.com");
+
+      expect(result).toEqual({ email: "user@example.com" });
+      expect(mockPendingUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { email: "user@example.com" },
+          data: expect.objectContaining({
+            attemptCount: 0,
+            resendCount: { increment: 1 },
+          }),
+        })
+      );
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+        to: "user@example.com",
+        code: expect.stringMatching(/^\d{6}$/),
+      });
+    });
+
+    test("propagates email send failures", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        lastSentAt: new Date(Date.now() - 61_000),
+      });
+      mockHashPassword.mockResolvedValueOnce("new-code-hash");
+      mockPendingUpdate.mockResolvedValue({});
+      mockSendVerificationEmail.mockRejectedValue(new Error("provider down"));
+
+      await expect(
+        resendRegistrationCode("user@example.com")
+      ).rejects.toThrow("provider down");
     });
   });
 

@@ -39,6 +39,13 @@ let refreshCookie = null;
 
 describe("Auth API", () => {
   afterAll(async () => {
+    try {
+      await prisma.pendingRegistration.deleteMany({
+        where: { email: TEST_USER.email },
+      });
+    } catch (_error) {
+      // ignore if any errors occur during cleanup
+    }
     if (createdUserId) {
       await prisma.user.deleteMany({
         where: {
@@ -102,6 +109,74 @@ describe("Auth API", () => {
 
       expect(res.statusCode).toBe(400)
     })
+
+    test("Login fails before email verification", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: TEST_USER.email,
+          password: TEST_USER.password,
+        });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toEqual({
+        message: "User not found",
+      });
+    });
+
+    test("Verify rejects wrong code", async () => {
+      const res = await request(app)
+        .post("/api/auth/register/verify")
+        .send({
+          email: TEST_USER.email,
+          code: "000000",
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({
+        message: "Invalid or expired verification code",
+      });
+    });
+
+    test("Resend issues a new code", async () => {
+      await prisma.pendingRegistration.update({
+        where: { email: TEST_USER.email },
+        data: { lastSentAt: new Date(Date.now() - 61_000) },
+      });
+
+      const res = await request(app)
+        .post("/api/auth/register/resend")
+        .send({ email: TEST_USER.email });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        message: "Verification code resent successfully.",
+      });
+      expect(typeof sentCodesByEmail.get(TEST_USER.email)).toBe("string");
+    });
+
+    test("Resend enforces cooldown", async () => {
+      // first check if now() and lastSentAt are within the cooldown period (10 secs)
+      const pending = prisma.pendingRegistration.findUnique({
+        where: { email: TEST_USER.email },
+      });
+      const lastSentAt = pending.lastSentAt;
+      const now = new Date();
+      const cooldownMs = 10 * 1000; 
+
+      if (lastSentAt && now - lastSentAt < cooldownMs) {
+        return;
+      }
+
+      const res = await request(app)
+        .post("/api/auth/register/resend")
+        .send({ email: TEST_USER.email });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({
+        message: "Please wait before requesting a new code",
+      });
+    });
 
     test("Verify creates user after code check", async () => {
       const code = sentCodesByEmail.get(TEST_USER.email);

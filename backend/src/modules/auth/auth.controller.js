@@ -62,7 +62,6 @@ async function verifyRegistration(req, res) {
         const user = await verifyRegistrationCode(email, code);
         return res.status(201).json({ message: "User registered successfully", userId: user.userId });
     } catch (error) {
-        console.error("Error in verifyRegistration:", error);
         if (error instanceof AuthError) {
             if (error.message.includes("already in use")) {
                 return res.status(409).json({ message: error.message });
