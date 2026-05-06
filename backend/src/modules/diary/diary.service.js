@@ -2,7 +2,7 @@ import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntrie
 import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
-import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
+import {searchFoodById} from "../../utils/searchFood.js"
 import { fetchGoals } from "../goals/goals.repository.js";
 import { listRecipes } from "../recipes/recipes.repository.js";
 
@@ -185,8 +185,7 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
     var parsed = null;
     
     if (fatSecret != null) {
-        const foodDetails = await searchFoodById(fatSecret.externalId);
-        parsed = parseFoodResponse(foodDetails);
+        parsed = await searchFoodById(fatSecret.externalId);
     }
     
     const foodItem = await createFoodItem({

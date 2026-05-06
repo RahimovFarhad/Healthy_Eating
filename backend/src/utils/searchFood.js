@@ -65,28 +65,44 @@ async function searchFoodById(id) {
 const parser = new XMLParser({ ignoreAttributes: false });
 
 function parseFoodResponse(xml) {
-    const result = parser.parse(xml);
-    const food = result.food;
-    const rawServings = food.servings.serving;
-    const servings = Array.isArray(rawServings) ? rawServings : [rawServings];
+    try {
+        const result = parser.parse(xml);
+        
+        // Log the parsed result to debug
+        
+        const food = result.food;
+        
+        if (!food) {
+            throw new Error('Invalid food data: no food object found');
+        }
+        
+        if (!food.servings || !food.servings.serving) {
+            throw new Error('Invalid food data: no servings found');
+        }
+        
+        const rawServings = food.servings.serving;
+        const servings = Array.isArray(rawServings) ? rawServings : [rawServings];
 
-    return {
-        name: food.food_name,
-        brand: food.brand_name || null,
-        portions: servings.map(s => ({
-            description: s.serving_description,
-            weight_g: parseFloat(s.metric_serving_amount),
-            nutrients: [
-                { nutrientId: 1, amount: parseFloat(s.calories)     || 0 },
-                { nutrientId: 2, amount: parseFloat(s.protein)       || 0 },
-                { nutrientId: 3, amount: parseFloat(s.carbohydrate)  || 0 },
-                { nutrientId: 4, amount: parseFloat(s.fat)           || 0 },
-                { nutrientId: 5, amount: parseFloat(s.fiber)         || 0 },
-                { nutrientId: 6, amount: parseFloat(s.sugar)         || 0 },
-                { nutrientId: 7, amount: parseFloat(s.sodium)        || 0 },
-            ]
-        }))
-    };
+        return {
+            name: food.food_name,
+            brand: food.brand_name || null,
+            portions: servings.map(s => ({
+                description: s.serving_description,
+                weight_g: parseFloat(s.metric_serving_amount),
+                nutrients: [
+                    { nutrientId: 1, amount: parseFloat(s.calories)     || 0 },
+                    { nutrientId: 2, amount: parseFloat(s.protein)       || 0 },
+                    { nutrientId: 3, amount: parseFloat(s.carbohydrate)  || 0 },
+                    { nutrientId: 4, amount: parseFloat(s.fat)           || 0 },
+                    { nutrientId: 5, amount: parseFloat(s.fiber)         || 0 },
+                    { nutrientId: 6, amount: parseFloat(s.sugar)         || 0 },
+                    { nutrientId: 7, amount: parseFloat(s.sodium)        || 0 },
+                ]
+            }))
+        };
+    } catch (error) {
+        throw error;
+    }
 }
 
 export { searchFood, searchFoodById, parseFoodResponse };

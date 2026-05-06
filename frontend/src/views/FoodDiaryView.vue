@@ -194,9 +194,10 @@
                 <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
                 <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
               </div>
-              <button class="btn btn-gf btn-sm ms-2"
+              <button class="btn btn-sm fw-semibold ms-2"
                       :disabled="mealAddingFoodId[meal.id] === food.food_id"
-                      @click="handleAddMealFood(meal.id, food.food_id)">
+                      @click="handleAddMealFood(meal.id, food.food_id)"
+                      style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
                 {{ mealAddingFoodId[meal.id] === food.food_id ? '…' : 'Add' }}
               </button>
             </div>
@@ -216,8 +217,8 @@
                   <div class="small fw-bold">{{ r.title }}</div>
                   <div style="font-size:0.72rem;color:#666;">{{ r.kcal }} kcal · P:{{ r.protein }}g · C:{{ r.carbs }}g · F:{{ r.fat }}g</div>
                   <div style="font-size:0.72rem;color:#888;">{{ r.time }}</div>
-                  <button class="btn btn-gf btn-sm w-100 mt-1"
-                          style="font-size:0.72rem;"
+                  <button class="btn btn-sm fw-semibold w-100 mt-1"
+                          style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.72rem;"
                           :disabled="recipeAdding[r.id + meal.id]"
                           @click="handleAddRecipe(r, meal.id)">
                     {{ recipeAdding[r.id + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
@@ -250,8 +251,9 @@
             <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
             <span class="small text-muted">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
-            <button class="btn btn-gf-outline btn-sm py-0 px-1" title="Edit entry"
-                    @click="startEditItem(entry)">Edit</button>
+            <button class="btn btn-sm fw-semibold" title="Edit entry"
+                    @click="startEditItem(entry)"
+                    style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.75rem;">Edit</button>
             <button class="btn btn-sm py-0 px-1"
                     style="background:#fde8e8;border:1px solid #d99;color:#c44;"
                     title="Remove entry"
@@ -274,10 +276,12 @@
           </div>
           <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
-            <button class="btn btn-gf btn-sm" :disabled="editSaving" @click="saveEditItem(entry.itemId)">
+            <button class="btn btn-sm fw-semibold" :disabled="editSaving" @click="saveEditItem(entry.itemId)"
+                    style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
               {{ editSaving ? 'Saving…' : 'Save' }}
             </button>
-            <button class="btn btn-outline-secondary btn-sm" @click="editingItem = null">Cancel</button>
+            <button class="btn btn-sm" @click="editingItem = null"
+                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
           </div>
         </div>
       </div>
@@ -289,25 +293,29 @@
       </div>
 
       <div class="mt-2">
-        <button class="btn btn-gf-outline btn-sm"
-                @click="showSnackPanel = !showSnackPanel">
+        <button class="btn fw-semibold"
+                @click="showSnackPanel = !showSnackPanel"
+                style="background:#f3f4f6;color:#1b4d1b;border:0.75px solid #1b4d1b;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;">
           {{ showSnackPanel ? 'Close' : 'Add Snack / Drink' }}
         </button>
       </div>
 
-      <div v-if="showSnackPanel" class="add-meal-panel mt-2">
+      <div v-if="showSnackPanel" class="p-4 rounded mt-3"
+           style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
 
-        <div class="d-flex gap-2 mb-2">
-          <input type="text" class="form-control form-control-sm"
+        <div class="d-flex gap-2 mb-3">
+          <input type="text" class="form-control"
                  placeholder="Search food or drink (e.g. banana, orange juice)..."
                  v-model="snackQuery"
-                 @keyup.enter="searchSnacks">
-          <button class="btn btn-gf btn-sm px-3" @click="searchSnacks" :disabled="snackLoading">
+                 @keyup.enter="searchSnacks"
+                 style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+          <button class="btn fw-semibold" @click="searchSnacks" :disabled="snackLoading"
+                  style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
             {{ snackLoading ? '...' : 'Search' }}
           </button>
         </div>
 
-        <div v-if="snackError" class="text-danger small mb-2">{{ snackError }}</div>
+        <div v-if="snackError" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ snackError }}</div>
 
         <div v-if="snackResults.length > 0" class="border rounded p-2 mb-2" style="background:#fff;">
           <div v-for="food in snackResults" :key="food.food_id"
@@ -492,7 +500,11 @@ async function searchMealFood(mealId) {
   mealSearchError.value[mealId] = ''
   mealSearchResults.value[mealId] = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(q)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(q)}`)
+    if (!res.ok) {
+      mealSearchError.value[mealId] = 'Search failed - check backend logs'
+      return
+    }
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {
@@ -500,8 +512,9 @@ async function searchMealFood(mealId) {
       return
     }
     mealSearchResults.value[mealId] = Array.isArray(foods) ? foods : [foods]
-  } catch {
+  } catch (e) {
     mealSearchError.value[mealId] = 'Search failed.'
+    console.error('Search error:', e)
   } finally {
     mealSearchLoading.value[mealId] = false
   }
@@ -535,7 +548,11 @@ async function searchSnacks() {
   snackError.value = ''
   snackResults.value = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
+    if (!res.ok) {
+      snackError.value = 'Search failed - check backend logs'
+      return
+    }
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {
@@ -543,8 +560,9 @@ async function searchSnacks() {
       return
     }
     snackResults.value = Array.isArray(foods) ? foods : [foods]
-  } catch {
+  } catch (e) {
     snackError.value = 'Search failed - is the backend running?'
+    console.error('Search error:', e)
   } finally {
     snackLoading.value = false
   }
