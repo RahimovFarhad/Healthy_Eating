@@ -5,9 +5,8 @@
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
         <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Food Diary</h2>
-        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">{{ formattedDate }} - Log everything you eat and drink today</p>
+        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Log everything you eat and drink today</p>
       </div>
-
       <div class="d-flex align-items-center gap-2">
         <button class="btn" @click="handlePrevDay"
                 style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;">‹</button>
@@ -32,14 +31,33 @@
             {{ caloriesRemaining }} kcal
           </div>
         </div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Protein</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.protein }}g</div></div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Carbs</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.carbs }}g</div></div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Fat</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.fat }}g</div></div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Fibre</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.fibre }}g</div></div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Sugar</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.sugar }}g</div></div>
-        <div><div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Salt</div><div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.salt }}g</div></div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Protein</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.protein }}g</div>
+        </div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Carbs</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.carbs }}g</div>
+        </div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Fat</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.fat }}g</div>
+        </div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Fibre</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.fibre }}g</div>
+        </div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Sugar</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.sugar }}g</div>
+        </div>
+        <div>
+          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Salt</div>
+          <div style="color:#1b4d1b;font-size:1.125rem;font-weight:600;">{{ headerTotals.salt }}g</div>
+        </div>
         <div class="ms-auto">
-          <RouterLink to="/nutrition" class="btn fw-semibold" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;text-decoration:none;">
+          <RouterLink to="/nutrition" class="btn fw-semibold"
+                      style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;text-decoration:none;">
             Nutrition Analysis →
           </RouterLink>
         </div>
@@ -54,8 +72,8 @@
         <span style="color:#6b7280;font-size:0.875rem;font-weight:500;">Total: {{ meal.entries.reduce((s, e) => s + (e.kcal || 0), 0) }} kcal</span>
       </div>
 
-      <div v-for="entry in meal.entries" :key="entry.itemId" class="p-3 rounded mb-2"
-           style="background:#fff;border:1px solid #e5e7eb;">
+      <div v-for="entry in meal.entries" :key="entry.itemId"
+           class="p-3 rounded mb-2" style="background:#fff;border:1px solid #e5e7eb;">
 
         <div v-if="editingItem?.itemId !== entry.itemId"
              class="d-flex justify-content-between align-items-start">
@@ -73,128 +91,130 @@
             <button class="btn btn-sm fw-semibold" title="Edit entry"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                     @click="startEditItem(entry)">Edit</button>
-            <button class="btn btn-sm fw-semibold"
+            <button class="btn btn-sm fw-semibold" title="Remove entry"
                     style="background:#fecaca;border:none;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
-                    title="Remove entry"
                     :disabled="removingItemId === entry.itemId"
                     @click="handleRemoveItem(entry.itemId)">
-              {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
+              {{ removingItemId === entry.itemId ? '…' : '×' }}
             </button>
           </div>
         </div>
 
-        <div v-else class="p-3 rounded" style="background:#fffaf5;border:1.25px solid #1b4d1b;">
-          <div class="row g-3 mb-3 align-items-end">
+        <div v-else class="p-2 rounded" style="background:#f0f7ef;border:1px solid #1b4d1b;">
+          <div class="row g-2 mb-2 align-items-end">
             <div class="col-auto">
-              <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.9375rem;">{{ entry.name }}</div>
+              <div class="fw-semibold mb-1" style="color:#1b4d1b;">{{ entry.name }}</div>
               <div style="color:#6b7280;font-size:0.8125rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Quantity (servings)</label>
-              <input type="number" min="0.1" step="0.1" class="form-control" v-model.number="editQty"
-                     style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+              <label class="form-label form-label-sm">Quantity (servings)</label>
+              <input type="number" min="0.1" step="0.1" class="form-control form-control-sm" v-model.number="editQty">
             </div>
           </div>
-          <div v-if="editError" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ editError }}</div>
+          <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
-            <button class="btn fw-semibold" :disabled="editSaving" @click="saveEditItem(entry.itemId)"
-                    style="background:#1b4d1b;color:#ffffff;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">
+            <button class="btn btn-sm fw-semibold" :disabled="editSaving"
+                    style="background:#1b4d1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                    @click="saveEditItem(entry.itemId)">
               {{ editSaving ? 'Saving…' : 'Save' }}
             </button>
-            <button class="btn fw-semibold" @click="editingItem = null"
-                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">Cancel</button>
+            <button class="btn btn-sm"
+                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                    @click="editingItem = null">Cancel</button>
           </div>
         </div>
 
       </div>
 
       <div v-if="meal.entries.length === 0"
-           class="rounded p-4 text-center my-2"
-           style="background:#f9fafb;border:2px dashed #e5e7eb;">
-        <p class="mb-0" style="color:#9ca3af;font-size:0.875rem;">Nothing logged yet for {{ meal.label.toLowerCase() }} - use the panel below to add</p>
+           class="p-3 text-center rounded my-2" style="background:#f9fafb;border:2px dashed #e5e7eb;">
+        <small style="color:#9ca3af;">Nothing logged yet for {{ meal.label.toLowerCase() }}</small>
       </div>
 
       <div class="mt-3">
         <button class="btn fw-semibold"
-                style="background:#f3f4f6;color:#1b4d1b;border:0.75px solid #1b4d1b;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;"
+                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
                 @click="openPanel === meal.id ? openPanel = null : (openPanel = meal.id, activeTab[meal.id] === 'recipes' && loadDiaryRecipes())">
-          {{ openPanel === meal.id ? 'Close' : 'Add to ' + meal.label }}
+          {{ openPanel === meal.id ? 'Close' : '+ Add to ' + meal.label }}
         </button>
       </div>
 
-      <div v-if="openPanel === meal.id" class="p-4 rounded mt-3"
-           style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
+      <div v-if="openPanel === meal.id" class="mt-3 p-4 rounded"
+           style="background:#f9fafb;border:1.25px solid #1b4d1b;border-radius:12px;">
 
-        <div class="d-flex gap-2 mb-4">
+        <div class="d-flex gap-2 mb-3">
           <button v-for="tab in addTabs" :key="tab.id"
                   class="btn"
-                  :style="activeTab[meal.id] === tab.id ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+                  :style="activeTab[meal.id] === tab.id ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;'"
                   @click="activeTab[meal.id] = tab.id; if (tab.id === 'recipes') loadDiaryRecipes()">
             {{ tab.label }}
           </button>
         </div>
 
         <div v-if="activeTab[meal.id] === 'custom'">
-          <div class="row g-3 mb-3">
+          <div class="row g-2 mb-2">
             <div class="col-md-4">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Food Name</label>
+              <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Food Name</label>
               <input type="text" class="form-control" placeholder="e.g. Porridge"
-                     v-model="customForm[meal.id].name"
-                     style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+                     style="border:1px solid #d4e7d4;border-radius:8px;"
+                     v-model="customForm[meal.id].name">
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Calories (kcal)</label>
-              <input type="number" class="form-control" v-model.number="customForm[meal.id].kcal"
-                     style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+              <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Calories (kcal)</label>
+              <input type="number" class="form-control"
+                     style="border:1px solid #d4e7d4;border-radius:8px;"
+                     v-model.number="customForm[meal.id].kcal">
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Serving Size</label>
+              <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Serving Size</label>
               <input type="text" class="form-control" placeholder="e.g. 100g"
-                     v-model="customForm[meal.id].serving"
-                     style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+                     style="border:1px solid #d4e7d4;border-radius:8px;"
+                     v-model="customForm[meal.id].serving">
             </div>
           </div>
-          <div class="row g-3 mb-3">
+          <div class="row g-2 mb-3">
             <div class="col" v-for="field in customNutrientFields" :key="field.key">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">{{ field.label }}</label>
-              <input type="number" class="form-control" v-model.number="customForm[meal.id][field.key]"
-                     style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+              <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">{{ field.label }}</label>
+              <input type="number" class="form-control"
+                     style="border:1px solid #d4e7d4;border-radius:8px;"
+                     v-model.number="customForm[meal.id][field.key]">
             </div>
           </div>
-          <div v-if="customError[meal.id]" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ customError[meal.id] }}</div>
-          <div class="d-flex gap-2">
-            <button class="btn fw-semibold" :disabled="customSaving[meal.id]" @click="handleAddCustom(meal.id)"
-                    style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
-              {{ customSaving[meal.id] ? 'Adding…' : 'Add Entry' }}
-            </button>
-          </div>
+          <div v-if="customError[meal.id]" class="text-danger small mb-2">{{ customError[meal.id] }}</div>
+          <button class="btn fw-semibold" :disabled="customSaving[meal.id]"
+                  style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;"
+                  @click="handleAddCustom(meal.id)">
+            {{ customSaving[meal.id] ? 'Adding…' : 'Add Entry' }}
+          </button>
         </div>
 
         <div v-if="activeTab[meal.id] === 'saved'">
-          <div class="d-flex gap-2 mb-3">
+          <div class="d-flex gap-2 mb-2">
             <input type="text" class="form-control"
                    placeholder="Search food database…"
+                   style="border:1px solid #d4e7d4;border-radius:8px;"
                    v-model="mealSearchQuery[meal.id]"
-                   @keyup.enter="searchMealFood(meal.id)"
-                   style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
+                   @keyup.enter="searchMealFood(meal.id)">
             <button class="btn fw-semibold"
+                    style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;"
                     :disabled="mealSearchLoading[meal.id]"
-                    @click="searchMealFood(meal.id)"
-                    style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
+                    @click="searchMealFood(meal.id)">
               {{ mealSearchLoading[meal.id] ? '…' : 'Search' }}
             </button>
           </div>
-          <div v-if="mealSearchError[meal.id]" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ mealSearchError[meal.id] }}</div>
+          <div v-if="mealSearchError[meal.id]" class="text-danger small mb-2">{{ mealSearchError[meal.id] }}</div>
           <div v-if="(mealSearchResults[meal.id] ?? []).length > 0"
-               class="border rounded p-2 mb-2" style="background:#fff;">
+               class="rounded p-2 mb-2" style="background:#fff;border:1px solid #e5e7eb;">
             <div v-for="food in mealSearchResults[meal.id]" :key="food.food_id"
-                 class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                 class="d-flex justify-content-between align-items-center py-2"
+                 style="border-bottom:1px solid #f3f4f6;">
               <div>
-                <span class="small fw-semibold">{{ food.food_name }}</span>
-                <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
-                <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
+                <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ food.food_name }}</span>
+                <span v-if="food.brand_name" class="ms-1" style="color:#6b7280;font-size:0.8125rem;">({{ food.brand_name }})</span>
+                <div style="font-size:0.75rem;color:#9ca3af;">{{ food.food_description }}</div>
               </div>
-              <button class="btn btn-gf btn-sm ms-2"
+              <button class="btn btn-sm fw-semibold ms-2"
+                      style="background:#1b4d1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;white-space:nowrap;"
                       :disabled="mealAddingFoodId[meal.id] === food.food_id"
                       @click="handleAddMealFood(meal.id, food.food_id)">
                 {{ mealAddingFoodId[meal.id] === food.food_id ? '…' : 'Add' }}
@@ -204,26 +224,31 @@
         </div>
 
         <div v-if="activeTab[meal.id] === 'recipes'">
-          <input type="text" class="form-control form-control-sm mb-2"
+          <input type="text" class="form-control mb-3"
                  placeholder="Search recipes..."
+                 style="border:1px solid #d4e7d4;border-radius:8px;"
                  v-model="recipeSearch">
-          <div class="row g-2" style="max-height:340px;overflow-y:auto;">
-            <div class="col-md-4" v-for="r in filteredRecipes" :key="r.id">
-              <div class="card h-100">
-                <img :src="r.image" :alt="r.title"
+          <div v-if="recipesLoading" class="text-center py-3" style="color:#9ca3af;"><small>Loading recipes…</small></div>
+          <div v-else class="row g-3" style="max-height:340px;overflow-y:auto;">
+            <div class="col-md-4" v-for="r in filteredRecipes" :key="r.recipeId">
+              <div class="h-100 rounded" style="background:#fff;border:1px solid #e5e7eb;overflow:hidden;">
+                <img :src="r.image || '/src/assets/hero.png'" :alt="r.title"
                      style="width:100%;height:90px;object-fit:cover;" />
                 <div class="p-2">
-                  <div class="small fw-bold">{{ r.title }}</div>
-                  <div style="font-size:0.72rem;color:#666;">{{ r.kcal }} kcal · P:{{ r.protein }}g · C:{{ r.carbs }}g · F:{{ r.fat }}g</div>
-                  <div style="font-size:0.72rem;color:#888;">{{ r.time }}</div>
-                  <button class="btn btn-gf btn-sm w-100 mt-1"
-                          style="font-size:0.72rem;"
-                          :disabled="recipeAdding[r.id + meal.id]"
+                  <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;">{{ r.title }}</div>
+                  <div style="font-size:0.75rem;color:#6b7280;">{{ r.kcal }} kcal · P:{{ r.protein }}g · C:{{ r.carbs }}g · F:{{ r.fat }}g</div>
+                  <div style="font-size:0.75rem;color:#9ca3af;">{{ r.cookTime }}</div>
+                  <button class="btn btn-sm fw-semibold w-100 mt-2"
+                          style="background:#1b4d1b;color:#fff;border:none;border-radius:6px;font-size:0.8125rem;"
+                          :disabled="recipeAdding[r.recipeId + meal.id]"
                           @click="handleAddRecipe(r, meal.id)">
-                    {{ recipeAdding[r.id + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
+                    {{ recipeAdding[r.recipeId + meal.id] ? 'Adding…' : 'Add (1 serving)' }}
                   </button>
                 </div>
               </div>
+            </div>
+            <div v-if="filteredRecipes.length === 0" class="text-center py-3 col-12" style="color:#9ca3af;">
+              No recipes match.
             </div>
           </div>
         </div>
@@ -231,41 +256,43 @@
       </div>
     </div>
 
-    <div class="mb-4">
-      <div class="meal-section-header d-flex justify-content-between">
-        <span>SNACKS &amp; DRINKS</span>
-        <span>Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
+    <div class="mb-5">
+      <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3"
+           style="background:#f9fafb;border:0.75px solid #1b4d1b;">
+        <span style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;">SNACKS &amp; DRINKS</span>
+        <span style="color:#6b7280;font-size:0.875rem;font-weight:500;">Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
       </div>
 
-      <div v-for="entry in (snackMeal?.entries ?? [])" :key="entry.itemId" class="diary-entry-row mt-1">
+      <div v-for="entry in (snackMeal?.entries ?? [])" :key="entry.itemId"
+           class="p-3 rounded mb-2" style="background:#fff;border:1px solid #e5e7eb;">
         <div v-if="editingItem?.itemId !== entry.itemId" class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="fw-semibold small">{{ entry.name }}</div>
-            <div style="font-size:0.75rem;color:#666;">{{ entry.detail }} · qty {{ entry.quantity }}</div>
+            <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.9375rem;">{{ entry.name }}</div>
+            <div style="font-size:0.8125rem;color:#6b7280;">{{ entry.detail }} · qty {{ entry.quantity }}</div>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="small text-muted">Carbs: {{ entry.carbs }}g</span>
-            <span class="small text-muted">Protein: {{ entry.protein }}g</span>
-            <span class="small text-muted">Fat: {{ entry.fat }}g</span>
-            <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
-            <span class="small text-muted">Salt: {{ entry.salt }}g</span>
-            <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
-            <button class="btn btn-gf-outline btn-sm py-0 px-1" title="Edit entry"
+          <div class="d-flex align-items-center gap-3">
+            <span style="font-size:0.8125rem;color:#6b7280;">Carbs: {{ entry.carbs }}g</span>
+            <span style="font-size:0.8125rem;color:#6b7280;">Protein: {{ entry.protein }}g</span>
+            <span style="font-size:0.8125rem;color:#6b7280;">Fat: {{ entry.fat }}g</span>
+            <span style="font-size:0.8125rem;color:#6b7280;">Sugar: {{ entry.sugar }}g</span>
+            <span style="font-size:0.8125rem;color:#6b7280;">Salt: {{ entry.salt }}g</span>
+            <span class="fw-bold" style="color:#2e7d32;font-size:0.9375rem;">{{ entry.kcal }} kcal</span>
+            <button class="btn btn-sm fw-semibold" title="Edit entry"
+                    style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                     @click="startEditItem(entry)">Edit</button>
-            <button class="btn btn-sm py-0 px-1"
-                    style="background:#fde8e8;border:1px solid #d99;color:#c44;"
-                    title="Remove entry"
+            <button class="btn btn-sm fw-semibold" title="Remove entry"
+                    style="background:#fecaca;border:none;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                     :disabled="removingItemId === entry.itemId"
                     @click="handleRemoveItem(entry.itemId)">
-              {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
+              {{ removingItemId === entry.itemId ? '…' : '×' }}
             </button>
           </div>
         </div>
-        <div v-else class="p-2 rounded" style="background:#f0f7ef;border:1px solid #5a9e56;">
+        <div v-else class="p-2 rounded" style="background:#f0f7ef;border:1px solid #1b4d1b;">
           <div class="row g-2 mb-2 align-items-end">
             <div class="col-auto">
-              <div class="small fw-semibold mb-1">{{ entry.name }}</div>
-              <div class="text-muted" style="font-size:0.75rem;">{{ entry.detail }}</div>
+              <div class="fw-semibold mb-1" style="color:#1b4d1b;">{{ entry.name }}</div>
+              <div style="color:#6b7280;font-size:0.8125rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
               <label class="form-label form-label-sm">Quantity (servings)</label>
@@ -274,75 +301,75 @@
           </div>
           <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
-            <button class="btn btn-gf btn-sm" :disabled="editSaving" @click="saveEditItem(entry.itemId)">
+            <button class="btn btn-sm fw-semibold" :disabled="editSaving"
+                    style="background:#1b4d1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                    @click="saveEditItem(entry.itemId)">
               {{ editSaving ? 'Saving…' : 'Save' }}
             </button>
-            <button class="btn btn-outline-secondary btn-sm" @click="editingItem = null">Cancel</button>
+            <button class="btn btn-sm"
+                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                    @click="editingItem = null">Cancel</button>
           </div>
         </div>
       </div>
 
       <div v-if="!snackMeal || snackMeal.entries.length === 0"
-           class="border rounded p-3 text-center text-muted my-1"
-           style="border-style:dashed!important;">
-        <small>Nothing logged yet for snacks &amp; drinks</small>
+           class="p-3 text-center rounded my-2" style="background:#f9fafb;border:2px dashed #e5e7eb;">
+        <small style="color:#9ca3af;">Nothing logged yet for snacks &amp; drinks</small>
       </div>
 
-      <div class="mt-2">
-        <button class="btn btn-gf-outline btn-sm"
+      <div class="mt-3">
+        <button class="btn fw-semibold"
+                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
                 @click="showSnackPanel = !showSnackPanel">
-          {{ showSnackPanel ? 'Close' : 'Add Snack / Drink' }}
+          {{ showSnackPanel ? 'Close' : '+ Add Snack / Drink' }}
         </button>
       </div>
 
-      <div v-if="showSnackPanel" class="add-meal-panel mt-2">
-
+      <div v-if="showSnackPanel" class="mt-3 p-4 rounded"
+           style="background:#f9fafb;border:1.25px solid #1b4d1b;border-radius:12px;">
         <div class="d-flex gap-2 mb-2">
-          <input type="text" class="form-control form-control-sm"
+          <input type="text" class="form-control"
                  placeholder="Search food or drink (e.g. banana, orange juice)..."
+                 style="border:1px solid #d4e7d4;border-radius:8px;"
                  v-model="snackQuery"
                  @keyup.enter="searchSnacks">
-          <button class="btn btn-gf btn-sm px-3" @click="searchSnacks" :disabled="snackLoading">
-            {{ snackLoading ? '...' : 'Search' }}
+          <button class="btn fw-semibold"
+                  style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;"
+                  @click="searchSnacks" :disabled="snackLoading">
+            {{ snackLoading ? '…' : 'Search' }}
           </button>
         </div>
 
         <div v-if="snackError" class="text-danger small mb-2">{{ snackError }}</div>
 
-        <div v-if="snackResults.length > 0" class="border rounded p-2 mb-2" style="background:#fff;">
+        <div v-if="snackResults.length > 0" class="rounded p-2 mb-2" style="background:#fff;border:1px solid #e5e7eb;">
           <div v-for="food in snackResults" :key="food.food_id"
-               class="d-flex justify-content-between align-items-center py-1 border-bottom">
+               class="d-flex justify-content-between align-items-center py-2"
+               style="border-bottom:1px solid #f3f4f6;">
             <div>
-              <span class="small fw-semibold">{{ food.food_name }}</span>
-              <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
-              <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
+              <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ food.food_name }}</span>
+              <span v-if="food.brand_name" class="ms-1" style="color:#6b7280;font-size:0.8125rem;">({{ food.brand_name }})</span>
+              <div style="font-size:0.75rem;color:#9ca3af;">{{ food.food_description }}</div>
             </div>
-            <button class="btn btn-gf btn-sm ms-2" style="white-space:nowrap;"
+            <button class="btn btn-sm fw-semibold ms-2"
+                    style="background:#1b4d1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;white-space:nowrap;"
                     :disabled="snackAddingFoodId === food.food_id"
                     @click="handleAddSnack(food.food_id)">
-              {{ snackAddingFoodId === food.food_id ? '...' : 'Add' }}
+              {{ snackAddingFoodId === food.food_id ? '…' : 'Add' }}
             </button>
           </div>
         </div>
-
       </div>
     </div>
-
-    <div class="card border p-3 mb-3">
-      <label class="form-label small fw-semibold">Daily Notes (optional)</label>
-      <textarea class="form-control form-control-sm" rows="2"
-                placeholder="How are you feeling today? Any notes about meals?"></textarea>
-    </div>
-
 
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import {
-  meals, recipes, headerTotals,
+  meals, headerTotals,
   diaryLoading, diaryError,
   viewDate, prevDay, nextDay,
   loadDiary,
@@ -350,9 +377,6 @@ import {
   updateItem, removeItem,
 } from '../diaryStore.js'
 import { apiFetch } from '../auth.js'
-
-const route = useRoute()
-const router = useRouter()
 
 const formattedDate = computed(() =>
   viewDate.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
@@ -381,25 +405,10 @@ async function loadCalorieGoal() {
 const caloriesRemaining = computed(() => calorieBudget.value - headerTotals.value.kcal)
 
 onMounted(() => {
-  // Check if there's a date in the URL query parameter
-  if (route.query.date) {
-    const dateFromQuery = new Date(route.query.date)
-    if (!isNaN(dateFromQuery.getTime())) {
-      viewDate.value = dateFromQuery
-    }
-  }
   loadDiary()
   loadCalorieGoal()
 })
-watch(viewDate, () => {
-  loadDiary()
-  // Update URL when date changes
-  const year = viewDate.value.getFullYear()
-  const month = String(viewDate.value.getMonth() + 1).padStart(2, '0')
-  const day = String(viewDate.value.getDate()).padStart(2, '0')
-  const dateStr = `${year}-${month}-${day}`
-  router.replace({ query: { date: dateStr } })
-})
+watch(viewDate, loadDiary)
 
 function handlePrevDay() { prevDay() }
 function handleNextDay() { nextDay() }
@@ -420,14 +429,31 @@ const activeTab = ref({
 
 const recipeSearch = ref('')
 const recipeAdding = ref({})
+const recipesLoading = ref(false)
+const diaryRecipes = ref([])
+
+async function loadDiaryRecipes() {
+  if (diaryRecipes.value.length > 0) return
+  recipesLoading.value = true
+  try {
+    const res = await apiFetch('/api/recipes')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) diaryRecipes.value = data.recipes ?? []
+  } catch {
+    // non-critical
+  } finally {
+    recipesLoading.value = false
+  }
+}
+
 const filteredRecipes = computed(() => {
-  if (!recipeSearch.value) return recipes.value
+  if (!recipeSearch.value) return diaryRecipes.value
   const q = recipeSearch.value.toLowerCase()
-  return recipes.value.filter(r => r.title.toLowerCase().includes(q))
+  return diaryRecipes.value.filter(r => r.title.toLowerCase().includes(q))
 })
 
 async function handleAddRecipe(recipe, mealId) {
-  const key = recipe.id + mealId
+  const key = recipe.recipeId + mealId
   recipeAdding.value[key] = true
   try {
     await addRecipeToDiary(recipe, mealId)
@@ -492,7 +518,7 @@ async function searchMealFood(mealId) {
   mealSearchError.value[mealId] = ''
   mealSearchResults.value[mealId] = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(q)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(q)}`)
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {
@@ -535,7 +561,7 @@ async function searchSnacks() {
   snackError.value = ''
   snackResults.value = []
   try {
-    const res = await fetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
+    const res = await apiFetch(`/api/search?query=${encodeURIComponent(snackQuery.value)}`)
     const data = await res.json()
     const foods = data?.foods?.food
     if (!foods) {

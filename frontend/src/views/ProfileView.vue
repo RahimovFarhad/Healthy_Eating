@@ -3,8 +3,8 @@
   <div class="container py-4" style="max-width:640px;">
 
     <div class="p-3 mb-3 rounded"
-         style="background:#e8f4e6;border:1px solid #5a9e56;">
-      <h4 style="color:#5a9e56;" class="mb-0">Your Profile</h4>
+         style="background:#e8f4e6;border:1px solid #1b4d1b;">
+      <h4 style="color:#1b4d1b;" class="mb-0">Your Profile</h4>
       <small class="text-secondary">Your account details</small>
     </div>
 
@@ -15,7 +15,7 @@
           {{ initials }}
         </div>
         <div>
-          <div class="fw-bold" style="font-size:1.2rem;color:#5a9e56;">{{ displayName }}</div>
+          <div class="fw-bold" style="font-size:1.2rem;color:#1b4d1b;">{{ displayName }}</div>
           <div class="text-muted small">{{ roleLabel }}</div>
         </div>
       </div>

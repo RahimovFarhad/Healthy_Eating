@@ -14,7 +14,7 @@ async function login(req, res) {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24 * 7
         });
 
@@ -115,7 +115,7 @@ async function logoutController(_req, res) {
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
     });
     return res.json({ message: "Logged out successfully" });
 }

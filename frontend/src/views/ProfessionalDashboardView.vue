@@ -5,19 +5,17 @@
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
         <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Professional Dashboard</h2>
-        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">{{ today }} - manage and review your assigned clients</p>
+        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">{{ today }} — manage and review your assigned clients</p>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn fw-semibold" @click="showInvite = !showInvite"
-                style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">
-          {{ showInvite ? 'Cancel' : 'Invite Client' }}
-        </button>
-      </div>
+      <button class="btn fw-semibold" @click="showInvite = !showInvite"
+              style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">
+        {{ showInvite ? 'Cancel' : 'Invite Client' }}
+      </button>
     </div>
 
     <div v-if="showInvite" class="p-4 rounded mb-4"
          style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
-      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Invite a Client</h6>
+      <h6 class="fw-bold mb-2" style="color:#1b4d1b;font-size:0.9375rem;">Invite a Client</h6>
       <p class="mb-3" style="color:#6b7280;font-size:0.875rem;">
         Enter the client's registered email address to send them an invitation.
       </p>
@@ -25,11 +23,11 @@
         <div style="flex:1;max-width:320px;">
           <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Client Email Address</label>
           <input type="email" class="form-control"
-                 v-model="inviteEmail" placeholder="client@example.com"
-                 style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;">
+                 style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
+                 v-model="inviteEmail" placeholder="client@example.com">
         </div>
         <button class="btn fw-semibold" @click="sendInvite" :disabled="inviteLoading || !inviteEmail"
-                style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">
+                style="background:#1b4d1b;color:#fff;border:none;padding:0.625rem 1.5rem;border-radius:8px;">
           {{ inviteLoading ? '…' : 'Send Invite' }}
         </button>
       </div>
@@ -38,15 +36,15 @@
     </div>
 
     <div v-if="pendingInvitations.length > 0" class="mb-4">
-      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:1.125rem;">
+      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">
         Pending Invitations
-        <span class="badge ms-2" style="background:#fbbf24;color:#fff;font-size:0.8125rem;padding:0.375rem 0.75rem;border-radius:6px;">{{ pendingInvitations.length }}</span>
+        <span class="badge ms-2" style="background:#e8a820;font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:6px;">{{ pendingInvitations.length }}</span>
       </h6>
       <div v-for="inv in pendingInvitations" :key="inv.id"
-           class="p-4 rounded mb-3 d-flex flex-row align-items-center justify-content-between gap-3"
+           class="mb-2 p-3 d-flex flex-row align-items-center justify-content-between gap-3 rounded"
            style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;">
         <div class="d-flex align-items-center gap-3 flex-grow-1">
-          <div class="avatar-circle" style="width:48px;height:48px;font-size:1rem;">
+          <div class="avatar-circle" style="width:42px;height:42px;font-size:0.9rem;">
             {{ initialsFor(inv.subscriber.fullName) }}
           </div>
           <div>
@@ -59,7 +57,7 @@
             </div>
           </div>
         </div>
-        <span class="badge" style="background:#fbbf24;color:#fff;font-size:0.8125rem;padding:0.375rem 0.75rem;border-radius:6px;">Pending</span>
+        <span class="badge" style="background:#e8a820;color:#fff;font-size:0.8125rem;padding:0.375rem 0.625rem;border-radius:6px;">Pending</span>
       </div>
     </div>
 
@@ -77,10 +75,9 @@
     <div v-else-if="error" class="alert alert-danger" style="border-radius:8px;">{{ error }}</div>
 
     <div v-else-if="clients.length === 0"
-         class="text-center py-5 rounded"
-         style="background:#f9fafb;border:2px dashed #e5e7eb;">
+         class="text-center py-5 rounded" style="background:#f9fafb;border:2px dashed #e5e7eb;">
       <p class="mb-2" style="color:#6b7280;font-size:0.9375rem;">No active clients yet.</p>
-      <small style="color:#9ca3af;">Invite a subscriber using their email - they'll appear here once they accept.</small>
+      <small style="color:#9ca3af;">Invite clients using their email — they'll appear here once they accept.</small>
     </div>
 
     <div v-else>
@@ -102,8 +99,8 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm"
-                    style="background:#fecaca;border:none;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;font-weight:500;"
+            <button class="btn btn-sm fw-semibold"
+                    style="background:#fecaca;border:none;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                     title="Remove client"
                     @click.stop="removeClient(client)">Remove</button>
             <span style="color:#1b4d1b;font-weight:bold;font-size:1.125rem;">
@@ -163,11 +160,15 @@
                        style="color:#9ca3af;font-size:0.875rem;">No entries logged today.</div>
                   <ul v-else class="list-unstyled mb-0">
                     <li v-for="entry in recentEntries(client.dashboard.data)" :key="entry.diaryEntryId"
-                        class="mb-2 pb-2" style="border-bottom:1px solid #f3f4f6;">
-                      <span class="fw-semibold text-capitalize" style="color:#1b4d1b;font-size:0.875rem;">{{ entry.mealType }}</span>
-                      <span class="ms-1" style="color:#6b7280;font-size:0.8125rem;">- {{ formatDate(entry.consumedAt) }}</span>
-                      <span v-if="entry.items?.length" class="ms-1"
-                            style="color:#9ca3af;font-size:0.8125rem;">({{ entry.items.length }} item{{ entry.items.length !== 1 ? 's' : '' }})</span>
+                        class="mb-2 pb-2 d-flex justify-content-between"
+                        style="border-bottom:1px solid #f3f4f6;">
+                      <div>
+                        <span class="fw-semibold text-capitalize" style="color:#1b4d1b;font-size:0.875rem;">{{ entry.mealType }}</span>
+                        <span class="ms-1" style="color:#6b7280;font-size:0.8125rem;">- {{ formatDate(entry.consumedAt) }}</span>
+                      </div>
+                      <span v-if="entry.items?.length" style="color:#9ca3af;font-size:0.8125rem;">
+                        ({{ entry.items.length }} item{{ entry.items.length !== 1 ? 's' : '' }})
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -178,7 +179,8 @@
                        style="color:#9ca3af;font-size:0.875rem;">No nutrition data yet.</div>
                   <ul v-else class="list-unstyled mb-0">
                     <li v-for="n in client.dashboard.data.nutritionPreview" :key="n.code"
-                        class="mb-2 pb-2 d-flex justify-content-between" style="border-bottom:1px solid #f3f4f6;">
+                        class="mb-2 pb-2 d-flex justify-content-between"
+                        style="border-bottom:1px solid #f3f4f6;">
                       <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ n.name }}</span>
                       <span style="color:#6b7280;font-size:0.875rem;">{{ n.totalAmount }} {{ n.unit }}</span>
                     </li>
@@ -189,8 +191,9 @@
                   <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Recent Risk Flags</h6>
                   <ul class="list-unstyled mb-0">
                     <li v-for="snap in riskSnapshots(client.dashboard.data)" :key="snap.snapshotId"
-                        class="mb-2 pb-2" style="border-bottom:1px solid #f3f4f6;">
-                      <span class="badge me-2"
+                        class="mb-2 pb-2 d-flex align-items-center gap-2"
+                        style="border-bottom:1px solid #f3f4f6;">
+                      <span class="badge"
                             :style="`background:${severityColor(snap.riskLevel)};color:#fff;font-size:0.8125rem;padding:0.25rem 0.5rem;border-radius:4px;`">
                         {{ snap.riskLevel }}
                       </span>
@@ -206,23 +209,20 @@
           <div v-if="activeTab[client.id] === 'summary'">
             <div class="d-flex gap-2 align-items-end mb-4">
               <div>
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Period</label>
-                <select class="form-select" v-model="client.summary.period"
-                        style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Period</label>
+                <select class="form-select" style="border:1px solid #d4e7d4;border-radius:8px;" v-model="client.summary.period">
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
                 </select>
               </div>
               <div>
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">End Date</label>
-                <input type="date" class="form-control"
-                       v-model="client.summary.endDate"
-                       style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">End Date</label>
+                <input type="date" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;"
+                       v-model="client.summary.endDate">
               </div>
-              <button class="btn fw-semibold" @click="loadSummary(client)"
-                      :disabled="client.summary.loading"
-                      style="background:#1b4d1b;color:#ffffff;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">
+              <button class="btn fw-semibold" @click="loadSummary(client)" :disabled="client.summary.loading"
+                      style="background:#1b4d1b;color:#fff;border:none;padding:0.625rem 1.25rem;border-radius:8px;">
                 {{ client.summary.loading ? '…' : 'Load' }}
               </button>
             </div>
@@ -230,16 +230,16 @@
             <div v-if="client.summary.loading" class="text-center py-3" style="color:#9ca3af;"><small>Loading…</small></div>
             <div v-else-if="client.summary.error" class="alert alert-danger" style="border-radius:8px;">{{ client.summary.error }}</div>
             <div v-else-if="client.summary.data">
-              <div class="row g-4 mb-4">
+              <div class="row g-3 mb-4">
 
                 <div class="col-md-4">
-                  <div class="p-4 text-center h-100 rounded" style="background:#f9fafb;">
-                    <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Calories</h6>
+                  <div class="p-3 text-center h-100 rounded" style="background:#f9fafb;">
+                    <h6 class="fw-bold mb-3" style="color:#1b4d1b;">Calories</h6>
                     <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
                       <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
-                      <circle cx="80" cy="80" r="62" fill="none" stroke="#2e7d32" stroke-width="18"
+                      <circle cx="80" cy="80" r="62" fill="none" stroke="#1b4d1b" stroke-width="18"
                               stroke-dasharray="389.6"
-                              :stroke-dashoffset="calorieOffset(client.summary.data)"
+                              :stroke-dashoffset="calorieOffset(client)"
                               stroke-linecap="round"
                               transform="rotate(-90 80 80)"/>
                       <text x="80" y="74" text-anchor="middle" font-size="18" font-weight="bold" fill="#1b4d1b">
@@ -255,12 +255,12 @@
                 </div>
 
                 <div class="col-md-4">
-                  <div class="p-4 text-center h-100 rounded" style="background:#f9fafb;position:relative;">
-                    <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Macronutrients</h6>
-                    <div style="position:absolute;top:12px;right:12px;text-align:center;">
+                  <div class="p-3 text-center h-100 rounded" style="background:#f9fafb;position:relative;">
+                    <h6 class="fw-bold mb-2" style="color:#1b4d1b;">Macronutrients</h6>
+                    <div style="position:absolute;top:8px;right:8px;text-align:center;">
                       <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
                         <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
-                        <template v-for="seg in IDEAL_MACRO_SEGS" :key="seg.code">
+                        <template v-for="seg in buildIdealSegments(client, MACRO_CODES)" :key="seg.code">
                           <circle cx="80" cy="80" r="62" fill="none"
                                   :stroke="seg.color" stroke-width="18"
                                   :stroke-dasharray="`${seg.dash} ${seg.gap}`"
@@ -268,7 +268,7 @@
                                   transform="rotate(-90 80 80)"/>
                         </template>
                       </svg>
-                      <span style="font-size:0.7rem;color:#9ca3af;">Ideal</span>
+                      <span style="font-size:0.6rem;color:#9ca3af;">Ideal</span>
                     </div>
                     <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
                       <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
@@ -279,12 +279,12 @@
                                 :stroke-dashoffset="seg.offset"
                                 transform="rotate(-90 80 80)"/>
                       </template>
-                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#6b7280">Macros</text>
+                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Macros</text>
                     </svg>
-                    <div class="mt-3 text-start" style="font-size:0.875rem;">
+                    <div class="mt-2 text-start" style="font-size:0.875rem;">
                       <div v-for="m in donutLegend(client.summary.data, MACRO_CODES)" :key="m.code"
-                           class="d-flex align-items-center gap-2 mb-2">
-                        <span style="display:inline-block;width:12px;height:12px;border-radius:3px;"
+                           class="d-flex align-items-center gap-1 mb-1">
+                        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
                               :style="`background:${m.color};`"></span>
                         <span style="color:#6b7280;">{{ m.name }}:</span>
                         <strong style="color:#1b4d1b;">{{ m.amount }} {{ m.unit }}</strong>
@@ -294,12 +294,12 @@
                 </div>
 
                 <div class="col-md-4">
-                  <div class="p-4 text-center h-100 rounded" style="background:#f9fafb;position:relative;">
-                    <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Micronutrients</h6>
-                    <div style="position:absolute;top:12px;right:12px;text-align:center;">
+                  <div class="p-3 text-center h-100 rounded" style="background:#f9fafb;position:relative;">
+                    <h6 class="fw-bold mb-2" style="color:#1b4d1b;">Micronutrients</h6>
+                    <div style="position:absolute;top:8px;right:8px;text-align:center;">
                       <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
                         <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
-                        <template v-for="seg in IDEAL_MICRO_SEGS" :key="seg.code">
+                        <template v-for="seg in buildIdealSegments(client, MICRO_CODES)" :key="seg.code">
                           <circle cx="80" cy="80" r="62" fill="none"
                                   :stroke="seg.color" stroke-width="18"
                                   :stroke-dasharray="`${seg.dash} ${seg.gap}`"
@@ -307,7 +307,7 @@
                                   transform="rotate(-90 80 80)"/>
                         </template>
                       </svg>
-                      <span style="font-size:0.7rem;color:#9ca3af;">Ideal</span>
+                      <span style="font-size:0.6rem;color:#9ca3af;">Ideal</span>
                     </div>
                     <svg viewBox="0 0 160 160" width="140" height="140" style="margin:0 auto;display:block;">
                       <circle cx="80" cy="80" r="62" fill="none" stroke="#e9ecef" stroke-width="18"/>
@@ -318,12 +318,12 @@
                                 :stroke-dashoffset="seg.offset"
                                 transform="rotate(-90 80 80)"/>
                       </template>
-                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#6b7280">Micros</text>
+                      <text x="80" y="80" text-anchor="middle" font-size="10" fill="#555">Micros</text>
                     </svg>
-                    <div class="mt-3 text-start" style="font-size:0.875rem;">
+                    <div class="mt-2 text-start" style="font-size:0.875rem;">
                       <div v-for="m in donutLegend(client.summary.data, MICRO_CODES)" :key="m.code"
-                           class="d-flex align-items-center gap-2 mb-2">
-                        <span style="display:inline-block;width:12px;height:12px;border-radius:3px;"
+                           class="d-flex align-items-center gap-1 mb-1">
+                        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;"
                               :style="`background:${m.color};`"></span>
                         <span style="color:#6b7280;">{{ m.name }}:</span>
                         <strong style="color:#1b4d1b;">{{ m.amount }} {{ m.unit }}</strong>
@@ -334,28 +334,28 @@
 
               </div>
 
-              <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:1rem;">Full Nutrient Breakdown</h6>
+              <h6 class="fw-bold mb-3" style="color:#1b4d1b;">Full Nutrient Breakdown</h6>
               <div class="table-responsive">
-                <table class="table table-sm mb-0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                <table class="table table-sm table-striped border mb-0">
                   <thead style="background:#1b4d1b;color:#fff;">
                     <tr>
-                      <th style="font-size:0.875rem;padding:0.75rem;">Nutrient</th>
-                      <th style="font-size:0.875rem;padding:0.75rem;">Amount</th>
-                      <th style="font-size:0.875rem;padding:0.75rem;">Unit</th>
-                      <th style="font-size:0.875rem;padding:0.75rem;">Reference</th>
-                      <th style="font-size:0.875rem;padding:0.75rem;">Progress</th>
+                      <th class="small">Nutrient</th>
+                      <th class="small">Amount</th>
+                      <th class="small">Unit</th>
+                      <th class="small">Reference</th>
+                      <th class="small">Progress</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="row in summaryBreakdown(client)" :key="row.code">
-                      <td style="font-size:0.875rem;font-weight:600;color:#1b4d1b;padding:0.75rem;">{{ row.name }}</td>
-                      <td style="font-size:0.875rem;padding:0.75rem;">{{ row.amount }}</td>
-                      <td style="font-size:0.875rem;color:#6b7280;padding:0.75rem;">{{ row.unit }}</td>
-                      <td style="font-size:0.875rem;color:#6b7280;padding:0.75rem;">{{ row.reference }}</td>
-                      <td style="width:140px;padding:0.75rem;">
-                        <div class="progress" style="height:10px;background:#f3f4f6;border-radius:6px;">
-                          <div class="progress-bar"
-                               :style="`width:${row.pct}%;background-color:${row.color};border-radius:6px;`"></div>
+                      <td class="small fw-semibold" style="color:#1b4d1b;">{{ row.name }}</td>
+                      <td class="small">{{ row.amount }}</td>
+                      <td class="small" style="color:#6b7280;">{{ row.unit }}</td>
+                      <td class="small" style="color:#6b7280;">{{ row.reference }}</td>
+                      <td style="width:120px;">
+                        <div class="progress" style="height:8px;border-radius:4px;">
+                          <div class="progress-bar" style="border-radius:4px;"
+                               :style="`width:${row.pct}%;background-color:${row.color};`"></div>
                         </div>
                       </td>
                     </tr>
@@ -372,18 +372,19 @@
             <div v-else-if="client.goals.error" class="alert alert-danger" style="border-radius:8px;">{{ client.goals.error }}</div>
             <div v-else>
               <div v-if="(client.goals.data ?? []).length === 0"
-                   style="color:#9ca3af;font-size:0.875rem;" class="mb-4">No goals set.</div>
+                   class="mb-3" style="color:#9ca3af;font-size:0.875rem;">No goals set.</div>
               <ul v-else class="list-unstyled mb-4">
                 <li v-for="goal in client.goals.data" :key="goal.goalId"
-                    class="mb-3 pb-3 d-flex justify-content-between align-items-center" style="border-bottom:1px solid #f3f4f6;">
+                    class="mb-2 pb-2 d-flex justify-content-between align-items-center"
+                    style="border-bottom:1px solid #f3f4f6;">
                   <div>
-                    <span class="fw-semibold" style="color:#1b4d1b;font-size:0.9375rem;">{{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}</span>
-                    <span class="ms-2" style="color:#6b7280;font-size:0.875rem;">{{ goalRange(goal) }}</span>
-                    <span class="badge ms-2"
-                          :style="`background:${goalSourceColor(goal.source)};color:#fff;font-size:0.8125rem;padding:0.25rem 0.5rem;border-radius:4px;`">
+                    <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}</span>
+                    <span class="ms-1" style="color:#6b7280;font-size:0.875rem;">{{ goalRange(goal) }}</span>
+                    <span class="badge ms-1"
+                          :style="`background:${goalSourceColor(goal.source)};color:#fff;font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:4px;`">
                       {{ goalSourceLabel(goal.source) }}
                     </span>
-                    <div v-if="goal.notes && goal.nutrient" style="color:#9ca3af;font-size:0.8125rem;margin-top:0.25rem;">
+                    <div v-if="goal.notes && goal.nutrient" style="color:#9ca3af;font-size:0.8125rem;">
                       {{ goal.notes }}
                     </div>
                   </div>
@@ -391,23 +392,22 @@
                 </li>
               </ul>
 
-              <div class="p-4 rounded" style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
+              <div class="p-4 rounded" style="background:#f9fafb;border:1.25px solid #1b4d1b;border-radius:12px;">
                 <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Set a Goal</h6>
 
                 <div class="d-flex flex-wrap gap-2 mb-4">
                   <button v-for="preset in goalPresets" :key="preset.title"
-                          class="btn btn-sm"
-                          style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.8125rem;font-weight:500;"
+                          class="btn btn-sm fw-semibold"
+                          style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
                           @click="applyGoalPreset(client, preset)">
                     {{ preset.title }}
                   </button>
                 </div>
 
-                <div class="row g-3 mb-3">
+                <div class="row g-2 mb-3">
                   <div class="col-md-4">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Tracked Nutrient</label>
-                    <select class="form-select" v-model="client.goalDraft.nutrientId"
-                            style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Tracked Nutrient</label>
+                    <select class="form-select" style="border:1px solid #d4e7d4;border-radius:8px;" v-model="client.goalDraft.nutrientId">
                       <option :value="null">No specific nutrient</option>
                       <option v-for="n in nutrients" :key="n.nutrientId" :value="n.nutrientId">
                         {{ n.name }} ({{ n.unit }})
@@ -415,51 +415,43 @@
                     </select>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">
                       Target Min{{ nutrientUnitFor(client.goalDraft.nutrientId) ? ` (${nutrientUnitFor(client.goalDraft.nutrientId)})` : '' }}
                     </label>
-                    <input type="number" class="form-control" step="any" min="0"
-                           v-model.number="client.goalDraft.targetMin"
-                           :disabled="!client.goalDraft.nutrientId"
-                           style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <input type="number" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;" step="any" min="0"
+                           v-model.number="client.goalDraft.targetMin" :disabled="!client.goalDraft.nutrientId">
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">
                       Target Max{{ nutrientUnitFor(client.goalDraft.nutrientId) ? ` (${nutrientUnitFor(client.goalDraft.nutrientId)})` : '' }}
                     </label>
-                    <input type="number" class="form-control" step="any" min="0"
-                           v-model.number="client.goalDraft.targetMax"
-                           :disabled="!client.goalDraft.nutrientId"
-                           style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <input type="number" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;" step="any" min="0"
+                           v-model.number="client.goalDraft.targetMax" :disabled="!client.goalDraft.nutrientId">
                   </div>
                 </div>
-                <div class="row g-3 mb-3">
+                <div class="row g-2 mb-3">
                   <div class="col-md-3">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Start Date</label>
-                    <input type="date" class="form-control"
-                           v-model="client.goalDraft.startDate"
-                           style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Start Date</label>
+                    <input type="date" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;"
+                           v-model="client.goalDraft.startDate">
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">End Date</label>
-                    <input type="date" class="form-control"
-                           v-model="client.goalDraft.endDate"
-                           style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">End Date</label>
+                    <input type="date" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;"
+                           v-model="client.goalDraft.endDate">
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Notes (required)</label>
-                    <input type="text" class="form-control"
-                           v-model="client.goalDraft.notes" placeholder="Why are you setting this goal?"
-                           style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
+                    <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Notes (required)</label>
+                    <input type="text" class="form-control" style="border:1px solid #d4e7d4;border-radius:8px;"
+                           v-model="client.goalDraft.notes" placeholder="Why are you setting this goal?">
                   </div>
                 </div>
-                <div v-if="replacesGoalWarningFor(client)" class="alert mt-3 mb-0"
-                     style="background:#fffbf0;border:1px solid #fbbf24;color:#92400e;border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;">
+                <div v-if="replacesGoalWarningFor(client)" class="alert py-2 mb-3"
+                     style="background:#fffbf0;border:1px solid #e8a820;color:#7a5800;border-radius:8px;font-size:0.875rem;">
                   This will replace the client's existing active {{ replacesGoalWarningFor(client) }} goal.
                 </div>
-                <button class="btn fw-semibold mt-3" @click="setGoal(client)"
-                        :disabled="client.goalDraft.saving"
-                        style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
+                <button class="btn fw-semibold" @click="setGoal(client)" :disabled="client.goalDraft.saving"
+                        style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;">
                   {{ client.goalDraft.saving ? '…' : 'Save Goal' }}
                 </button>
                 <div v-if="client.goalDraft.error" class="alert alert-danger mt-3 mb-0" style="border-radius:8px;">
@@ -495,19 +487,81 @@ const loading = ref(true)
 const error = ref('')
 const expandedId = ref(null)
 const activeTab = reactive({})
+const nutrients = ref([])
+
+const goalPresets = [
+  { title: 'Calories ≤ 2000', nutrientCode: 'calories', targetMax: 2000, durationDays: 30, notes: 'Stay within daily calorie target' },
+  { title: 'Protein ≥ 50g', nutrientCode: 'protein', targetMin: 50, durationDays: 30, notes: 'Hit daily protein target' },
+  { title: 'Fibre ≥ 30g', nutrientCode: 'fibre', targetMin: 30, durationDays: 21, notes: 'Reach NHS fibre recommendation' },
+  { title: 'Sugar ≤ 30g', nutrientCode: 'sugar', targetMax: 30, durationDays: 30, notes: 'Reduce added sugar' },
+  { title: 'Salt ≤ 6g', nutrientCode: 'salt', targetMax: 6, durationDays: 30, notes: 'Lower salt intake' },
+]
 
 const showInvite = ref(false)
-const inviteId = ref(null)
+const inviteEmail = ref('')
 const inviteLoading = ref(false)
 const inviteError = ref('')
 const inviteSuccess = ref('')
 
+const pendingInvitations = ref([])
+
 const todayIso = () => new Date().toISOString().slice(0, 10)
+
+const PERIOD_DAYS = { daily: 1, weekly: 7, monthly: 30 }
+
+const FALLBACK_REFS = {
+  calories:      { ref: 2000, unit: 'kcal' },
+  protein:       { ref: 50,   unit: 'g' },
+  carbohydrates: { ref: 260,  unit: 'g' },
+  fat:           { ref: 70,   unit: 'g' },
+  fibre:         { ref: 30,   unit: 'g' },
+  sugar:         { ref: 30,   unit: 'g' },
+  salt:          { ref: 6,    unit: 'g' },
+}
+
+function buildGoalRefs(goals) {
+  const map = {}
+  for (const goal of goals) {
+    if (!goal.nutrient?.code || goal.status !== 'active') continue
+    const code = goal.nutrient.code
+    map[code] = {
+      min: goal.targetMin != null ? Number(goal.targetMin) : null,
+      max: goal.targetMax != null ? Number(goal.targetMax) : null,
+      unit: goal.nutrient.unit,
+    }
+  }
+  return map
+}
+
+function scaledRefsFor(client) {
+  const days = PERIOD_DAYS[client.summary.period] ?? 1
+  const goalRefs = client.summary.goalRefs ?? {}
+  const result = {}
+  for (const [code, fallback] of Object.entries(FALLBACK_REFS)) {
+    const goal = goalRefs[code]
+    const isMaxNutrient = ['calories', 'carbohydrates', 'fat', 'sugar', 'salt'].includes(code)
+    const isMinNutrient = ['calories', 'carbohydrates', 'protein', 'fibre'].includes(code)
+    let baseRef
+    if (goal) {
+      baseRef = (isMaxNutrient && !isMinNutrient) ? (goal.max ?? goal.min ?? fallback.ref)
+              : (isMinNutrient && !isMaxNutrient) ? (goal.min ?? goal.max ?? fallback.ref)
+              : (goal.max ?? goal.min ?? fallback.ref)
+    } else {
+      baseRef = fallback.ref
+    }
+    const unit = goal?.unit ?? fallback.unit
+    const scaled = baseRef * days
+    const isMax = goal ? (goal.max != null && goal.min == null) : (code === 'fat' || code === 'sugar' || code === 'salt')
+    const label = `${isMax ? '≤ ' : '≥ '}${scaled % 1 === 0 ? scaled : scaled.toFixed(1)} ${unit}`
+    result[code] = { ref: scaled, unit, label }
+  }
+  return result
+}
 
 function blankClientState() {
   return {
     dashboard: { loading: false, error: '', data: null },
-    summary: { loading: false, error: '', data: null, period: 'daily', endDate: todayIso() },
+    summary: { loading: false, error: '', data: null, period: 'daily', endDate: todayIso(), goalRefs: {} },
     goals: { loading: false, error: '', data: null },
     goalDraft: {
       nutrientId: null, targetMin: null, targetMax: null,
@@ -517,7 +571,74 @@ function blankClientState() {
   }
 }
 
-onMounted(loadClients)
+onMounted(() => {
+  loadClients()
+  loadNutrients()
+  loadPendingInvitations()
+})
+
+async function loadPendingInvitations() {
+  try {
+    const res = await apiFetch('/api/professional/client-invitations')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) pendingInvitations.value = data.invitations ?? data.clients ?? []
+  } catch {
+    // non-critical
+  }
+}
+
+async function loadNutrients() {
+  try {
+    const res = await apiFetch('/api/goals/nutrients')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) nutrients.value = data.nutrients ?? []
+  } catch {
+    // non-critical
+  }
+}
+
+function nutrientUnitFor(nutrientId) {
+  if (!nutrientId) return ''
+  return nutrients.value.find(n => n.nutrientId === nutrientId)?.unit ?? ''
+}
+
+function replacesGoalWarningFor(client) {
+  const nutrientId = client.goalDraft.nutrientId
+  if (!nutrientId) return null
+  const existing = (client.goals.data ?? []).find(
+    g => g.status === 'active' && g.nutrient?.nutrientId === nutrientId
+  )
+  return existing ? existing.nutrient.name : null
+}
+
+function nutrientIdByCode(code) {
+  return nutrients.value.find(n => n.code === code)?.nutrientId ?? null
+}
+
+function applyGoalPreset(client, preset) {
+  const start = new Date()
+  const end = new Date()
+  end.setDate(end.getDate() + preset.durationDays)
+  client.goalDraft.nutrientId = nutrientIdByCode(preset.nutrientCode)
+  client.goalDraft.targetMin = preset.targetMin ?? null
+  client.goalDraft.targetMax = preset.targetMax ?? null
+  client.goalDraft.startDate = start.toISOString().slice(0, 10)
+  client.goalDraft.endDate = end.toISOString().slice(0, 10)
+  client.goalDraft.notes = preset.notes
+}
+
+function goalSourceLabel(source) {
+  if (source === 'professional_defined') return 'pro'
+  if (source === 'system_default') return 'system'
+  return 'personal'
+}
+
+function goalRangeDates(goal) {
+  const start = goal.startDate ? new Date(goal.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''
+  const end = goal.endDate ? new Date(goal.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'ongoing'
+  if (!start) return ''
+  return `${start} → ${end}`
+}
 
 async function fetchJson(url, options) {
   const res = await apiFetch(url, options)
@@ -567,14 +688,15 @@ async function sendInvite() {
   try {
     const { ok, message } = await fetchJson('/api/professional/client-invitations', {
       method: 'POST',
-      body: JSON.stringify({ subscriberId: Number(inviteId.value) }),
+      body: JSON.stringify({ email: inviteEmail.value }),
     })
     if (!ok) {
       inviteError.value = message || 'Invitation failed'
       return
     }
-    inviteSuccess.value = `Invitation sent to user #${inviteId.value}.`
-    inviteId.value = null
+    inviteSuccess.value = `Invitation sent to ${inviteEmail.value}.`
+    inviteEmail.value = ''
+    await loadPendingInvitations()
   } catch {
     inviteError.value = 'Network error - could not send invitation'
   } finally {
@@ -637,12 +759,18 @@ async function loadSummary(client) {
     period: client.summary.period,
     endDate: client.summary.endDate,
   })
-  await loadResource(
-    client.summary,
-    `/api/professional/clients/${client.subscriberId}/summary?${params}`,
-    d => d.summary ?? d,
-    'Failed to load summary',
-  )
+  const [, goalsRes] = await Promise.all([
+    loadResource(
+      client.summary,
+      `/api/professional/clients/${client.subscriberId}/summary?${params}`,
+      d => d.summary ?? d,
+      'Failed to load summary',
+    ),
+    fetchJson(`/api/professional/clients/${client.subscriberId}/goals`),
+  ])
+  if (goalsRes.ok) {
+    client.summary.goalRefs = buildGoalRefs(goalsRes.data.goals ?? [])
+  }
 }
 
 function loadGoals(client) {
@@ -720,28 +848,18 @@ function goalRange(goal) {
 }
 
 function goalSourceColor(source) {
-  if (source === 'professional_defined') return '#5a9e56'
+  if (source === 'professional_defined') return '#1b4d1b'
   if (source === 'user_defined') return '#3a7fbf'
   return '#888'
 }
 
-// NHS reference intakes used for progress bars
-const REFERENCES = {
-  calories:      { ref: 2000, unit: 'kcal', label: '2,000 kcal' },
-  protein:       { ref: 50,   unit: 'g',    label: '50 g' },
-  carbohydrates: { ref: 260,  unit: 'g',    label: '260 g' },
-  fat:           { ref: 70,   unit: 'g',    label: '70 g' },
-  fibre:         { ref: 30,   unit: 'g',    label: '30 g' },
-  sugar:         { ref: 30,   unit: 'g',    label: '≤ 30 g' },
-  salt:          { ref: 6,    unit: 'g',    label: '≤ 6 g' },
-}
 
 const MACRO_CODES = ['carbohydrates', 'protein', 'fat']
 const MICRO_CODES = ['fibre', 'sugar', 'salt']
 
 const NUTRIENT_COLORS = {
   carbohydrates: '#4e9af1',
-  protein:       '#5a9e56',
+  protein:       '#1b4d1b',
   fat:           '#e8a820',
   fibre:         '#a86cc1',
   sugar:         '#d94f4f',
@@ -754,9 +872,9 @@ function summaryNutrient(data, code) {
 
 const SVG_CIRC = 2 * Math.PI * 62  // ≈ 389.6
 
-function calorieOffset(data) {
-  const eaten = summaryNutrient(data, 'calories')?.totalAmount ?? 0
-  const pct = Math.min(eaten / REFERENCES.calories.ref, 1)
+function calorieOffset(client) {
+  const eaten = summaryNutrient(client.summary.data, 'calories')?.totalAmount ?? 0
+  const pct = Math.min(eaten / scaledRefsFor(client).calories.ref, 1)
   return SVG_CIRC * (1 - pct)
 }
 
@@ -776,8 +894,9 @@ function buildSegments(data, codes) {
 function macroSegments(data) { return buildSegments(data, MACRO_CODES) }
 function microSegments(data) { return buildSegments(data, MICRO_CODES) }
 
-function buildIdealSegments(codes) {
-  const amounts = codes.map(code => REFERENCES[code]?.ref ?? 0)
+function buildIdealSegments(client, codes) {
+  const refs = scaledRefsFor(client)
+  const amounts = codes.map(code => refs[code]?.ref ?? 0)
   const total = amounts.reduce((s, v) => s + v, 0) || 1
   let cumulative = 0
   return codes.map((code, i) => {
@@ -788,9 +907,6 @@ function buildIdealSegments(codes) {
     return { code, color: NUTRIENT_COLORS[code], dash, gap, offset }
   })
 }
-
-const IDEAL_MACRO_SEGS = buildIdealSegments(MACRO_CODES)
-const IDEAL_MICRO_SEGS = buildIdealSegments(MICRO_CODES)
 
 function donutLegend(data, codes) {
   return codes.map(code => {
@@ -805,14 +921,15 @@ function donutLegend(data, codes) {
   })
 }
 
-function summaryBreakdown(data) {
-  const nutrients = data?.nutrients ?? []
+function summaryBreakdown(client) {
+  const refs = scaledRefsFor(client)
+  const nutrients = client.summary.data?.nutrients ?? []
   return nutrients.map(n => {
-    const ref = REFERENCES[n.code]
+    const ref = refs[n.code]
     const pct = ref ? Math.min((n.totalAmount / ref.ref) * 100, 100) : null
     const color = pct == null ? '#aaa'
       : pct < 50 ? '#e8a820'
-      : pct <= 100 ? '#5a9e56'
+      : pct <= 100 ? '#1b4d1b'
       : '#d94f4f'
     return {
       code: n.code,
@@ -829,6 +946,6 @@ function summaryBreakdown(data) {
 function severityColor(level) {
   if (level === 'high') return '#d94f4f'
   if (level === 'medium') return '#e8a820'
-  return '#5a9e56'
+  return '#1b4d1b'
 }
 </script>

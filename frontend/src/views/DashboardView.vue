@@ -5,15 +5,9 @@
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
         <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Welcome back</h2>
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn" @click="handlePrevDay"
-                  style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">‹</button>
-          <span class="rounded px-3 py-1" style="background:#fff;border:1px solid #1b4d1b;font-size:0.875rem;font-weight:500;color:#1b4d1b;">{{ formattedDate }}</span>
-          <button class="btn" @click="handleNextDay"
-                  style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">›</button>
-        </div>
+        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">{{ today }}</p>
       </div>
-      <RouterLink :to="`/diary?date=${referenceDate}`" class="btn fw-semibold"
+      <RouterLink :to="`/diary?date=${todayIso}`" class="btn fw-semibold"
                   style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">
         + Log Meal
       </RouterLink>
@@ -27,7 +21,7 @@
         <div class="h-100 p-3 rounded"
              style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
           <h6 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">Calories Today</h6>
-          <div v-if="loading" class="text-center text-muted py-3"><small>Loading…</small></div>
+          <div v-if="loading" class="text-center py-3" style="color:#9ca3af;"><small>Loading…</small></div>
           <template v-else>
             <div class="d-flex justify-content-between align-items-end mb-3">
               <div>
@@ -72,9 +66,9 @@
 
       <div class="col-md-7">
         <div class="h-100 p-3 rounded"
-             style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b">
+             style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
           <h6 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">This Week's Calories</h6>
-          <div v-if="loading" class="text-center text-muted py-3"><small>Loading…</small></div>
+          <div v-if="loading" class="text-center py-3" style="color:#9ca3af;"><small>Loading…</small></div>
           <template v-else>
             <div class="d-flex align-items-end gap-2" style="height:100px;">
               <div v-for="bar in weekBars" :key="bar.date"
@@ -106,14 +100,15 @@
           </template>
         </div>
       </div>
+
     </div>
 
-    <h5 class="fw-bold mb-3" style="color:#5a9e56;">Your Overview</h5>
+    <h5 class="fw-bold mb-3" style="color:#1b4d1b;">Your Overview</h5>
 
     <div class="row g-3 mb-4">
 
       <div class="col-md-6">
-        <RouterLink :to="`/diary?date=${referenceDate}`" class="text-decoration-none">
+        <RouterLink :to="`/diary?date=${todayIso}`" class="text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
@@ -121,7 +116,7 @@
               <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Food Diary</h6>
               <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All →</span>
             </div>
-            <div v-if="loading" class="py-2 text-center text-muted"><small>Loading…</small></div>
+            <div v-if="loading" class="py-2 text-center" style="color:#9ca3af;"><small>Loading…</small></div>
             <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0">
               <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
                   class="d-flex justify-content-between align-items-center py-2"
@@ -140,7 +135,7 @@
       </div>
 
       <div class="col-md-6">
-        <RouterLink :to="`/nutrition?date=${referenceDate}`" class="text-decoration-none">
+        <RouterLink :to="`/nutrition?date=${todayIso}`" class="text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
@@ -148,7 +143,7 @@
               <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Nutrition Today</h6>
               <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Details →</span>
             </div>
-            <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-if="loading" class="text-center py-2" style="color:#9ca3af;"><small>Loading…</small></div>
             <div v-else-if="nutritionPreview.length > 0">
               <div v-for="n in nutritionPreview" :key="n.code" class="mb-2">
                 <div class="d-flex justify-content-between mb-1">
@@ -167,6 +162,7 @@
           </div>
         </RouterLink>
       </div>
+
     </div>
 
     <div class="row g-3 mb-4">
@@ -180,7 +176,7 @@
               <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Goals & Progress</h6>
               <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All →</span>
             </div>
-            <div v-if="loadingGoals" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-if="loadingGoals" class="text-center py-2" style="color:#9ca3af;"><small>Loading…</small></div>
             <div v-else-if="goals.length === 0" class="text-center py-3" style="color:#9ca3af;">
               <p class="mb-0" style="font-size:0.8125rem;">No active goals yet.</p>
             </div>
@@ -188,7 +184,7 @@
               <div v-for="goal in goals.slice(0, 3)" :key="goal.goalId"
                    class="d-flex justify-content-between align-items-center py-2"
                    style="border-bottom:1px solid #f3f4f6;">
-                 <div>
+                <div>
                   <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;">
                     {{ goal.nutrient?.name ?? goal.notes ?? 'Custom goal' }}
                   </div>
@@ -207,7 +203,7 @@
         </RouterLink>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-6">
         <RouterLink to="/messages" class="text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
@@ -216,7 +212,7 @@
               <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Professional Support</h6>
               <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Messages →</span>
             </div>
-            <div v-if="loadingPro" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-if="loadingPro" class="text-center py-2" style="color:#9ca3af;"><small>Loading…</small></div>
             <template v-else>
               <div v-if="professional" class="d-flex align-items-center gap-2 mb-2">
                 <div class="avatar-circle flex-shrink-0" style="width:40px;height:40px;font-size:0.875rem;">
@@ -260,7 +256,7 @@
       <h5 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">My Favourite Recipes</h5>
     </div>
 
-    <div v-if="loadingFavs" class="text-center text-muted py-5">
+    <div v-if="loadingFavs" class="text-center py-5" style="color:#9ca3af;">
       <small>Loading favourites…</small>
     </div>
 
@@ -278,8 +274,7 @@
                     style="background:#2e7d32;color:#fff;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:500;">
                 {{ recipe.category }}
               </span>
-              <span class="position-absolute top-0 end-0 m-2"
-                    style="color:#d94f4f;font-size:1.125rem;">♥</span>
+              <span class="position-absolute top-0 end-0 m-2" style="color:#d94f4f;font-size:1.125rem;">♥</span>
             </div>
             <div class="p-3">
               <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;line-height:1.3;">{{ recipe.title }}</div>
@@ -291,7 +286,7 @@
                 <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
               </div>
               <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
-                          class="btn w-100" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem;border-radius:8px;font-size:0.8125rem;font-weight:500;">
+                          class="btn w-100" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem;border-radius:8px;font-size:0.8125rem;font-weight:500;text-decoration:none;">
                 View Recipe →
               </RouterLink>
             </div>
@@ -299,17 +294,19 @@
         </div>
       </div>
 
-      <div v-if="favourites.length > 3" class="text-center">
-        <RouterLink to="/recipes" class="btn fw-semibold" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
+      <div v-if="favourites.length > 3" class="text-center mb-4">
+        <RouterLink to="/recipes" class="btn fw-semibold"
+                    style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
           View all {{ favourites.length }} favourites →
         </RouterLink>
       </div>
     </div>
 
-    <div v-else class="text-center py-5 rounded"
+    <div v-else class="text-center py-5 rounded mb-4"
          style="background:#f9fafb;border:2px dashed #e5e7eb;">
       <p class="mb-3" style="color:#6b7280;font-size:0.9375rem;">You haven't saved any favourite recipes yet.</p>
-      <RouterLink to="/recipes" class="btn fw-semibold" style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
+      <RouterLink to="/recipes" class="btn fw-semibold"
+                  style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
         Browse Recipe Library
       </RouterLink>
     </div>
@@ -318,82 +315,48 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { apiFetch } from '../auth.js'
 
-const route = useRoute()
-const router = useRouter()
-
-const viewDate = ref(new Date())
-
-const formattedDate = computed(() =>
-  viewDate.value.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-)
-
-// Use local date instead of UTC to avoid timezone offset issues
-const referenceDate = computed(() => {
-  const d = viewDate.value
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-})
-
-function handlePrevDay() {
-  const d = new Date(viewDate.value)
-  d.setDate(d.getDate() - 1)
-  viewDate.value = d
-}
-
-function handleNextDay() {
-  const d = new Date(viewDate.value)
-  d.setDate(d.getDate() + 1)
-  viewDate.value = d
-}
+const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
 const dashboard = ref(null)
 const loading = ref(true)
 const error = ref('')
 
 const professional = ref(null)
+const pendingInvites = ref([])
 const loadingPro = ref(true)
 
 const goals = ref([])
 const loadingGoals = ref(true)
 
-onMounted(async () => {
-  // Check if there's a date in the URL query parameter
-  if (route.query.date) {
-    const dateFromQuery = new Date(route.query.date)
-    if (!isNaN(dateFromQuery.getTime())) {
-      viewDate.value = dateFromQuery
-    }
-  }
-  await Promise.all([loadDashboard(), loadProfessional(), loadGoals(), loadFavourites()])
+const favourites = ref([])
+const loadingFavs = ref(true)
+
+const calorieBudget = computed(() => {
+  const goal = goals.value.find(g =>
+    g.status === 'active' && g.nutrient?.code === 'calories' && g.targetMax != null
+  )
+  return goal ? Number(goal.targetMax) : 2000
 })
 
-watch(viewDate, () => {
-  loadDashboard()
-  // Update URL when date changes
-  router.replace({ query: { date: referenceDate.value } })
+onMounted(async () => {
+  await Promise.all([loadDashboard(), loadProfessional(), loadGoals(), loadFavourites()])
 })
 
 async function loadDashboard() {
   loading.value = true
-  error.value = ''
   try {
-    const params = new URLSearchParams({ date: referenceDate.value })
-    const res = await apiFetch(`/api/diary/dashboard?${params}`)
+    const res = await apiFetch('/api/diary/dashboard')
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
       error.value = data.message || data.error || 'Failed to load dashboard'
       return
     }
     dashboard.value = data.dashboardData ?? data
-  } catch (err) {
+  } catch {
     error.value = 'Network error - could not load dashboard'
-    console.error('Dashboard load error:', err)
   } finally {
     loading.value = false
   }
@@ -402,28 +365,52 @@ async function loadDashboard() {
 async function loadProfessional() {
   loadingPro.value = true
   try {
-    const res = await apiFetch('/api/client/professionals')
-    const data = await res.json().catch(() => ({}))
-    if (res.ok) professional.value = (data.professionals ?? [])[0] ?? null
+    const [proRes, inviteRes] = await Promise.all([
+      apiFetch('/api/client/professionals'),
+      apiFetch('/api/client/client-invitations'),
+    ])
+    const proData = await proRes.json().catch(() => ({}))
+    if (proRes.ok) professional.value = (proData.professionals ?? [])[0] ?? null
+    const inviteData = await inviteRes.json().catch(() => ({}))
+    if (inviteRes.ok) pendingInvites.value = inviteData.invitations ?? []
   } catch {
-    // non-critical, silently ignore
   } finally {
     loadingPro.value = false
+  }
+}
+
+async function respondToInvite(professionalId, action) {
+  try {
+    const res = await apiFetch(`/api/client/client-invitations/${professionalId}/${action}`, { method: 'POST' })
+    if (res.ok) await loadProfessional()
+  } catch {
   }
 }
 
 async function loadGoals() {
   loadingGoals.value = true
   try {
-    const res = await apiFetch('/api/goals')
+    const res = await apiFetch('/api/goals?effective=true')
     const data = await res.json().catch(() => ({}))
     if (res.ok) goals.value = data.goals ?? []
   } catch {
-    // non-critical, silently ignore
   } finally {
     loadingGoals.value = false
   }
 }
+
+async function loadFavourites() {
+  loadingFavs.value = true
+  try {
+    const res = await apiFetch('/api/recipes/favorites')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) favourites.value = data.recipes ?? []
+  } catch {
+  } finally {
+    loadingFavs.value = false
+  }
+}
+
 
 const quickStats = computed(() => dashboard.value?.quickStats ?? {})
 const foodDiaryPreview = computed(() => (dashboard.value?.foodDiaryPreview ?? []).filter(e => (e.items?.length ?? 0) > 0))
@@ -449,22 +436,21 @@ const macroSummary = computed(() =>
   })
 )
 
-const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const MAX_BAR_H = 90
+const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const MAX_BAR_H = 72
+const todayIso = new Date().toISOString().slice(0, 10)
 
 const weekBars = computed(() => {
   const trend = dashboard.value?.weeklyCaloryTrend ?? []
   if (!trend.length) {
-    return Array.from({ length: 7 }, (_, i) => ({ day: '-', date: '', val: '-', height: 0, over: false, isToday: false }))
+    return WEEK_DAYS.map(day => ({ day, date: '', val: '-', height: 0, over: false, isToday: false }))
   }
   const maxCal = Math.max(...trend.map(d => d.calories), calorieBudget.value)
-  return trend.map((d) => {
+  return trend.map((d, dayIndex) => {
     const cal = Math.round(d.calories)
-    const isToday = d.date === referenceDate.value
-    const dateObj = new Date(d.date + 'T00:00:00')
-    const dayName = WEEK_DAYS[dateObj.getDay()]
+    const isToday = d.date === todayIso
     return {
-      day: isToday ? 'Today' : dayName,
+      day: isToday ? 'Today' : (WEEK_DAYS[dayIndex] ?? d.date.slice(5)),
       date: d.date,
       val: cal > 0 ? String(cal) : '-',
       height: cal > 0 ? Math.max(3, Math.round((cal / maxCal) * MAX_BAR_H)) : 0,
@@ -498,6 +484,6 @@ function goalRange(goal) {
   if (min != null && max != null) return `${min}–${max}${unit}`
   if (min != null) return `≥ ${min}${unit}`
   if (max != null) return `≤ ${max}${unit}`
-  return ''
+  return 'Custom goal'
 }
 </script>

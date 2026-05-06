@@ -79,16 +79,15 @@
       </div>
     </section>
 
-    <section class="py-5" style="background:url('/src/assets/buddha-bowl-white-wooden-background-assortment-healthy-food-top-view-free-space-your-text_187166-247.jpg.avif') center/cover;min-height:45vh;display:flex;align-items:center;position:relative;">
-      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(27,77,27,0.88);"></div>
-      <div class="container" style="position:relative;z-index:1;">
+    <section class="py-5" style="background:linear-gradient(135deg,#1b4d1b 0%,#2e7d32 100%);min-height:45vh;display:flex;align-items:center;">
+      <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-9 text-center">
             <h2 style="color:#ffffff;font-weight:400;font-size:2.5rem;line-height:1.4;margin-bottom:1.5rem;font-family:Georgia,'Times New Roman',serif;">
               Nourishing Lives Through Better Choices
             </h2>
             <p style="color:#e8f5e8;font-size:1.05rem;font-weight:400;max-width:700px;line-height:1.8;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-              We believe that understanding what you eat is the foundation of a healthier life. Our mission is to make nutrition tracking simple, insightful, and empowering—helping you build sustainable habits that last a lifetime.
+              We believe that understanding what you eat is the foundation of a healthier life. Our mission is to make nutrition tracking simple, insightful, and empowering — helping you build sustainable habits that last a lifetime.
             </p>
           </div>
         </div>

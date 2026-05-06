@@ -9,24 +9,22 @@
       </p>
     </div>
 
-    <!-- Professional view -->
     <template v-if="isProfessional">
       <div v-if="loadingClients" class="text-center py-5" style="color:#9ca3af;"><small>Loading clients…</small></div>
       <div v-else-if="clientsError" class="alert alert-danger" style="border-radius:8px;">{{ clientsError }}</div>
       <div v-else-if="clients.length === 0"
-           class="text-center py-5 rounded"
-           style="background:#f9fafb;border:2px dashed #e5e7eb;">
+           class="text-center py-5 rounded" style="background:#f9fafb;border:2px dashed #e5e7eb;">
         <p class="mb-2" style="color:#6b7280;font-size:0.9375rem;">No active clients yet.</p>
         <small style="color:#9ca3af;">Clients will appear here once they accept your invitation.</small>
       </div>
       <div v-else class="row g-4 flex-grow-1" style="min-height:0;">
 
-        <div class="col-md-4">
-          <div class="list-group">
+        <div class="col-md-4 d-flex flex-column" style="min-height:0;">
+          <div class="overflow-auto" style="flex-shrink:0;max-height:55%;">
             <button
               v-for="client in clients"
               :key="client.id"
-              class="list-group-item list-group-item-action d-flex align-items-center gap-3"
+              class="list-group-item list-group-item-action d-flex align-items-center gap-3 mb-1"
               :style="selectedClient?.id === client.id ? 'background:#1b4d1b;color:#fff;border-color:#1b4d1b;border-radius:8px;' : 'border-radius:8px;border:1px solid #e5e7eb;'"
               @click="selectClient(client)"
             >
@@ -37,7 +35,10 @@
               </div>
               <div class="text-start overflow-hidden">
                 <div class="fw-bold text-truncate" style="font-size:0.9375rem;">{{ client.subscriber.fullName }}</div>
-                <div style="font-size:0.8125rem;" :style="selectedClient?.id === client.id ? 'color:rgba(255,255,255,0.8);' : 'color:#6b7280;'">ID {{ client.subscriberId }}</div>
+                <div style="font-size:0.8125rem;"
+                     :style="selectedClient?.id === client.id ? 'color:rgba(255,255,255,0.8);' : 'color:#6b7280;'">
+                  ID {{ client.subscriberId }}
+                </div>
               </div>
             </button>
           </div>
@@ -47,23 +48,25 @@
             <div class="fw-bold d-flex justify-content-between align-items-center p-3"
                  style="background:#f9fafb;border-bottom:1px solid #e5e7eb;color:#1b4d1b;font-size:0.9375rem;">
               <span>Shared Recipes</span>
-              <button class="btn btn-sm fw-semibold" @click="openShareModal"
-                      style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;">+ Share</button>
+              <button class="btn btn-sm fw-semibold"
+                      style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
+                      @click="openShareModal">+ Share</button>
             </div>
-            <div class="card-body p-2 overflow-auto" style="min-height:0;">
-              <div v-if="proSharedLoading" class="text-muted small text-center py-2">Loading…</div>
-              <div v-else-if="proSharedError" class="alert alert-danger small mb-0">{{ proSharedError }}</div>
-              <div v-else-if="proShared.length === 0" class="text-muted small text-center py-2">
+            <div class="p-2 overflow-auto" style="min-height:0;">
+              <div v-if="proSharedLoading" class="text-center py-2" style="color:#9ca3af;"><small>Loading…</small></div>
+              <div v-else-if="proSharedError" class="alert alert-danger mb-0" style="border-radius:8px;">{{ proSharedError }}</div>
+              <div v-else-if="proShared.length === 0" class="text-center py-2" style="color:#9ca3af;font-size:0.875rem;">
                 No recipes shared yet.
               </div>
-              <ul v-else class="list-unstyled small mb-0">
+              <ul v-else class="list-unstyled mb-0">
                 <li v-for="s in proShared" :key="s.id"
-                    class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+                    class="d-flex align-items-center gap-2 mb-2 pb-2"
+                    style="border-bottom:1px solid #f3f4f6;">
                   <img v-if="s.recipe?.image" :src="s.recipe.image"
-                       style="width:36px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0;" />
+                       style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
                   <div class="flex-grow-1 overflow-hidden">
-                    <div class="fw-semibold text-truncate">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
-                    <div class="text-muted" style="font-size:0.7rem;">Shared {{ formatDate(s.sharedAt) }}</div>
+                    <div class="fw-semibold text-truncate" style="color:#1b4d1b;font-size:0.875rem;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
+                    <div style="color:#9ca3af;font-size:0.75rem;">Shared {{ formatDate(s.sharedAt) }}</div>
                   </div>
                 </li>
               </ul>
@@ -72,48 +75,51 @@
         </div>
 
         <div class="col-md-8 d-flex flex-column" style="min-height:0;">
-          <div v-if="!selectedClient" class="text-muted small text-center py-5 border rounded"
-               style="border-style:dashed!important;">
-            Select a client to start messaging.
+          <div v-if="!selectedClient" class="text-center py-5 rounded"
+               style="background:#f9fafb;border:2px dashed #e5e7eb;">
+            <p class="mb-0" style="color:#6b7280;">Select a client to start messaging.</p>
           </div>
-          <div v-else class="card border flex-grow-1" style="min-height:0;display:flex;flex-direction:column;">
-            <div class="card-header fw-bold small" style="background:#e8f4e6;">
+          <div v-else class="rounded flex-grow-1"
+               style="min-height:0;display:flex;flex-direction:column;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;overflow:hidden;">
+            <div class="fw-bold p-3" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;color:#1b4d1b;font-size:0.9375rem;">
               Conversation with {{ selectedClient.subscriber.fullName }}
             </div>
 
-            <div class="card-body overflow-auto flex-grow-1 p-3" ref="proChatBody">
-              <div v-if="proChat.loading" class="text-muted small text-center py-4">Loading messages…</div>
-              <div v-else-if="proChat.error" class="alert alert-danger small">{{ proChat.error }}</div>
-              <div v-else-if="proChat.messages.length === 0" class="text-center text-muted py-4">
+            <div class="overflow-auto flex-grow-1 p-3" ref="proChatBody">
+              <div v-if="proChat.loading" class="text-center py-4" style="color:#9ca3af;"><small>Loading messages…</small></div>
+              <div v-else-if="proChat.error" class="alert alert-danger" style="border-radius:8px;">{{ proChat.error }}</div>
+              <div v-else-if="proChat.messages.length === 0" class="text-center py-4" style="color:#9ca3af;">
                 <small>No messages yet. Start the conversation below.</small>
               </div>
               <template v-else>
                 <div v-for="msg in proChat.messages" :key="msg.id" class="mb-2">
                   <div v-if="msg.sentBy === 'professional'" class="chat-mine ms-auto" style="max-width:80%;">
-                    <div class="small">{{ msg.message }}</div>
-                    <div class="text-muted mt-1" style="font-size:0.65rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                    <div style="font-size:0.875rem;">{{ msg.message }}</div>
+                    <div style="color:#9ca3af;margin-top:0.25rem;font-size:0.65rem;">{{ formatDateTime(msg.createdAt) }}</div>
                   </div>
                   <div v-else class="chat-pro" style="max-width:80%;">
-                    <div class="fw-semibold small mb-1" style="color:#5a9e56;">
+                    <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.8125rem;">
                       {{ selectedClient.subscriber.fullName }}
                     </div>
-                    <div class="small">{{ msg.message }}</div>
-                    <div class="text-muted mt-1" style="font-size:0.65rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                    <div style="font-size:0.875rem;">{{ msg.message }}</div>
+                    <div style="color:#9ca3af;margin-top:0.25rem;font-size:0.65rem;">{{ formatDateTime(msg.createdAt) }}</div>
                   </div>
                 </div>
               </template>
             </div>
 
-            <div class="card-footer p-2" style="background:#f9f9f9;">
-              <div v-if="proChat.sendError" class="alert alert-danger py-1 small mb-2">{{ proChat.sendError }}</div>
+            <div class="p-3" style="background:#f9fafb;border-top:1px solid #e5e7eb;">
+              <div v-if="proChat.sendError" class="alert alert-danger mb-2" style="border-radius:8px;">{{ proChat.sendError }}</div>
               <div class="d-flex gap-2">
                 <input type="text"
-                       class="form-control form-control-sm"
+                       class="form-control"
+                       style="border:1px solid #d4e7d4;border-radius:8px;"
                        placeholder="Type a message…"
                        v-model="proChat.draft"
                        :disabled="proChat.sending"
                        @keyup.enter="proSendMessage">
-                <button class="btn btn-gf btn-sm px-3"
+                <button class="btn fw-semibold px-3"
+                        style="background:#1b4d1b;color:#fff;border:none;border-radius:8px;"
                         @click="proSendMessage"
                         :disabled="proChat.sending || !proChat.draft.trim()">
                   {{ proChat.sending ? '…' : 'Send' }}
@@ -124,95 +130,266 @@
         </div>
 
       </div>
+
+      <Teleport to="body">
+        <div v-if="shareModal.open"
+             style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1080;display:flex;align-items:center;justify-content:center;"
+             @click.self="closeShareModal">
+          <div class="bg-white p-4"
+               style="width:520px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.15);">
+            <h5 class="fw-bold mb-2" style="color:#1b4d1b;">Share a Recipe</h5>
+            <p class="mb-3" style="color:#6b7280;font-size:0.875rem;">
+              Send {{ selectedClient?.subscriber?.fullName }} a recipe from the library.
+            </p>
+
+            <input type="text" class="form-control mb-2"
+                   style="border:1px solid #d4e7d4;border-radius:8px;"
+                   placeholder="Search recipes by title…"
+                   v-model="shareModal.query">
+
+            <div class="overflow-auto rounded" style="flex:1;min-height:120px;border:1px solid #e5e7eb;">
+              <div v-if="shareModal.loading" class="text-center py-3" style="color:#9ca3af;"><small>Loading…</small></div>
+              <div v-else-if="shareModal.error" class="alert alert-danger m-2 mb-0" style="border-radius:8px;">{{ shareModal.error }}</div>
+              <div v-else-if="filteredShareCandidates.length === 0"
+                   class="text-center py-3" style="color:#9ca3af;font-size:0.875rem;">No recipes match.</div>
+              <ul v-else class="list-unstyled mb-0">
+                <li v-for="r in filteredShareCandidates" :key="r.recipeId"
+                    class="d-flex align-items-center gap-2 p-2"
+                    style="border-bottom:1px solid #f3f4f6;cursor:pointer;"
+                    :style="shareModal.selectedId === r.recipeId ? 'background:#f0f7ef;' : ''"
+                    @click="shareModal.selectedId = r.recipeId">
+                  <img v-if="r.image" :src="r.image"
+                       style="width:42px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
+                  <div class="flex-grow-1 overflow-hidden">
+                    <div class="fw-semibold text-truncate" style="color:#1b4d1b;font-size:0.875rem;">{{ r.title }}</div>
+                    <div style="color:#9ca3af;font-size:0.75rem;">{{ r.kcal ?? '?' }} kcal</div>
+                  </div>
+                  <input type="radio" :checked="shareModal.selectedId === r.recipeId" readonly>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="shareModal.sendError" class="alert alert-danger mt-2 mb-0" style="border-radius:8px;">
+              {{ shareModal.sendError }}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button class="btn fw-semibold"
+                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;"
+                      @click="closeShareModal" :disabled="shareModal.sending">Cancel</button>
+              <button class="btn fw-semibold"
+                      style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;"
+                      @click="confirmShare" :disabled="shareModal.sending || !shareModal.selectedId">
+                {{ shareModal.sending ? '…' : 'Share Recipe' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
     </template>
 
-    <!-- Subscriber view -->
     <template v-else>
-      <div v-if="loadingPro" class="text-muted small text-center py-4">Loading...</div>
-      <div v-else-if="proError" class="alert alert-danger small">{{ proError }}</div>
+      <div v-if="loadingPro" class="text-center py-5" style="color:#9ca3af;"><small>Loading…</small></div>
+      <div v-else-if="proError" class="alert alert-danger" style="border-radius:8px;">{{ proError }}</div>
 
-      <div v-else-if="!professional" class="text-center text-muted py-5 border rounded"
-           style="border-style:dashed!important;">
-        <p class="mb-1">No professional assigned yet.</p>
-        <small>A nutritionist will appear here once they invite you and you accept.</small>
-      </div>
-
-      <div v-else class="row g-3 flex-grow-1" style="min-height:0;">
-
-        <div class="col-md-4">
-          <div class="card card-gf p-3 mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="avatar-circle" style="width:52px;height:52px;font-size:1rem;">
-                {{ initialsFor(professional.professional.fullName) }}
+      <template v-else>
+        <div v-if="invitations.length > 0" class="mb-4">
+          <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Pending Invitations</h6>
+          <div v-for="inv in invitations" :key="inv.id"
+               class="p-3 mb-2 d-flex flex-row align-items-center justify-content-between gap-3 rounded"
+               style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+              <div class="avatar-circle" style="width:42px;height:42px;font-size:0.9rem;">
+                {{ initialsFor(inv.professional.fullName) }}
               </div>
               <div>
-                <div class="fw-bold">{{ professional.professional.fullName }}</div>
-                <div class="text-muted small">{{ professional.professional.email }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-8 d-flex flex-column" style="min-height:0;">
-          <div class="card border flex-grow-1" style="min-height:0;display:flex;flex-direction:column;">
-            <div class="card-header fw-bold small" style="background:#e8f4e6;">
-              Conversation with {{ professional.professional.fullName }}
-            </div>
-
-            <div class="card-body overflow-auto flex-grow-1 p-3" ref="chatBody">
-              <div v-if="loadingMessages" class="text-muted small text-center py-4">Loading messages...</div>
-              <div v-else-if="messagesError" class="alert alert-danger small">{{ messagesError }}</div>
-              <div v-else-if="messages.length === 0" class="text-center text-muted py-4">
-                <small>No messages yet. Start the conversation below.</small>
-              </div>
-              <template v-else>
-                <div v-for="msg in messages" :key="msg.id" class="mb-2">
-                  <div v-if="msg.sentBy === 'professional'" class="chat-pro" style="max-width:80%;">
-                    <div class="fw-semibold small mb-1" style="color:#5a9e56;">
-                      {{ professional.professional.fullName }}
-                    </div>
-                    <div class="small">{{ msg.message }}</div>
-                    <div class="text-muted mt-1" style="font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
-                  </div>
-                  <div v-else class="chat-mine ms-auto" style="max-width:80%;">
-                    <div class="small">{{ msg.message }}</div>
-                    <div class="text-muted mt-1" style="font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
-                  </div>
+                <div class="fw-bold" style="color:#1b4d1b;font-size:0.9375rem;">{{ inv.professional.fullName }}</div>
+                <div style="color:#6b7280;font-size:0.8125rem;">
+                  {{ inv.professional.email }} · invited {{ formatDate(inv.assignedAt) }}
                 </div>
-              </template>
-            </div>
-
-            <div class="card-footer p-2" style="background:#f9f9f9;">
-              <div v-if="sendError" class="alert alert-danger py-1 small mb-2">{{ sendError }}</div>
-              <div class="d-flex gap-2">
-                <input type="text"
-                       class="form-control form-control-sm"
-                       placeholder="Type a message..."
-                       v-model="newMessage"
-                       :disabled="sending"
-                       @keyup.enter="sendMessage">
-                <button class="btn btn-gf btn-sm px-3" @click="sendMessage" :disabled="sending || !newMessage.trim()">
-                  {{ sending ? '...' : 'Send' }}
-                </button>
+                <div style="color:#9ca3af;font-size:0.8125rem;">
+                  Wants to be your assigned nutrition professional.
+                </div>
               </div>
             </div>
-
+            <div class="d-flex gap-2 flex-shrink-0">
+              <button class="btn btn-sm fw-semibold"
+                      style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                      :disabled="inv._busy" @click="respondInvite(inv, 'accept')">
+                {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
+              </button>
+              <button class="btn btn-sm fw-semibold"
+                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;"
+                      :disabled="inv._busy" @click="respondInvite(inv, 'reject')">
+                {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
+              </button>
+            </div>
           </div>
         </div>
 
-      </div>
+        <div v-if="!professional && invitations.length === 0"
+             class="text-center py-5 rounded"
+             style="background:#f9fafb;border:2px dashed #e5e7eb;">
+          <p class="mb-1" style="color:#6b7280;">No professional assigned yet.</p>
+          <small style="color:#9ca3af;">A nutritionist will appear here once they invite you and you accept.</small>
+        </div>
+
+        <div v-if="professional" class="row g-4 flex-grow-1" style="min-height:0;">
+
+          <div class="col-md-4 d-flex flex-column" style="min-height:0;">
+            <div class="p-3 rounded mb-3" style="flex-shrink:0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="avatar-circle" style="width:52px;height:52px;font-size:1rem;">
+                  {{ initialsFor(professional.professional.fullName) }}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold" style="color:#1b4d1b;">{{ professional.professional.fullName }}</div>
+                  <div style="color:#6b7280;font-size:0.875rem;">{{ professional.professional.email }}</div>
+                </div>
+              </div>
+              <button class="btn btn-sm fw-semibold w-100"
+                      style="background:#fecaca;border:none;color:#991b1b;padding:0.5rem;border-radius:8px;"
+                      @click="openRemoveModal">
+                Remove Professional
+              </button>
+            </div>
+
+            <div class="rounded flex-grow-1"
+                 style="min-height:0;display:flex;flex-direction:column;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;overflow:hidden;">
+              <div class="fw-bold p-3" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;color:#1b4d1b;font-size:0.9375rem;">Shared Recipes</div>
+              <div class="p-2 overflow-auto" style="min-height:0;">
+                <div v-if="subSharedLoading" class="text-center py-2" style="color:#9ca3af;"><small>Loading…</small></div>
+                <div v-else-if="subSharedError" class="alert alert-danger mb-0" style="border-radius:8px;">{{ subSharedError }}</div>
+                <div v-else-if="subShared.length === 0" class="text-center py-2" style="color:#9ca3af;font-size:0.875rem;">
+                  Your nutritionist hasn't shared any recipes yet.
+                </div>
+                <ul v-else class="list-unstyled mb-0">
+                  <li v-for="s in subShared" :key="s.id"
+                      class="d-flex align-items-center gap-2 mb-2 pb-2"
+                      style="border-bottom:1px solid #f3f4f6;">
+                    <img v-if="s.recipe?.image" :src="s.recipe.image"
+                         style="width:42px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
+                    <div class="flex-grow-1 overflow-hidden">
+                      <div class="fw-semibold text-truncate" style="color:#1b4d1b;font-size:0.875rem;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
+                      <div style="color:#9ca3af;font-size:0.75rem;">Shared {{ formatDate(s.sharedAt) }}</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-8 d-flex flex-column" style="min-height:0;">
+            <div class="rounded flex-grow-1"
+                 style="min-height:0;display:flex;flex-direction:column;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;overflow:hidden;">
+              <div class="fw-bold p-3" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;color:#1b4d1b;font-size:0.9375rem;">
+                Conversation with {{ professional.professional.fullName }}
+              </div>
+
+              <div class="overflow-auto flex-grow-1 p-3" ref="chatBody">
+                <div v-if="loadingMessages" class="text-center py-4" style="color:#9ca3af;"><small>Loading messages…</small></div>
+                <div v-else-if="messagesError" class="alert alert-danger" style="border-radius:8px;">{{ messagesError }}</div>
+                <div v-else-if="messages.length === 0" class="text-center py-4" style="color:#9ca3af;">
+                  <small>No messages yet. Start the conversation below.</small>
+                </div>
+                <template v-else>
+                  <div v-for="msg in messages" :key="msg.id" class="mb-2">
+                    <div v-if="msg.sentBy === 'professional'" class="chat-pro" style="max-width:80%;">
+                      <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.8125rem;">
+                        {{ professional.professional.fullName }}
+                      </div>
+                      <div style="font-size:0.875rem;">{{ msg.message }}</div>
+                      <div style="color:#9ca3af;margin-top:0.25rem;font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                    </div>
+                    <div v-else class="chat-mine ms-auto" style="max-width:80%;">
+                      <div style="font-size:0.875rem;">{{ msg.message }}</div>
+                      <div style="color:#9ca3af;margin-top:0.25rem;font-size:0.7rem;">{{ formatDateTime(msg.createdAt) }}</div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <div class="p-3" style="background:#f9fafb;border-top:1px solid #e5e7eb;">
+                <div v-if="sendError" class="alert alert-danger mb-2" style="border-radius:8px;">{{ sendError }}</div>
+                <div class="d-flex gap-2">
+                  <input type="text"
+                         class="form-control"
+                         style="border:1px solid #d4e7d4;border-radius:8px;"
+                         placeholder="Type a message…"
+                         v-model="newMessage"
+                         :disabled="sending"
+                         @keyup.enter="sendMessage">
+                  <button class="btn fw-semibold px-3"
+                          style="background:#1b4d1b;color:#fff;border:none;border-radius:8px;"
+                          @click="sendMessage" :disabled="sending || !newMessage.trim()">
+                    {{ sending ? '…' : 'Send' }}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+      <Teleport to="body">
+        <div v-if="removeModal.open"
+             style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1080;display:flex;align-items:center;justify-content:center;"
+             @click.self="closeRemoveModal">
+          <div class="bg-white p-4" style="width:480px;max-width:92vw;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.15);">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div style="width:36px;height:36px;border-radius:50%;background:#fecaca;color:#991b1b;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;">!</div>
+              <h5 class="fw-bold mb-0" style="color:#991b1b;">Remove Professional?</h5>
+            </div>
+            <p class="mb-2" style="color:#6b7280;font-size:0.875rem;">
+              You're about to remove <strong>{{ professional?.professional?.fullName }}</strong> as your assigned nutritionist.
+            </p>
+            <div class="alert alert-warning py-2 mb-3" style="border-radius:8px;font-size:0.875rem;">
+              <strong>What will happen:</strong>
+              <ul class="mb-0 mt-1 ps-3">
+                <li>You will lose access to this conversation.</li>
+                <li>Recipes they have shared with you will no longer appear.</li>
+                <li>Goals they set for you will remain, but cannot be updated by them.</li>
+                <li>You can be re-invited later if you change your mind.</li>
+              </ul>
+            </div>
+            <div class="mb-3">
+              <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">
+                Type <code>{{ removeConfirmPhrase }}</code> to confirm:
+              </label>
+              <input type="text" class="form-control"
+                     style="border:1px solid #d4e7d4;border-radius:8px;"
+                     v-model="removeModal.confirmText"
+                     :disabled="removeModal.removing"
+                     placeholder="Type to confirm">
+            </div>
+            <div v-if="removeModal.error" class="alert alert-danger mb-2" style="border-radius:8px;">{{ removeModal.error }}</div>
+            <div class="d-flex justify-content-end gap-2">
+              <button class="btn fw-semibold"
+                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;"
+                      @click="closeRemoveModal" :disabled="removeModal.removing">Cancel</button>
+              <button class="btn fw-semibold"
+                      style="background:#991b1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;"
+                      :disabled="removeModal.removing || removeModal.confirmText !== removeConfirmPhrase"
+                      @click="confirmRemove">
+                {{ removeModal.removing ? '…' : 'Yes, Remove' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
     </template>
 
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, onMounted } from 'vue'
+import { ref, reactive, computed, nextTick, onMounted, watch } from 'vue'
 import { apiFetch, currentUser } from '../auth.js'
 
-const isProfessional = currentUser.value.role === 'professional'
+const isProfessional = computed(() => currentUser.value.role === 'professional')
 
-// ── Professional state ────────────────────────────────────────────────────────
 const clients = ref([])
 const loadingClients = ref(false)
 const clientsError = ref('')
@@ -226,6 +403,27 @@ const proChat = reactive({
   draft: '',
   sending: false,
   sendError: '',
+})
+
+const proShared = ref([])
+const proSharedLoading = ref(false)
+const proSharedError = ref('')
+
+const shareModal = reactive({
+  open: false,
+  query: '',
+  loading: false,
+  error: '',
+  candidates: [],
+  selectedId: null,
+  sending: false,
+  sendError: '',
+})
+
+const filteredShareCandidates = computed(() => {
+  const q = shareModal.query.trim().toLowerCase()
+  if (!q) return shareModal.candidates
+  return shareModal.candidates.filter(r => r.title?.toLowerCase().includes(q))
 })
 
 async function loadClients() {
@@ -252,7 +450,7 @@ async function selectClient(client) {
   proChat.error = ''
   proChat.sendError = ''
   proChat.draft = ''
-  await loadProMessages()
+  await Promise.all([loadProMessages(), loadProShared()])
 }
 
 async function loadProMessages() {
@@ -298,13 +496,82 @@ async function proSendMessage() {
   }
 }
 
+async function loadProShared() {
+  proSharedLoading.value = true
+  proSharedError.value = ''
+  try {
+    const res = await apiFetch(`/api/professional/clients/${selectedClient.value.subscriberId}/shared-recipes`)
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      proSharedError.value = data.error || 'Failed to load shared recipes'
+      return
+    }
+    proShared.value = data.sharedRecipes ?? []
+  } catch {
+    proSharedError.value = 'Network error'
+  } finally {
+    proSharedLoading.value = false
+  }
+}
+
+async function openShareModal() {
+  shareModal.open = true
+  shareModal.query = ''
+  shareModal.selectedId = null
+  shareModal.sendError = ''
+  if (shareModal.candidates.length > 0) return
+  shareModal.loading = true
+  shareModal.error = ''
+  try {
+    const res = await apiFetch('/api/recipes')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      shareModal.error = data.error || 'Failed to load recipes'
+      return
+    }
+    shareModal.candidates = data.recipes ?? []
+  } catch {
+    shareModal.error = 'Network error'
+  } finally {
+    shareModal.loading = false
+  }
+}
+
+function closeShareModal() {
+  if (shareModal.sending) return
+  shareModal.open = false
+}
+
+async function confirmShare() {
+  if (!shareModal.selectedId || shareModal.sending) return
+  shareModal.sending = true
+  shareModal.sendError = ''
+  try {
+    const res = await apiFetch(`/api/professional/clients/${selectedClient.value.subscriberId}/shared-recipes`, {
+      method: 'POST',
+      body: JSON.stringify({ recipeId: shareModal.selectedId }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      shareModal.sendError = data.error || 'Failed to share recipe'
+      return
+    }
+    shareModal.open = false
+    await loadProShared()
+  } catch {
+    shareModal.sendError = 'Network error'
+  } finally {
+    shareModal.sending = false
+  }
+}
+
 async function scrollProToBottom() {
   await nextTick()
   if (proChatBody.value) proChatBody.value.scrollTop = proChatBody.value.scrollHeight
 }
 
-// ── Subscriber state ──────────────────────────────────────────────────────────
 const professional = ref(null)
+const invitations = ref([])
 const loadingPro = ref(true)
 const proError = ref('')
 
@@ -318,23 +585,64 @@ const sendError = ref('')
 
 const chatBody = ref(null)
 
+const subShared = ref([])
+const subSharedLoading = ref(false)
+const subSharedError = ref('')
+
+const removeModal = reactive({
+  open: false,
+  confirmText: '',
+  removing: false,
+  error: '',
+})
+
+const removeConfirmPhrase = 'REMOVE'
+
 async function loadProfessional() {
   loadingPro.value = true
   proError.value = ''
   try {
-    const res = await apiFetch('/api/client/professionals')
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      proError.value = data.error || 'Failed to load professional'
+    const [activeRes, invitedRes] = await Promise.all([
+      apiFetch('/api/client/professionals'),
+      apiFetch('/api/client/client-invitations'),
+    ])
+    const activeData = await activeRes.json().catch(() => ({}))
+    const invitedData = await invitedRes.json().catch(() => ({}))
+    if (!activeRes.ok) {
+      proError.value = activeData.error || 'Failed to load professional'
       return
     }
-    const list = data.professionals ?? []
-    professional.value = list[0] ?? null
-    if (professional.value) await loadMessages()
+    professional.value = (activeData.professionals ?? [])[0] ?? null
+    invitations.value = (invitedData.invitations ?? []).map(i => ({ ...i, _busy: false, _action: '' }))
+    if (professional.value) {
+      await Promise.all([loadMessages(), loadSubShared()])
+    }
   } catch {
     proError.value = 'Network error - could not load professional'
   } finally {
     loadingPro.value = false
+  }
+}
+
+async function respondInvite(inv, action) {
+  inv._busy = true
+  inv._action = action
+  try {
+    const res = await apiFetch(
+      `/api/client/client-invitations/${inv.professionalId}/${action}`,
+      { method: 'POST' },
+    )
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(data.error || `Failed to ${action} invitation`)
+      return
+    }
+    await loadProfessional()
+  } catch {
+    alert('Network error')
+  } finally {
+    inv._busy = false
+    inv._action = ''
   }
 }
 
@@ -381,12 +689,68 @@ async function sendMessage() {
   }
 }
 
+async function loadSubShared() {
+  subSharedLoading.value = true
+  subSharedError.value = ''
+  try {
+    const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}/shared-recipes`)
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      subSharedError.value = data.error || 'Failed to load shared recipes'
+      return
+    }
+    subShared.value = data.sharedRecipes ?? []
+  } catch {
+    subSharedError.value = 'Network error'
+  } finally {
+    subSharedLoading.value = false
+  }
+}
+
+function openRemoveModal() {
+  removeModal.open = true
+  removeModal.confirmText = ''
+  removeModal.error = ''
+}
+
+function closeRemoveModal() {
+  if (removeModal.removing) return
+  removeModal.open = false
+}
+
+async function confirmRemove() {
+  if (removeModal.confirmText !== removeConfirmPhrase) return
+  removeModal.removing = true
+  removeModal.error = ''
+  try {
+    const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}`, {
+      method: 'DELETE',
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      removeModal.error = data.error || 'Failed to remove professional'
+      return
+    }
+    removeModal.open = false
+    professional.value = null
+    messages.value = []
+    subShared.value = []
+    await loadProfessional()
+  } catch {
+    removeModal.error = 'Network error'
+  } finally {
+    removeModal.removing = false
+  }
+}
+
 async function scrollToBottom() {
   await nextTick()
   if (chatBody.value) chatBody.value.scrollTop = chatBody.value.scrollHeight
 }
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
+watch(() => proChat.messages.length, scrollProToBottom)
+watch(() => messages.value.length, scrollToBottom)
+
 function initialsFor(name) {
   if (!name) return '?'
   return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?'
@@ -399,8 +763,15 @@ function formatDateTime(value) {
   return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
+function formatDate(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
 onMounted(() => {
-  if (isProfessional) loadClients()
+  if (isProfessional.value) loadClients()
   else loadProfessional()
 })
 </script>

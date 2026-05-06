@@ -2,19 +2,19 @@
 <template>
   <div class="container-fluid px-4 py-4">
 
-    <div class="p-5 pt-3 rounded text-center">
-      <h2 class="fw-bold mb-4" style="color:#1b4d1b;font-size:1.75rem;">Recipe Library</h2>
-      <div class="d-flex justify-content-center gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <div>
+        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Recipe Library</h2>
+        <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Browse and discover healthy recipes</p>
+      </div>
+      <div class="d-flex gap-2" style="max-width:420px;flex:1;margin-left:2rem;">
         <input type="text" class="form-control"
-               style="max-width:500px;border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
+               style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
                placeholder="Search recipes..."
                v-model="searchQuery"
                @input="currentPage = 1">
-        <button class="btn fw-semibold" style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">Search</button>
       </div>
     </div>
-
-    <div class="mb-5" style="height:1px;background:linear-gradient(to right, transparent, #d4e7d4 20%, #d4e7d4 80%, transparent);margin:0 auto;max-width:80%;"></div>
 
     <div v-if="loadError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
 
@@ -48,55 +48,40 @@
             </div>
 
             <div class="p-3">
-              <div class="d-flex justify-content-between align-items-start">
+              <div class="d-flex justify-content-between align-items-start mb-1">
                 <h6 class="fw-bold mb-0" style="color:#1b4d1b;font-size:1rem;line-height:1.3;flex:1;">{{ recipe.title }}</h6>
-                <button class="p-0 ms-2"
-                        style="cursor:pointer;font-size:1.375rem;line-height:1;border:none;background:none;outline:none;transition:color 0.2s;"
+                <button class="p-0 ms-2" style="cursor:pointer;font-size:1.375rem;line-height:1;border:none;background:none;outline:none;transition:color 0.2s;"
                         :title="recipe.isFavorited ? 'Remove from favourites' : 'Save to favourites'"
                         @click.stop="toggleFavorite(recipe)"
-                        @mouseenter="$event.currentTarget.style.color='#d94f4f'"
-                        @mouseleave="$event.currentTarget.style.color=recipe.isFavorited ? '#d94f4f' : '#ccc'"
+                        @mouseenter="$event.target.style.color='#d94f4f'"
+                        @mouseleave="$event.target.style.color=recipe.isFavorited ? '#d94f4f' : '#ccc'"
                         :style="recipe.isFavorited ? 'color:#d94f4f;' : 'color:#ccc;'">
                   {{ recipe._favLoading ? '…' : '♥' }}
                 </button>
               </div>
-
-              <div class="mb-2" style="color:#6b7280;font-size:0.8125rem;">
-                {{ recipe.category }} · {{ recipe.cuisine }}
-              </div>
-
+              <div class="mb-2" style="color:#6b7280;font-size:0.8125rem;">{{ recipe.category }} · {{ recipe.cuisine }}</div>
               <div class="mb-2" style="color:#6b7280;font-size:0.8125rem;">
                 {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
               </div>
-              
               <div class="d-flex align-items-center gap-3 mb-3" style="color:#6b7280;font-size:0.875rem;">
-                <div class="d-flex align-items-center gap-1">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
+                <span class="d-flex align-items-center gap-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  <span>{{ recipe.cookTime }}</span>
-                </div>
-                <div class="d-flex align-items-center gap-1">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  <span>{{ recipe.ingredientDetails?.length ?? 0 }} items</span>
-                </div>
+                  {{ recipe.cookTime }}
+                </span>
+                <span v-if="recipe.averageRating != null" class="d-flex align-items-center gap-1">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
+                </span>
               </div>
-
               <div class="d-flex gap-2">
-                <button class="btn fw-semibold flex-fill" 
+                <button class="btn fw-semibold flex-fill"
                         style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
-                        @click="viewRecipe(recipe)">
-                  View Recipe
-                </button>
-                <button class="btn fw-semibold flex-fill" 
+                        @click="viewRecipe(recipe)">View Recipe</button>
+                <button class="btn fw-semibold flex-fill"
                         style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
-                        @click="pickMeal(recipe)">
-                  Add to Diary
-                </button>
+                        @click="pickMeal(recipe)">Add to Diary</button>
               </div>
             </div>
           </div>
@@ -104,61 +89,56 @@
       </div>
 
       <div v-if="filteredRecipes.length === 0 && !loading"
-           class="text-center text-muted py-5 border rounded"
-           style="border-style:dashed!important;">
-        <p class="mb-1">{{ activeTab === 'fav' ? 'No favourites saved yet.' : 'No recipes match your search.' }}</p>
+           class="text-center py-5 rounded"
+           style="background:#f9fafb;border:2px dashed #e5e7eb;">
+        <p class="mb-0" style="color:#6b7280;">{{ activeTab === 'fav' ? 'No favourites saved yet.' : 'No recipes match your search.' }}</p>
       </div>
 
-    <div class="d-flex justify-content-center gap-1 mb-4">
-      <button class="btn btn-outline-secondary btn-sm"
-              :disabled="currentPage === 1"
-              @click="currentPage--">‹</button>
+      <div class="d-flex justify-content-center gap-1 mb-4">
+        <button class="btn btn-sm"
+                style="background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;"
+                :disabled="currentPage === 1"
+                @click="currentPage--">‹</button>
 
-      <template v-for="item in pageItems" :key="item">
-        <span v-if="item === '...'" class="btn btn-sm disabled">…</span>
-        <button v-else
-                class="btn btn-sm"
-                :class="item === currentPage ? 'btn-gf' : 'btn-outline-secondary'"
-                @click="currentPage = item">{{ item }}</button>
-      </template>
+        <template v-for="item in pageItems" :key="item">
+          <span v-if="item === '...'" class="btn btn-sm disabled" style="color:#9ca3af;">…</span>
+          <button v-else class="btn btn-sm"
+                  :style="item === currentPage ? 'background:#1b4d1b;color:#fff;border:none;border-radius:6px;' : 'background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;'"
+                  @click="currentPage = item">{{ item }}</button>
+        </template>
 
-      <button class="btn btn-outline-secondary btn-sm"
-              :disabled="currentPage === totalPages"
-              @click="currentPage++">›</button>
-    </div>
+        <button class="btn btn-sm"
+                style="background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;"
+                :disabled="currentPage === totalPages"
+                @click="currentPage++">›</button>
+      </div>
+    </template>
 
     <div v-if="selectedRecipe"
+         id="recipe-detail"
          class="p-4 rounded mb-4"
          style="background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.1);border-radius:16px;">
       <div class="d-flex justify-content-between align-items-start mb-4">
         <h4 class="fw-bold mb-0" style="color:#1b4d1b;">{{ selectedRecipe.title }}</h4>
-        <button class="btn btn-sm" style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;" @click="selectedRecipe = null">Close</button>
+        <button class="btn btn-sm" style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;"
+                @click="selectedRecipe = null">Close</button>
       </div>
-      
       <div class="row g-4">
 
         <div class="col-md-4">
-          <img :src="selectedRecipe.image || '/src/assets/placeholder.jpg'" :alt="selectedRecipe.title"
+          <img :src="selectedRecipe.image || '/src/assets/hero.png'" :alt="selectedRecipe.title"
                class="rounded mb-3" style="width:100%;height:240px;object-fit:cover;border-radius:12px;" />
-          
           <div class="d-flex align-items-center gap-3 mb-3" style="color:#6b7280;font-size:0.875rem;">
-            <div class="d-flex align-items-center gap-1">
+            <span class="d-flex align-items-center gap-1">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
-              <span>{{ selectedRecipe.cookTime }}</span>
-            </div>
-            <div class="d-flex align-items-center gap-1">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
-              </svg>
-              <span>{{ selectedRecipe.kcal }} kcal</span>
-            </div>
-            <span class="badge" style="background:#f3f4f6;color:#1b4d1b;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.75rem;">{{ selectedRecipe.servings }} servings</span>
+              {{ selectedRecipe.cookTime }}
+            </span>
+            <span class="badge" style="background:#f3f4f6;color:#1b4d1b;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.75rem;">
+              {{ selectedRecipe.servings }} servings
+            </span>
           </div>
-
           <div class="d-flex gap-2 mb-3">
             <button class="btn fw-semibold flex-fill"
                     style="background:#1b4d1b;color:#fff;border:none;padding:0.625rem 1rem;border-radius:8px;font-size:0.875rem;"
@@ -166,47 +146,36 @@
                     @click="toggleFavorite(selectedRecipe)">
               {{ selectedRecipe._favLoading ? '…' : (selectedRecipe.isFavorited ? '♥ Saved' : '♥ Save') }}
             </button>
-            <button class="btn fw-semibold flex-fill" 
+            <button class="btn fw-semibold flex-fill"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1rem;border-radius:8px;font-size:0.875rem;"
-                    @click="pickMeal(selectedRecipe)">
-              Add to Diary
-            </button>
+                    @click="pickMeal(selectedRecipe)">Add to Diary</button>
           </div>
-
           <div class="p-3 rounded" style="background:#f9fafb;">
             <h6 class="fw-bold mb-2" style="color:#1b4d1b;font-size:0.9375rem;">Nutrition Per Serving</h6>
             <div style="font-size:0.875rem;color:#6b7280;">
               <div class="d-flex justify-content-between mb-1">
-                <span>Calories</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.kcal }} kcal</strong>
+                <span>Calories</span><strong style="color:#1b4d1b;">{{ selectedRecipe.kcal }} kcal</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span>Protein</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.protein }}g</strong>
+                <span>Protein</span><strong style="color:#1b4d1b;">{{ selectedRecipe.protein }}g</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span>Carbs</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.carbs }}g</strong>
+                <span>Carbs</span><strong style="color:#1b4d1b;">{{ selectedRecipe.carbs }}g</strong>
               </div>
               <div v-if="selectedRecipe.sugars != null" class="d-flex justify-content-between mb-1 ms-2">
-                <span style="font-size:0.8125rem;">of which sugars</span>
-                <strong style="color:#1b4d1b;font-size:0.8125rem;">{{ selectedRecipe.sugars }}g</strong>
+                <span style="font-size:0.8125rem;">of which sugars</span><strong style="color:#1b4d1b;font-size:0.8125rem;">{{ selectedRecipe.sugars }}g</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span>Fat</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.fat }}g</strong>
+                <span>Fat</span><strong style="color:#1b4d1b;">{{ selectedRecipe.fat }}g</strong>
               </div>
               <div v-if="selectedRecipe.saturatedFat != null" class="d-flex justify-content-between mb-1 ms-2">
-                <span style="font-size:0.8125rem;">of which saturated</span>
-                <strong style="color:#1b4d1b;font-size:0.8125rem;">{{ selectedRecipe.saturatedFat }}g</strong>
+                <span style="font-size:0.8125rem;">of which saturated</span><strong style="color:#1b4d1b;font-size:0.8125rem;">{{ selectedRecipe.saturatedFat }}g</strong>
               </div>
               <div v-if="selectedRecipe.fibre != null" class="d-flex justify-content-between mb-1">
-                <span>Fibre</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.fibre }}g</strong>
+                <span>Fibre</span><strong style="color:#1b4d1b;">{{ selectedRecipe.fibre }}g</strong>
               </div>
               <div v-if="selectedRecipe.salt != null" class="d-flex justify-content-between">
-                <span>Salt</span>
-                <strong style="color:#1b4d1b;">{{ selectedRecipe.salt }}g</strong>
+                <span>Salt</span><strong style="color:#1b4d1b;">{{ selectedRecipe.salt }}g</strong>
               </div>
             </div>
           </div>
@@ -219,7 +188,6 @@
               {{ ing.quantity }} {{ ing.name }}
             </li>
           </ul>
-
           <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:1rem;">Method</h6>
           <ol class="ps-3 mb-0" style="font-size:0.875rem;color:#6b7280;">
             <li v-for="(step, i) in selectedRecipeSteps" :key="i" class="mb-2">{{ step }}</li>
@@ -266,7 +234,9 @@
               {{ reviewSubmitting ? 'Submitting…' : 'Submit Review' }}
             </button>
           </div>
-          <div v-else class="p-3 rounded" style="background:#f9fafb;color:#9ca3af;font-size:0.875rem;">You have already reviewed this recipe.</div>
+          <div v-else class="p-3 rounded" style="background:#f9fafb;color:#9ca3af;font-size:0.875rem;">
+            You have already reviewed this recipe.
+          </div>
         </div>
 
       </div>
@@ -276,17 +246,19 @@
       <div v-if="pendingRecipe"
            style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1050;display:flex;align-items:center;justify-content:center;"
            @click.self="pendingRecipe = null">
-        <div class="p-4 rounded bg-white shadow" style="min-width:300px;max-width:380px;">
-          <h6 class="fw-bold mb-1" style="color:#5a9e56;">Add to Diary</h6>
-          <p class="small text-muted mb-3">{{ pendingRecipe.title }} - choose a meal:</p>
+        <div class="p-4 rounded bg-white shadow" style="min-width:300px;max-width:380px;border-radius:16px;">
+          <h6 class="fw-bold mb-1" style="color:#1b4d1b;">Add to Diary</h6>
+          <p class="mb-3" style="color:#6b7280;font-size:0.875rem;">{{ pendingRecipe.title }} — choose a meal:</p>
           <div class="d-grid gap-2">
-            <button v-for="meal in meals" :key="meal.id"
-                    class="btn btn-gf"
+            <button v-for="meal in MEAL_OPTIONS" :key="meal.id"
+                    class="btn fw-semibold"
+                    style="background:#1b4d1b;color:#fff;border:none;padding:0.625rem;border-radius:8px;"
                     @click="confirmAdd(meal.id)">
               {{ meal.label }}
             </button>
           </div>
-          <button class="btn btn-outline-secondary btn-sm w-100 mt-3"
+          <button class="btn w-100 mt-3"
+                  style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem;border-radius:8px;"
                   @click="pendingRecipe = null">Cancel</button>
         </div>
       </div>
@@ -296,26 +268,106 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { recipes, meals, addRecipeToDiary } from '../diaryStore.js'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import { apiFetch, currentUser } from '../auth.js'
+import { addRecipeToDiary } from '../diaryStore.js'
+
+const route = useRoute()
 
 const PAGE_SIZE = 6
 
+const MEAL_OPTIONS = [
+  { id: 'breakfast', label: 'Breakfast' },
+  { id: 'lunch', label: 'Lunch' },
+  { id: 'dinner', label: 'Dinner' },
+  { id: 'snack', label: 'Snacks & Drinks' },
+]
+
+const recipes = ref([])
+const loading = ref(true)
+const loadError = ref('')
+
 const searchQuery = ref('')
 const activeTab = ref('all')
-const selectedRecipe = ref(null)
 const currentPage = ref(1)
-
+const selectedRecipe = ref(null)
 const pendingRecipe = ref(null)
+
+const reviewDraft = ref({ rating: 0, comment: '' })
+const reviewSubmitting = ref(false)
+const reviewError = ref('')
 
 const tabs = [
   { id: 'all', label: 'All Recipes' },
   { id: 'fav', label: 'My Favourites' },
 ]
 
+onMounted(loadRecipes)
+
+async function loadRecipes() {
+  loading.value = true
+  loadError.value = ''
+  try {
+    const res = await apiFetch('/api/recipes')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      loadError.value = data.error || 'Failed to load recipes'
+      return
+    }
+    recipes.value = (data.recipes ?? []).map(r => ({ ...r, _favLoading: false }))
+    await handleHighlight()
+  } catch {
+    loadError.value = 'Network error — could not load recipes'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function handleHighlight() {
+  const id = Number(route.query.highlight)
+  if (!id) return
+  const idx = recipes.value.findIndex(r => r.recipeId === id)
+  if (idx === -1) return
+  // Jump to the page that contains this recipe
+  currentPage.value = Math.floor(idx / PAGE_SIZE) + 1
+  await nextTick()
+  const recipe = recipes.value[idx]
+  selectedRecipe.value = recipe
+  reviewDraft.value = { rating: 0, comment: '' }
+  reviewError.value = ''
+  await nextTick()
+  document.getElementById('recipe-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+async function loadFavorites() {
+  loading.value = true
+  loadError.value = ''
+  try {
+    const res = await apiFetch('/api/recipes/favorites')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      loadError.value = data.error || 'Failed to load favourites'
+      return
+    }
+    recipes.value = (data.recipes ?? []).map(r => ({ ...r, isFavorited: true, _favLoading: false }))
+  } catch {
+    loadError.value = 'Network error — could not load favourites'
+  } finally {
+    loading.value = false
+  }
+}
+
+function switchTab(tabId) {
+  activeTab.value = tabId
+  currentPage.value = 1
+  selectedRecipe.value = null
+  if (tabId === 'fav') loadFavorites()
+  else loadRecipes()
+}
+
 const filteredRecipes = computed(() => {
   let result = recipes.value
-  if (activeTab.value === 'fav') result = result.filter(r => r.saved)
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(r => r.title.toLowerCase().includes(q))
@@ -334,7 +386,6 @@ const pageItems = computed(() => {
   const total = totalPages.value
   const cur = currentPage.value
   const items = []
-
   for (let p = 1; p <= total; p++) {
     if (p === 1 || p === total || (p >= cur - 1 && p <= cur + 1)) {
       items.push(p)
@@ -345,17 +396,102 @@ const pageItems = computed(() => {
   return items
 })
 
-function viewRecipe(recipe) {
+const selectedRecipeSteps = computed(() => {
+  if (!selectedRecipe.value?.instructions) return []
+  return selectedRecipe.value.instructions.split(/\n+/).filter(s => s.trim())
+})
+
+const userReviewExists = computed(() => {
+  if (!selectedRecipe.value) return false
+  const uid = currentUser.value.userId
+  return (selectedRecipe.value.reviews ?? []).some(r => r.subscriberId === uid)
+})
+
+async function viewRecipe(recipe) {
   selectedRecipe.value = recipe
-  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  reviewDraft.value = { rating: 0, comment: '' }
+  reviewError.value = ''
+  await nextTick()
+  document.getElementById('recipe-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function pickMeal(recipe) {
   pendingRecipe.value = recipe
 }
 
-function confirmAdd(mealId) {
-  addRecipeToDiary(pendingRecipe.value, mealId)
-  pendingRecipe.value = null
+async function confirmAdd(mealId) {
+  try {
+    await addRecipeToDiary(pendingRecipe.value, mealId)
+  } catch (e) {
+    alert(e.message)
+  } finally {
+    pendingRecipe.value = null
+  }
+}
+
+async function toggleFavorite(recipe) {
+  if (recipe._favLoading) return
+  recipe._favLoading = true
+  try {
+    const res = await apiFetch(`/api/recipes/${recipe.recipeId}/favorites`, { method: 'POST' })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(data.error || 'Failed to update favourite')
+      return
+    }
+    recipe.isFavorited = data.favorite?.favorited ?? !recipe.isFavorited
+    if (selectedRecipe.value?.recipeId === recipe.recipeId) {
+      selectedRecipe.value.isFavorited = recipe.isFavorited
+    }
+    // If on favourites tab and unfavorited, remove from list
+    if (activeTab.value === 'fav' && !recipe.isFavorited) {
+      recipes.value = recipes.value.filter(r => r.recipeId !== recipe.recipeId)
+    }
+  } catch {
+    alert('Network error — could not update favourite')
+  } finally {
+    recipe._favLoading = false
+  }
+}
+
+async function submitReview() {
+  if (reviewDraft.value.rating === 0) return
+  reviewError.value = ''
+  reviewSubmitting.value = true
+  try {
+    const res = await apiFetch(`/api/recipes/${selectedRecipe.value.recipeId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({
+        rating: reviewDraft.value.rating,
+        comment: reviewDraft.value.comment.trim() || null,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      reviewError.value = data.error || 'Failed to submit review'
+      return
+    }
+    const newReview = data.review
+    selectedRecipe.value.reviews = [newReview, ...(selectedRecipe.value.reviews ?? [])]
+    const ratings = selectedRecipe.value.reviews.map(r => r.rating)
+    selectedRecipe.value.averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length
+    selectedRecipe.value.reviewCount = ratings.length
+    // Sync back into main list
+    const listEntry = recipes.value.find(r => r.recipeId === selectedRecipe.value.recipeId)
+    if (listEntry) {
+      listEntry.averageRating = selectedRecipe.value.averageRating
+      listEntry.reviewCount = selectedRecipe.value.reviewCount
+    }
+    reviewDraft.value = { rating: 0, comment: '' }
+  } catch {
+    reviewError.value = 'Network error'
+  } finally {
+    reviewSubmitting.value = false
+  }
+}
+
+function formatDate(value) {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>
