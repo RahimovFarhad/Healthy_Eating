@@ -2,17 +2,19 @@
 <template>
   <div class="container-fluid px-4 py-3">
 
-    <div class="p-4 mb-3 rounded text-center" style="background:#5a9e56;">
-      <h3 class="fw-bold text-white mb-3">Recipe Library</h3>
+    <div class="p-5 pt-3 rounded text-center">
+      <h2 class="fw-bold mb-4" style="color:#1b4d1b;font-size:1.75rem;">Recipe Library</h2>
       <div class="d-flex justify-content-center gap-2">
         <input type="text" class="form-control"
-               style="max-width:500px;border:2px solid #5a9e56;"
+               style="max-width:500px;border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
                placeholder="Search recipes..."
                v-model="searchQuery"
                @input="currentPage = 1">
-        <button class="btn btn-gf px-4">Search</button>
+        <button class="btn fw-semibold" style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">Search</button>
       </div>
     </div>
+
+    <div class="mb-5" style="height:1px;background:linear-gradient(to right, transparent, #d4e7d4 20%, #d4e7d4 80%, transparent);margin:0 auto;max-width:80%;"></div>
 
     <div v-if="loadError" class="alert alert-danger small mb-3">{{ loadError }}</div>
 
