@@ -1,4 +1,4 @@
-import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, archiveGoalsForNutrient, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn, listNutrients } from "./goals.repository.js";
+import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, archiveGoalsForNutrient, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn, upsertGoalCheckIn, listNutrients } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, normalizeGoalIncludeQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
 async function getGoalsService({ subscriberId, effective, include }) {
@@ -192,15 +192,8 @@ async function evaluateGoalsForToday({ subscriberId, nutritionSummary }) {
     else if (min != null)           isDone = total >= min;
     else if (max != null)           isDone = total <= max;
 
-    // only write if the status actually changed
-    const existing = await findGoalCheckInByDate({ goalId: goal.goalId, date: today });
-    if (existing) {
-      if (existing.isDone !== isDone) {
-        await updateGoalCheckIn({ checkInId: existing.checkInId, isDone });
-      }
-    } else {
-      await createGoalCheckIn({ goalId: goal.goalId, date: today, isDone });
-    }
+    // Atomic write avoids race conditions across concurrent evaluations.
+    await upsertGoalCheckIn({ goalId: goal.goalId, date: today, isDone });
   }));
 }
 

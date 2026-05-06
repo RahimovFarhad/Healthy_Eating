@@ -240,6 +240,11 @@ async function main() {
 
   const recipes = await readJSON("./recipes.json");
 
+  // clears existing recipe data before reseeding to avoid duplicates
+  await prisma.recipeIngredient.deleteMany({});
+  await prisma.recipe.deleteMany({});
+  console.log("Cleared existing recipes");
+
   for (const r of recipes) {
     const recipe = await prisma.recipe.create({
       data: {
@@ -270,11 +275,18 @@ async function main() {
         create: { name }
       })
 
-      await prisma.recipeIngredient.create({
-        data: {
+      await prisma.recipeIngredient.upsert({
+        where: {
+          recipeId_ingredientId: {
+            recipeId:     recipe.recipeId,
+            ingredientId: ingredient.ingredientId,
+          }
+        },
+        update: { quantity: r.ingredients[i] },
+        create: {
           recipeId:     recipe.recipeId,
           ingredientId: ingredient.ingredientId,
-          quantity:     r.ingredients[i] 
+          quantity:     r.ingredients[i]
         }
       })
     }

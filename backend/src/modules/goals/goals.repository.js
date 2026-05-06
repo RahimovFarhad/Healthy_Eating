@@ -237,6 +237,33 @@ async function updateGoalCheckIn({ checkInId, isDone }) {
   });
 }
 
+async function upsertGoalCheckIn({ goalId, date, isDone }) {
+  return prisma.goalCheckIn.upsert({
+    where: {
+      goalId_date: {
+        goalId,
+        date,
+      },
+    },
+    update: {
+      isDone,
+    },
+    create: {
+      goalId,
+      date,
+      isDone,
+    },
+    select: {
+      checkInId: true,
+      goalId: true,
+      date: true,
+      isDone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
 export {
   fetchGoals,
   findNutrientById,
@@ -252,4 +279,5 @@ export {
   findGoalCheckInByDate,
   createGoalCheckIn,
   updateGoalCheckIn,
+  upsertGoalCheckIn,
 };
