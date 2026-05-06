@@ -9,8 +9,8 @@
           <button class="btn" @click="handlePrevDay"
                   style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">‹</button>
           <span class="rounded px-3 py-1" style="background:#fff;border:1px solid #1b4d1b;font-size:0.875rem;font-weight:500;color:#1b4d1b;">{{ formattedDate }}</span>
-          <button class="btn" @click="handleNextDay"
-                  style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">›</button>
+          <button class="btn" @click="handleNextDay" :disabled="isToday"
+                  :style="isToday ? 'background:#e5e7eb;color:#9ca3af;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;'">›</button>
         </div>
       </div>
       <RouterLink :to="`/diary?date=${referenceDate}`" class="btn fw-semibold"
@@ -207,7 +207,7 @@
         </RouterLink>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-6">
         <RouterLink to="/messages" class="text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
@@ -392,6 +392,12 @@ const referenceDate = computed(() => {
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+})
+
+const isToday = computed(() => {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  return referenceDate.value === todayStr
 })
 
 function handlePrevDay() {

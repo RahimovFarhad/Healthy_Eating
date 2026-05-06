@@ -17,7 +17,7 @@
           </button>
         </div>
         <input type="date" class="form-control" style="width:150px;border-radius:8px;"
-               v-model="endDate" @change="load()">
+               v-model="endDate" :max="maxDate" @change="load()">
       </div>
     </div>
 
@@ -364,6 +364,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10)
 
 const period = ref('daily')
 const endDate = ref(todayIso())
+const maxDate = computed(() => todayIso())
 const loading = ref(true)
 const error = ref('')
 const nutrients = ref([])

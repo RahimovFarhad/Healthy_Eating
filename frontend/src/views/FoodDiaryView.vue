@@ -12,8 +12,8 @@
         <button class="btn" @click="handlePrevDay"
                 style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;">‹</button>
         <span class="rounded px-4 py-2" style="background:#fff;border:1.25px solid #1b4d1b;font-size:0.875rem;font-weight:500;color:#1b4d1b;">{{ formattedDate }}</span>
-        <button class="btn" @click="handleNextDay"
-                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;">›</button>
+        <button class="btn" @click="handleNextDay" :disabled="isToday"
+                :style="isToday ? 'background:#e5e7eb;color:#9ca3af;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;'">›</button>
       </div>
     </div>
 
@@ -363,6 +363,13 @@ const router = useRouter()
 const formattedDate = computed(() =>
   viewDate.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 )
+
+const isToday = computed(() => {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const viewStr = `${viewDate.value.getFullYear()}-${String(viewDate.value.getMonth() + 1).padStart(2, '0')}-${String(viewDate.value.getDate()).padStart(2, '0')}`
+  return viewStr === todayStr
+})
 
 const snackMeal = computed(() => meals.value.find(m => m.id === 'snack'))
 const mainMeals = computed(() => meals.value.filter(m => m.id !== 'snack'))
