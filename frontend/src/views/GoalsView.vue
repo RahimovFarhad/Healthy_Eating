@@ -118,10 +118,10 @@
               <div class="d-flex flex-wrap gap-2">
                 <button v-if="goal.status === 'active' && !goal.nutrientId"
                         class="btn btn-sm fw-semibold"
-                        :style="isDoneToday(goal) ? 'background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;'"
+                        :style="isDoneToday(goal) ? 'background:#f3f4f6;color:#1b4d1b;border:1px solid #e5e7eb;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;' : 'background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;'"
                         :disabled="goal._toggling"
                         @click="toggleDone(goal)">
-                  {{ goal._toggling ? '…' : (isDoneToday(goal) ? '✓ Done Today' : 'Mark Today Done') }}
+                  {{ goal._toggling ? '…' : (isDoneToday(goal) ? '✓ Mark Today Undone' : 'Mark Today Done') }}
                 </button>
                 <span v-if="goal.status === 'active' && goal.nutrientId"
                       class="badge rounded-pill align-self-center"
@@ -289,6 +289,7 @@ const goals = ref([])
 const nutrients = ref([])
 const loading = ref(true)
 const loadError = ref('')
+const todayNutrition = ref([]) // Today's nutrition summary for progress calculation
 
 const showAddForm = ref(false)
 const activeTab = ref('active')
@@ -373,22 +374,23 @@ const presets = [
 ]
 
 onMounted(async () => {
-  await Promise.all([loadGoals(), loadNutrients()])
+  await Promise.all([loadGoals(), loadNutrients(), loadTodayNutrition()])
 })
 
 async function loadGoals() {
   loading.value = true
   loadError.value = ''
   try {
-    const res = await apiFetch('/api/goals?effective=false&include=all')
+    const res = await apiFetch('/api/goals?include=all')
     const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      loadError.value = data.error || 'Failed to load goals'
-      return
+    if (res.ok) {
+      goals.value = data.goals ?? []
+    } else {
+      loadError.value = data.message || data.error || 'Failed to load goals'
     }
-    goals.value = (data.goals ?? []).map(g => ({ ...g, _toggling: false, _archiving: false }))
-  } catch {
+  } catch (err) {
     loadError.value = 'Network error - could not load goals'
+    console.error('Goals load error:', err)
   } finally {
     loading.value = false
   }
@@ -399,6 +401,24 @@ async function loadNutrients() {
     const res = await apiFetch('/api/goals/nutrients')
     const data = await res.json().catch(() => ({}))
     if (res.ok) nutrients.value = data.nutrients ?? []
+  } catch {
+    // non-critical
+  }
+}
+
+async function loadTodayNutrition() {
+  try {
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    const params = new URLSearchParams({ 
+      period: 'daily', 
+      endDate: today.toISOString() 
+    })
+    const res = await apiFetch(`/api/diary/summary?${params}`)
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) {
+      todayNutrition.value = data.summary?.nutrients ?? []
+    }
   } catch {
     // non-critical
   }
@@ -495,10 +515,34 @@ async function applyPreset(preset) {
 }
 
 function isDoneToday(goal) {
-  const today = todayIso()
-  return (goal.checkIns ?? []).some(c => {
-    const d = new Date(c.date).toISOString().slice(0, 10)
-    return d === today && c.isDone
+  // For nutrient-based goals: check if target is met based on today's nutrition
+  if (goal.nutrientId) {
+    const nutrient = todayNutrition.value.find(n => n.nutrientId === goal.nutrientId)
+    const currentAmount = nutrient ? Number(nutrient.totalAmount) : 0
+    
+    const min = goal.targetMin != null ? Number(goal.targetMin) : null
+    const max = goal.targetMax != null ? Number(goal.targetMax) : null
+    
+    // Check if goal is met based on min/max constraints
+    if (min != null && max != null) {
+      return currentAmount >= min && currentAmount <= max
+    } else if (min != null) {
+      return currentAmount >= min
+    } else if (max != null) {
+      return currentAmount <= max
+    }
+    return false
+  }
+  
+  // For manual goals: check checkIns (same logic as goalProgress uses)
+  const checkIns = goal.checkIns ?? []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const iso = today.toISOString().slice(0, 10)
+  
+  return checkIns.some(c => {
+    const checkInDate = new Date(c.date).toISOString().slice(0, 10)
+    return checkInDate === iso && c.isDone
   })
 }
 
@@ -511,7 +555,7 @@ async function toggleDone(goal) {
       alert(data.error || 'Failed to toggle goal')
       return
     }
-    await loadGoals()
+    await Promise.all([loadGoals(), loadTodayNutrition()])
   } catch {
     alert('Network error')
   } finally {
@@ -600,6 +644,39 @@ function goalRange(goal) {
 }
 
 function goalProgress(goal) {
+  // For nutrient-based goals: show current intake as percentage of target
+  if (goal.nutrientId) {
+    const nutrient = todayNutrition.value.find(n => n.nutrientId === goal.nutrientId)
+    const currentAmount = nutrient ? Number(nutrient.totalAmount) : 0
+    
+    const min = goal.targetMin != null ? Number(goal.targetMin) : null
+    const max = goal.targetMax != null ? Number(goal.targetMax) : null
+    
+    let referenceValue = 0
+    
+    // Determine reference value based on what's set
+    if (min != null && max != null) {
+      // Both set: use average
+      referenceValue = (min + max) / 2
+    } else if (max != null) {
+      // Max only: use max
+      referenceValue = max
+    } else if (min != null) {
+      // Min only: use min
+      referenceValue = min
+    } else {
+      // Neither set: no progress bar
+      return 0
+    }
+    
+    if (referenceValue === 0) return 0
+    
+    // Calculate percentage of reference value
+    const percentage = Math.round((currentAmount / referenceValue) * 100)
+    return Math.min(percentage, 100) // Cap at 100% for display
+  }
+  
+  // For manual (non-nutrient) goals: show completion based on checkIns
   const checkIns = goal.checkIns ?? []
   const start = goal.startDate ? new Date(goal.startDate) : new Date()
   start.setHours(0, 0, 0, 0)
