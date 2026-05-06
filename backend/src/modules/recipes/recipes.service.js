@@ -1,5 +1,5 @@
 import { validateListRecipesInput, validatePositiveInteger, validateReviewInput } from "./recipes.validator.js";
-import { listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite } from "./recipes.repository.js";
+import { listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite, toggleRecipeUsage } from "./recipes.repository.js";
 
 async function listRecipesService({ category, cuisine, ingredients, subscriberId }) {
   const filters = validateListRecipesInput({ category, cuisine, ingredients });
@@ -34,10 +34,24 @@ async function toggleRecipeFavoriteService({ recipeId, subscriberId }) {
   return toggleRecipeFavorite({ recipeId: normalizedRecipeId, subscriberId: normalizedSubscriberId });
 }
 
+async function toggleRecipeUsageService({ recipeId, subscriberId }) {
+  const normalizedRecipeId = validatePositiveInteger({ value: recipeId });
+  const normalizedSubscriberId = validatePositiveInteger({ value: subscriberId });
+
+  return toggleRecipeUsage({ recipeId: normalizedRecipeId, subscriberId: normalizedSubscriberId });
+}
+
 async function getFavoriteRecipesService({ subscriberId, category, cuisine, ingredients }) {
   const normalizedSubscriberId = validatePositiveInteger({ value: subscriberId });
   const filters = validateListRecipesInput({ category, cuisine, ingredients });
   const recipes = await listRecipes({ ...filters, favoritedBySubscriberId: normalizedSubscriberId });
+  return processReturnedRecipes(recipes, normalizedSubscriberId);
+}
+
+async function getUsedRecipesService({ subscriberId, category, cuisine, ingredients }) {
+  const normalizedSubscriberId = validatePositiveInteger({ value: subscriberId });
+  const filters = validateListRecipesInput({ category, cuisine, ingredients });
+  const recipes = await listRecipes({ ...filters, usedBySubscriberId: normalizedSubscriberId });
   return processReturnedRecipes(recipes, normalizedSubscriberId);
 }
 
@@ -49,9 +63,12 @@ function processReturnedRecipes(recipes, subscriberId) {
   }
 
   return recipes.map((recipe) => {
-    const { recipeIngredients, reviews, favorites, ...recipeWithoutIngredients } = recipe;
+    const { recipeIngredients, reviews, favorites, usages, ...recipeWithoutIngredients } = recipe;
     const isFavorited = subscriberId
       ? (favorites ?? []).some(f => f.subscriberId === subscriberId)
+      : false;
+    const isUsed = subscriberId
+      ? (usages ?? []).some(u => u.subscriberId === subscriberId)
       : false;
     return {
       ...recipeWithoutIngredients,
@@ -59,6 +76,7 @@ function processReturnedRecipes(recipes, subscriberId) {
       reviewCount: (reviews ?? []).length,
       reviews,
       isFavorited,
+      isUsed,
       ingredients: recipeIngredients.map((ri) => ri.ingredient.name),
       ingredientDetails: recipeIngredients.map((ri) => ({ quantity: ri.quantity, name: ri.ingredient.name })),
     };
@@ -70,5 +88,7 @@ export {
   getRecipeByIdService,
   submitRecipeReviewService,
   toggleRecipeFavoriteService,
-  getFavoriteRecipesService
+  toggleRecipeUsageService,
+  getFavoriteRecipesService,
+  getUsedRecipesService
 };

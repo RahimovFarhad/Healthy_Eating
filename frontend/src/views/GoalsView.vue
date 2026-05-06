@@ -16,28 +16,22 @@
     <div v-if="loadError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
 
     <div class="row g-3 mb-4">
-      <div class="col-md-3 col-6">
+      <div class="col-md-4 col-6">
         <div class="p-3 rounded h-100" style="background:#f9fafb;">
           <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Active Goals</div>
           <div style="color:#1b4d1b;font-size:1.25rem;font-weight:700;">{{ activeGoals.length }}</div>
         </div>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-4 col-6">
         <div class="p-3 rounded h-100" style="background:#f9fafb;">
           <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Done Today</div>
           <div style="color:#1b4d1b;font-size:1.25rem;font-weight:700;">{{ doneToday }} / {{ activeGoals.length }}</div>
         </div>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-4 col-6">
         <div class="p-3 rounded h-100" style="background:#f9fafb;">
           <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Set By Pro</div>
           <div style="color:#1b4d1b;font-size:1.25rem;font-weight:700;">{{ proGoalsCount }}</div>
-        </div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="p-3 rounded h-100" style="background:#f9fafb;">
-          <div style="color:#6b7280;font-size:0.8125rem;margin-bottom:0.25rem;">Archived</div>
-          <div style="color:#1b4d1b;font-size:1.25rem;font-weight:700;">{{ archivedGoals.length }}</div>
         </div>
       </div>
     </div>
@@ -45,7 +39,7 @@
     <div class="d-flex gap-2 mb-4 pb-3 flex-wrap" style="border-bottom:1px solid #f3f4f6;">
       <button v-for="tab in tabs" :key="tab.id"
               class="btn"
-              :style="activeTab === tab.id ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+              :style="(activeTab === tab.id) ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
               @click="activeTab = tab.id">
         {{ tab.label }}
       </button>
@@ -87,15 +81,15 @@
 
                 <svg viewBox="0 0 100 100" width="80" height="80" style="flex-shrink:0;">
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" stroke-width="10"/>
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="#2e7d32" stroke-width="10"
-                          :stroke-dasharray="`${goalProgress(goal) * 2.51} ${(100 - goalProgress(goal)) * 2.51}`"
+                  <circle cx="50" cy="50" r="40" fill="none" :stroke="goalProgressColor(goal)" stroke-width="10"
+                          :stroke-dasharray="`${Math.min(goalProgress(goal), 100) * 2.51} ${(100 - Math.min(goalProgress(goal), 100)) * 2.51}`"
                           stroke-dashoffset="62.75"
                           stroke-linecap="round"
                           transform="rotate(-90 50 50)"/>
                   <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="#1b4d1b">
                     {{ goalProgress(goal) }}%
                   </text>
-                  <text x="50" y="60" text-anchor="middle" font-size="9" fill="#6b7280">done</text>
+                  <text x="50" y="60" text-anchor="middle" font-size="9" fill="#6b7280">{{ goalProgressLabel(goal) }}</text>
                 </svg>
 
                 <div class="flex-grow-1">
@@ -133,11 +127,8 @@
                         style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
                         :disabled="goal._archiving"
                         @click="archiveGoal(goal)">
-                  {{ goal._archiving ? '…' : 'Archive' }}
+                  {{ goal._archiving ? '…' : 'Delete' }}
                 </button>
-                <span v-if="goal.status === 'archived'"
-                      class="badge rounded-pill"
-                      style="background:#9ca3af;color:#fff;font-size:0.7rem;padding:0.25rem 0.625rem;">Archived</span>
               </div>
 
               <div v-if="editingId === goal.goalId" class="mt-3 pt-3" style="border-top:1px solid #f3f4f6;">
@@ -350,19 +341,16 @@ const doneToday = computed(() => activeGoals.value.filter(isDoneToday).length)
 const tabs = computed(() => [
   { id: 'active', label: 'Active', count: activeGoals.value.length },
   { id: 'pro', label: 'From Pro', count: proGoalsCount.value },
-  { id: 'archived', label: 'Archived', count: archivedGoals.value.length },
 ])
 
 const visibleGoals = computed(() => {
-  if (activeTab.value === 'archived') return archivedGoals.value
   if (activeTab.value === 'pro') return activeGoals.value.filter(g => g.source === 'professional_defined')
   return activeGoals.value
 })
 
 const emptyMessage = computed(() => {
-  if (activeTab.value === 'archived') return 'No archived goals yet.'
-  if (activeTab.value === 'pro') return 'Your nutritionist hasn’t set any goals for you yet.'
-  return 'No active goals yet.'
+  if (activeTab.value === 'pro') return 'Your nutritionist hasn\'t set any goals for you yet.';
+  return 'No active goals yet.';
 })
 
 const presets = [
@@ -659,10 +647,10 @@ function goalProgress(goal) {
       // Both set: use average
       referenceValue = (min + max) / 2
     } else if (max != null) {
-      // Max only: use max
+      // Max only: use max as the limit
       referenceValue = max
     } else if (min != null) {
-      // Min only: use min
+      // Min only: use min as the target
       referenceValue = min
     } else {
       // Neither set: no progress bar
@@ -671,9 +659,9 @@ function goalProgress(goal) {
     
     if (referenceValue === 0) return 0
     
-    // Calculate percentage of reference value
+    // Calculate percentage of reference value (don't cap it)
     const percentage = Math.round((currentAmount / referenceValue) * 100)
-    return Math.min(percentage, 100) // Cap at 100% for display
+    return percentage
   }
   
   // For manual (non-nutrient) goals: show completion based on checkIns
@@ -693,6 +681,66 @@ function goalProgress(goal) {
     }
   }
   return Math.round((done / elapsedDays) * 100)
+}
+
+function goalProgressColor(goal) {
+  const progress = goalProgress(goal)
+  
+  // For nutrient goals, determine if being over/under is good or bad
+  if (goal.nutrientId) {
+    const min = goal.targetMin != null ? Number(goal.targetMin) : null
+    const max = goal.targetMax != null ? Number(goal.targetMax) : null
+    
+    // If only max is set (e.g., "stay under 30g sugar"), being over is bad
+    if (max != null && min == null) {
+      return progress > 100 ? '#d94f4f' : '#2e7d32' // Red if over, green if under
+    }
+    
+    // If only min is set (e.g., "at least 50g protein"), being under is bad
+    if (min != null && max == null) {
+      return progress < 100 ? '#f59e0b' : '#2e7d32' // Orange if under, green if met
+    }
+    
+    // If both are set (range), being outside range is bad
+    if (min != null && max != null) {
+      return progress >= 100 ? '#2e7d32' : '#f59e0b' // Green if in range, orange if not
+    }
+  }
+  
+  // Default green for manual goals
+  return '#2e7d32'
+}
+
+function goalProgressLabel(goal) {
+  const progress = goalProgress(goal)
+  
+  // For nutrient goals
+  if (goal.nutrientId) {
+    const min = goal.targetMin != null ? Number(goal.targetMin) : null
+    const max = goal.targetMax != null ? Number(goal.targetMax) : null
+    
+    // If only max is set (e.g., "stay under 30g sugar")
+    if (max != null && min == null) {
+      if (progress > 100) return 'over limit'
+      if (progress === 100) return 'at limit'
+      return 'of limit'
+    }
+    
+    // If only min is set (e.g., "at least 50g protein")
+    if (min != null && max == null) {
+      if (progress >= 100) return 'done'
+      return 'of target'
+    }
+    
+    // If both are set (range)
+    if (min != null && max != null) {
+      if (progress >= 100) return 'done'
+      return 'of target'
+    }
+  }
+  
+  // For manual goals
+  return progress >= 100 ? 'done' : 'of target'
 }
 
 function trendFor(goal) {

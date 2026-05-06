@@ -67,6 +67,7 @@
             <span style="font-size:0.8125rem;color:#6b7280;">Carbs: {{ entry.carbs }}g</span>
             <span style="font-size:0.8125rem;color:#6b7280;">Protein: {{ entry.protein }}g</span>
             <span style="font-size:0.8125rem;color:#6b7280;">Fat: {{ entry.fat }}g</span>
+            <span style="font-size:0.8125rem;color:#6b7280;">Fibre: {{ entry.fibre }}g</span>
             <span style="font-size:0.8125rem;color:#6b7280;">Sugar: {{ entry.sugar }}g</span>
             <span style="font-size:0.8125rem;color:#6b7280;">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold" style="color:#2e7d32;font-size:0.9375rem;">{{ entry.kcal }} kcal</span>
@@ -186,18 +187,19 @@
           </div>
           <div v-if="mealSearchError[meal.id]" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ mealSearchError[meal.id] }}</div>
           <div v-if="(mealSearchResults[meal.id] ?? []).length > 0"
-               class="border rounded p-2 mb-2" style="background:#fff;">
+               class="rounded p-3 mb-2" style="background:#fff;border:1px solid #e5e7eb;max-height:400px;overflow-y:auto;">
             <div v-for="food in mealSearchResults[meal.id]" :key="food.food_id"
-                 class="d-flex justify-content-between align-items-center py-1 border-bottom">
-              <div>
-                <span class="small fw-semibold">{{ food.food_name }}</span>
-                <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
-                <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
+                 class="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
+                 style="background:#f9fafb;border:1px solid #e5e7eb;">
+              <div class="flex-grow-1">
+                <div class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ food.food_name }}</div>
+                <div v-if="food.brand_name" class="text-muted" style="font-size:0.75rem;">{{ food.brand_name }}</div>
+                <div class="text-muted" style="font-size:0.75rem;">{{ food.food_description }}</div>
               </div>
-              <button class="btn btn-sm fw-semibold ms-2"
+              <button class="btn btn-sm fw-semibold ms-3"
                       :disabled="mealAddingFoodId[meal.id] === food.food_id"
                       @click="handleAddMealFood(meal.id, food.food_id)"
-                      style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
+                      style="background:#2e7d32;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.8125rem;white-space:nowrap;">
                 {{ mealAddingFoodId[meal.id] === food.food_id ? '…' : 'Add' }}
               </button>
             </div>
@@ -248,6 +250,7 @@
             <span class="small text-muted">Carbs: {{ entry.carbs }}g</span>
             <span class="small text-muted">Protein: {{ entry.protein }}g</span>
             <span class="small text-muted">Fat: {{ entry.fat }}g</span>
+            <span class="small text-muted">Fibre: {{ entry.fibre }}g</span>
             <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
             <span class="small text-muted">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
@@ -317,31 +320,26 @@
 
         <div v-if="snackError" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ snackError }}</div>
 
-        <div v-if="snackResults.length > 0" class="border rounded p-2 mb-2" style="background:#fff;">
+        <div v-if="snackResults.length > 0" class="rounded p-3 mb-2" style="background:#fff;border:1px solid #e5e7eb;max-height:400px;overflow-y:auto;">
           <div v-for="food in snackResults" :key="food.food_id"
-               class="d-flex justify-content-between align-items-center py-1 border-bottom">
-            <div>
-              <span class="small fw-semibold">{{ food.food_name }}</span>
-              <span v-if="food.brand_name" class="text-muted small ms-1">({{ food.brand_name }})</span>
-              <div class="text-muted" style="font-size:0.72rem;">{{ food.food_description }}</div>
+               class="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
+               style="background:#f9fafb;border:1px solid #e5e7eb;">
+            <div class="flex-grow-1">
+              <div class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ food.food_name }}</div>
+              <div v-if="food.brand_name" class="text-muted" style="font-size:0.75rem;">{{ food.brand_name }}</div>
+              <div class="text-muted" style="font-size:0.75rem;">{{ food.food_description }}</div>
             </div>
-            <button class="btn btn-gf btn-sm ms-2" style="white-space:nowrap;"
+            <button class="btn btn-sm fw-semibold ms-3"
                     :disabled="snackAddingFoodId === food.food_id"
-                    @click="handleAddSnack(food.food_id)">
-              {{ snackAddingFoodId === food.food_id ? '...' : 'Add' }}
+                    @click="handleAddSnack(food.food_id)"
+                    style="background:#2e7d32;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.8125rem;white-space:nowrap;">
+              {{ snackAddingFoodId === food.food_id ? '…' : 'Add' }}
             </button>
           </div>
         </div>
 
       </div>
     </div>
-
-    <div class="card border p-3 mb-3">
-      <label class="form-label small fw-semibold">Daily Notes (optional)</label>
-      <textarea class="form-control form-control-sm" rows="2"
-                placeholder="How are you feeling today? Any notes about meals?"></textarea>
-    </div>
-
 
   </div>
 </template>

@@ -67,6 +67,11 @@
                     <div class="fw-semibold text-truncate" style="color:#1b4d1b;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
                     <div style="font-size:0.7rem;color:#6b7280;">Shared {{ formatDate(s.sharedAt) }}</div>
                   </div>
+                  <RouterLink :to="`/recipes/${s.recipeId}#recipe-detail`" 
+                              class="btn btn-sm fw-semibold"
+                              style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.7rem;white-space:nowrap;text-decoration:none;">
+                    View →
+                  </RouterLink>
                 </li>
               </ul>
             </div>
@@ -269,6 +274,11 @@
                       <div class="fw-semibold text-truncate" style="color:#1b4d1b;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
                       <div style="font-size:0.7rem;color:#6b7280;">Shared {{ formatDate(s.sharedAt) }}</div>
                     </div>
+                    <RouterLink :to="`/recipes/${s.recipeId}#recipe-detail`" 
+                                class="btn btn-sm fw-semibold"
+                                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.7rem;white-space:nowrap;text-decoration:none;">
+                      View →
+                    </RouterLink>
                   </li>
                 </ul>
               </div>

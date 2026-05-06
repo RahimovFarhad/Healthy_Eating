@@ -41,9 +41,14 @@ const RECIPE_SELECT = {
             subscriberId: true,
         }
     },
+    usages: {
+        select: {
+            subscriberId: true,
+        }
+    },
 }
 
-async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId } = {}) {
+async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId, usedBySubscriberId } = {}) {
     return prisma.recipe.findMany({
         where: {
             ...(category && { category }),
@@ -66,6 +71,13 @@ async function listRecipes({ category, cuisine, ingredients, favoritedBySubscrib
                 favorites: {
                     some: {
                         subscriberId: favoritedBySubscriberId,
+                    }
+                }
+            }),
+            ...(usedBySubscriberId && {
+                usages: {
+                    some: {
+                        subscriberId: usedBySubscriberId,
                     }
                 }
             })
@@ -133,6 +145,37 @@ async function favoriteExists({ recipeId, subscriberId }) {
 
 }
 
+async function toggleRecipeUsage({ recipeId, subscriberId }) {
+  const existingUsage = await usageExists({ recipeId, subscriberId });
+
+  if (existingUsage) {
+    await prisma.recipeUsage.delete({
+      where: { id: existingUsage.id },
+    });
+    return { used: false };
+  }
+
+  await prisma.recipeUsage.create({
+    data: {
+      subscriberId,
+      recipeId,
+    },
+  });
+  return { used: true };
+}
+
+async function usageExists({ recipeId, subscriberId }) {
+    return prisma.recipeUsage.findUnique({
+        where: {
+            subscriberId_recipeId: { subscriberId, recipeId },
+        },
+        select: {
+            id: true,
+        },
+    });
+
+}
 
 
-export {listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite}
+
+export {listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite, toggleRecipeUsage}

@@ -6,11 +6,11 @@
       <h2 class="fw-bold mb-4" style="color:#1b4d1b;font-size:1.75rem;">Recipe Library</h2>
       <div class="d-flex justify-content-center gap-2">
         <input type="text" class="form-control"
-               style="max-width:500px;border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
+               style="max-width:500px;border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 1rem;font-size:0.9375rem;"
                placeholder="Search recipes..."
                v-model="searchQuery"
                @input="currentPage = 1">
-        <button class="btn fw-semibold" style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">Search</button>
+        <button class="btn fw-semibold" style="background:#1b4d1b;color:#ffffff;border:none;padding:0.5rem 1.5rem;border-radius:8px;font-size:0.9375rem;">Search</button>
       </div>
     </div>
 
@@ -76,7 +76,10 @@
 
             <div class="card-footer bg-transparent border-top d-flex gap-2">
               <button class="btn btn-gf btn-sm flex-fill" @click="viewRecipe(recipe)">View Recipe</button>
-              <button class="btn btn-gf-outline btn-sm flex-fill" @click="pickMeal(recipe)">Add to Diary</button>
+              <button class="btn btn-gf-outline btn-sm flex-fill"
+                      @click.stop="pickMeal(recipe)">
+                Add to Diary
+              </button>
             </div>
           </div>
         </div>
@@ -85,7 +88,7 @@
       <div v-if="filteredRecipes.length === 0 && !loading"
            class="text-center text-muted py-5 border rounded"
            style="border-style:dashed!important;">
-        <p class="mb-1">{{ activeTab === 'fav' ? 'No favourites saved yet.' : 'No recipes match your search.' }}</p>
+        <p class="mb-1">{{ activeTab === 'fav' ? 'No favourites saved yet.' : activeTab === 'used' ? 'No recipes marked as used yet.' : 'No recipes match your search.' }}</p>
       </div>
 
       <div class="d-flex justify-content-center gap-1 mb-4">
@@ -110,8 +113,11 @@
     <div v-if="selectedRecipe"
          id="recipe-detail"
          class="p-4 rounded mb-4"
-         style="background:#f0f7ef;border:1.5px solid #5a9e56;">
-      <h5 class="fw-bold mb-3" style="color:#5a9e56;">{{ selectedRecipe.title }}</h5>
+         style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:1.25px solid #1b4d1b;">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <h5 class="fw-bold mb-0" style="color:#1b4d1b;">{{ selectedRecipe.title }}</h5>
+        <button class="btn btn-sm" style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;" @click="closeRecipe">✕ Close</button>
+      </div>
       <div class="row g-4">
 
         <div class="col-md-3">
@@ -119,14 +125,24 @@
                class="rounded mb-2" style="width:100%;height:180px;object-fit:cover;" />
           <div class="small text-muted mb-1">{{ selectedRecipe.category }} · {{ selectedRecipe.cuisine }}</div>
           <div class="small text-muted mb-2">{{ selectedRecipe.cookTime }}</div>
-          <div class="d-flex flex-wrap gap-1">
-            <button class="btn btn-sm"
-                    :class="selectedRecipe.isFavorited ? 'btn-gf' : 'btn-gf-outline'"
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm fw-semibold"
+                    :style="selectedRecipe.isFavorited ? 'background:#2e7d32;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;' : 'background:#f3f4f6;color:#1b4d1b;border:1px solid #1b4d1b;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;'"
                     :disabled="selectedRecipe._favLoading"
                     @click="toggleFavorite(selectedRecipe)">
-              {{ selectedRecipe._favLoading ? '…' : (selectedRecipe.isFavorited ? 'Saved ♥' : 'Save ♥') }}
+              {{ selectedRecipe._favLoading ? '…' : (selectedRecipe.isFavorited ? '♥ Saved' : '♥ Save') }}
             </button>
-            <button class="btn btn-gf-outline btn-sm" @click="pickMeal(selectedRecipe)">Add to Diary</button>
+            <button class="btn btn-sm fw-semibold"
+                    style="background:#f3f4f6;color:#1b4d1b;border:1px solid #1b4d1b;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
+                    @click="pickMeal(selectedRecipe)">
+              Add to Diary
+            </button>
+            <button class="btn btn-sm fw-semibold"
+                    :style="selectedRecipe.isUsed ? 'background:#2e7d32;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;' : 'background:#f3f4f6;color:#1b4d1b;border:1px solid #1b4d1b;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;'"
+                    :disabled="selectedRecipe._usedLoading"
+                    @click="toggleUsed(selectedRecipe)">
+              {{ selectedRecipe._usedLoading ? '…' : (selectedRecipe.isUsed ? '✓ Used It' : 'I Used It') }}
+            </button>
           </div>
         </div>
 
@@ -163,8 +179,8 @@
 
       </div>
 
-      <div class="mt-4 pt-3 border-top">
-        <h6 class="fw-bold mb-2" style="color:#5a9e56;">
+      <div class="mt-4 pt-3" style="border-top:1px solid #f3f4f6;">
+        <h6 class="fw-bold mb-2" style="color:#1b4d1b;">
           Reviews
           <span v-if="selectedRecipe.averageRating != null" class="ms-2 fw-normal text-muted" style="font-size:0.85rem;">
             ★ {{ selectedRecipe.averageRating.toFixed(1) }} · {{ selectedRecipe.reviewCount }} review{{ selectedRecipe.reviewCount !== 1 ? 's' : '' }}
@@ -173,30 +189,31 @@
 
         <div v-if="(selectedRecipe.reviews ?? []).length > 0" class="mb-3">
           <div v-for="rev in selectedRecipe.reviews" :key="rev.reviewId"
-               class="p-2 mb-2 rounded" style="background:#fff;border:1px solid #d6e8d4;">
+               class="p-3 mb-2 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <span style="color:#e8a820;">{{ '★'.repeat(rev.rating) }}{{ '☆'.repeat(5 - rev.rating) }}</span>
+              <span style="color:#f59e0b;">{{ '★'.repeat(rev.rating) }}{{ '☆'.repeat(5 - rev.rating) }}</span>
               <small class="text-muted">{{ formatDate(rev.createdAt) }}</small>
             </div>
-            <div v-if="rev.comment" class="small text-muted">{{ rev.comment }}</div>
+            <div v-if="rev.comment" class="small" style="color:#374151;">{{ rev.comment }}</div>
           </div>
         </div>
         <div v-else class="text-muted small mb-3">No reviews yet — be the first!</div>
 
         <div v-if="!userReviewExists">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="small fw-semibold">Your rating:</span>
+            <span class="small fw-semibold" style="color:#1b4d1b;">Your rating:</span>
             <span v-for="star in 5" :key="star"
                   style="cursor:pointer;font-size:1.3rem;"
-                  :style="star <= reviewDraft.rating ? 'color:#e8a820;' : 'color:#ccc;'"
+                  :style="star <= reviewDraft.rating ? 'color:#f59e0b;' : 'color:#d1d5db;'"
                   @click="reviewDraft.rating = star">★</span>
           </div>
           <textarea class="form-control form-control-sm mb-2" rows="2"
                     placeholder="Leave a comment (optional)…"
                     v-model="reviewDraft.comment"
-                    style="max-width:480px;"></textarea>
-          <div v-if="reviewError" class="text-danger small mb-1">{{ reviewError }}</div>
-          <button class="btn btn-gf btn-sm"
+                    style="max-width:480px;border:1px solid #d4e7d4;border-radius:8px;"></textarea>
+          <div v-if="reviewError" class="alert alert-danger small mb-2" style="border-radius:8px;">{{ reviewError }}</div>
+          <button class="btn btn-sm fw-semibold"
+                  style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;"
                   :disabled="reviewDraft.rating === 0 || reviewSubmitting"
                   @click="submitReview">
             {{ reviewSubmitting ? 'Submitting…' : 'Submit Review' }}
@@ -205,8 +222,6 @@
         <div v-else class="text-muted small">You have already reviewed this recipe.</div>
       </div>
 
-      <button class="btn btn-outline-secondary btn-sm mt-3"
-              @click="selectedRecipe = null">Close</button>
     </div>
 
     <Teleport to="body">
@@ -233,12 +248,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { apiFetch, currentUser } from '../auth.js'
 import { addRecipeToDiary } from '../diaryStore.js'
 
 const route = useRoute()
+const router = useRouter()
 
 const PAGE_SIZE = 6
 
@@ -266,6 +282,7 @@ const reviewError = ref('')
 const tabs = [
   { id: 'all', label: 'All Recipes' },
   { id: 'fav', label: 'My Favourites' },
+  { id: 'used', label: 'I Used It' },
 ]
 
 onMounted(loadRecipes)
@@ -280,12 +297,22 @@ async function loadRecipes() {
       loadError.value = data.error || 'Failed to load recipes'
       return
     }
-    recipes.value = (data.recipes ?? []).map(r => ({ ...r, _favLoading: false }))
+    recipes.value = (data.recipes ?? []).map(r => ({ ...r, _favLoading: false, _usedLoading: false }))
     await handleHighlight()
+    await handleRouteRecipeId()
   } catch {
     loadError.value = 'Network error — could not load recipes'
   } finally {
     loading.value = false
+  }
+}
+
+async function handleRouteRecipeId() {
+  const id = Number(route.params.id)
+  if (!id) return
+  const recipe = recipes.value.find(r => r.recipeId === id)
+  if (recipe) {
+    await viewRecipe(recipe)
   }
 }
 
@@ -315,9 +342,27 @@ async function loadFavorites() {
       loadError.value = data.error || 'Failed to load favourites'
       return
     }
-    recipes.value = (data.recipes ?? []).map(r => ({ ...r, isFavorited: true, _favLoading: false }))
+    recipes.value = (data.recipes ?? []).map(r => ({ ...r, isFavorited: true, _favLoading: false, _usedLoading: false }))
   } catch {
     loadError.value = 'Network error — could not load favourites'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadUsed() {
+  loading.value = true
+  loadError.value = ''
+  try {
+    const res = await apiFetch('/api/recipes/used')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      loadError.value = data.error || 'Failed to load used recipes'
+      return
+    }
+    recipes.value = (data.recipes ?? []).map(r => ({ ...r, isUsed: true, _favLoading: false, _usedLoading: false }))
+  } catch {
+    loadError.value = 'Network error — could not load used recipes'
   } finally {
     loading.value = false
   }
@@ -328,6 +373,7 @@ function switchTab(tabId) {
   currentPage.value = 1
   selectedRecipe.value = null
   if (tabId === 'fav') loadFavorites()
+  else if (tabId === 'used') loadUsed()
   else loadRecipes()
 }
 
@@ -376,9 +422,38 @@ async function viewRecipe(recipe) {
   selectedRecipe.value = recipe
   reviewDraft.value = { rating: 0, comment: '' }
   reviewError.value = ''
+  
+  // Update URL with recipe ID
+  router.push({ path: `/recipes/${recipe.recipeId}`, hash: '#recipe-detail' })
+  
   await nextTick()
   document.getElementById('recipe-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
+
+function closeRecipe() {
+  selectedRecipe.value = null
+  // Clear the recipe ID from URL
+  router.push('/recipes')
+}
+
+// Watch for route changes (e.g., back button)
+watch(() => route.params.id, (newId) => {
+  if (!newId && selectedRecipe.value) {
+    // URL changed to /recipes (no ID), close the recipe detail
+    selectedRecipe.value = null
+  } else if (newId && recipes.value.length > 0) {
+    // URL has a recipe ID, open that recipe
+    const recipe = recipes.value.find(r => r.recipeId === Number(newId))
+    if (recipe && (!selectedRecipe.value || selectedRecipe.value.recipeId !== recipe.recipeId)) {
+      selectedRecipe.value = recipe
+      reviewDraft.value = { rating: 0, comment: '' }
+      reviewError.value = ''
+      nextTick(() => {
+        document.getElementById('recipe-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
+})
 
 function pickMeal(recipe) {
   pendingRecipe.value = recipe
@@ -398,7 +473,7 @@ async function toggleFavorite(recipe) {
   if (recipe._favLoading) return
   recipe._favLoading = true
   try {
-    const res = await apiFetch(`/api/recipes/${recipe.recipeId}/favorites`, { method: 'POST' })
+    const res = await apiFetch(`/api/recipes/${recipe.recipeId}/favorite`, { method: 'POST' })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
       alert(data.error || 'Failed to update favourite')
@@ -416,6 +491,31 @@ async function toggleFavorite(recipe) {
     alert('Network error — could not update favourite')
   } finally {
     recipe._favLoading = false
+  }
+}
+
+async function toggleUsed(recipe) {
+  if (recipe._usedLoading) return
+  recipe._usedLoading = true
+  try {
+    const res = await apiFetch(`/api/recipes/${recipe.recipeId}/usage`, { method: 'POST' })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(data.error || 'Failed to update usage')
+      return
+    }
+    recipe.isUsed = data.usage?.used ?? !recipe.isUsed
+    if (selectedRecipe.value?.recipeId === recipe.recipeId) {
+      selectedRecipe.value.isUsed = recipe.isUsed
+    }
+    // If on used tab and unmarked, remove from list
+    if (activeTab.value === 'used' && !recipe.isUsed) {
+      recipes.value = recipes.value.filter(r => r.recipeId !== recipe.recipeId)
+    }
+  } catch {
+    alert('Network error — could not update usage')
+  } finally {
+    recipe._usedLoading = false
   }
 }
 
