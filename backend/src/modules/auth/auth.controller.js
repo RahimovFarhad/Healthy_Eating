@@ -98,7 +98,15 @@ async function refreshToken(req, res) {
             return res.status(401).json({ message: "Refresh token is required" });
         }
     
-        const token = await refreshAccessToken(refreshToken);
+        const { token, email } = await refreshAccessToken(refreshToken);
+        //let's rotate refresh token
+        const newRefreshToken = await generateRefreshToken(email);
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1000 * 60 * 60 * 24 * 7
+        });
         return res.json({ message: "Token refreshed successfully", token });
 
     } catch (error) {

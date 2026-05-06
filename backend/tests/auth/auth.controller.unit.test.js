@@ -321,16 +321,29 @@ describe("Authentication Controller", () => {
         message: "Invalid refresh token",
       });
     });
-    test("Returns access token on success", async() => {
+    test("Returns access token and rotates refresh cookie on success", async() => {
       const req = {
         cookies: {
           refreshToken: "mock.refresh.token"
         }
       };
       const res = createRes();
-      mockRefreshToken.mockResolvedValue("new.mock.jwt.token");
+      const refreshedAccessToken = {
+        token: "new.mock.jwt.token",
+        email: TEST_USER.email
+      };
+      mockRefreshToken.mockResolvedValue(refreshedAccessToken);
+      mockGenerateRefreshToken.mockResolvedValue("rotated.refresh.token");
 
       await refreshToken(req, res);
+
+      expect(mockRefreshToken).toHaveBeenCalledWith("mock.refresh.token");
+      expect(mockGenerateRefreshToken).toHaveBeenCalledWith(TEST_USER.email);
+      expect(res.cookie).toHaveBeenCalledWith(
+        "refreshToken",
+        "rotated.refresh.token",
+        expect.any(Object)
+      );
       
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         message: "Token refreshed successfully",

@@ -285,7 +285,7 @@ describe("Auth API", () => {
   });
 
   describe("Refresh Token", () => {
-    test("Refresh returns new access token", async () => {
+    test("Refresh returns new access token and rotates refresh token", async () => {
       expect(refreshCookie).toBeDefined();
 
       const res = await request(app)
@@ -295,6 +295,12 @@ describe("Auth API", () => {
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("token");
       expect(typeof res.body.token).toBe("string");
+      const cookies = res.headers["set-cookie"] || [];
+      const rotatedRefreshTokenCookie = cookies.find(cookie =>
+        cookie.toLowerCase().includes("refreshtoken")
+      );
+      expect(rotatedRefreshTokenCookie).toBeDefined();
+      expect(rotatedRefreshTokenCookie).not.toEqual(refreshCookie);
     });
 
     test ("Refresh rejects missing token", async () => {

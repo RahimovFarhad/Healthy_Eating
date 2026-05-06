@@ -2,7 +2,7 @@ import { prisma } from "../../db/prisma.js";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../../utils/hash.js";
 import { ensureDefaultGoalsForUser } from "../goals/goals.service.js";
-import { randomInt } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { sendVerificationEmail } from "../../utils/email.js";
 
 const { sign, verify } = jwt;
@@ -181,7 +181,7 @@ async function verifyRegistrationCode(email, code) {
     });
 
     if (existingUser) {
-        if (existingUser.email === pendingRegistration.email) {
+        if (existingUser.email === pendingRegistration.email) { 
             throw new AuthError("Email already in use");
         }
         if (existingUser.fullName === pendingRegistration.fullName) {
@@ -262,7 +262,8 @@ async function generateRefreshToken(email) {
     // That means we will also include a unique identifier for the token in the payload, so we can find it in the database later.
     const payload = { 
         userId: user.userId,
-        tokenType: "refresh"
+        tokenType: "refresh",
+        jti: randomUUID()
     };
 
     const refreshToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -297,7 +298,9 @@ async function refreshAccessToken(refreshToken) {
         };
 
         const newAccessToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-        return newAccessToken;
+
+        // I will return email too for controller to generate new refresh token if needed, but we can remove it later if we decide to store refresh tokens in the database with a unique identifier, so we can validate them without needing to query the user every time.
+        return { token: newAccessToken, email: user.email };
     } catch (error) {
         throw new AuthError("Invalid refresh token");
     }

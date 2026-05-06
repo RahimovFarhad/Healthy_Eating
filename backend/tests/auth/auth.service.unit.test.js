@@ -255,10 +255,11 @@ describe("Authentication Service", () => {
         where: { email: "refresh@example.com" },
       });
       expect(mockSign).toHaveBeenCalledWith(
-        {
+        expect.objectContaining({
           userId: 10,
           tokenType: "refresh",
-        },
+          jti: expect.any(String),
+        }),
         "unit-test-secret",
         { expiresIn: "7d" }
       );
@@ -517,9 +518,12 @@ describe("Authentication Service", () => {
       });
       mockSign.mockReturnValue("mock.new.access.token");
 
-      const token = await refreshAccessToken("valid.refresh.token");
+      const result = await refreshAccessToken("valid.refresh.token");
 
-      expect(token).toBe("mock.new.access.token");
+      expect(result).toEqual({
+        token: "mock.new.access.token",
+        email: "valid@example.com",
+      });
       expect(mockFindUnique).toHaveBeenCalledWith({
         where: { userId: 7 },
       });
