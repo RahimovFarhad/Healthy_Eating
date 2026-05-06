@@ -9,14 +9,36 @@ import clientRouter from "./modules/client/client.routes.js";
 import recipesRouter from "./modules/recipes/recipes.routes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
+import { rateLimit } from "express-rate-limit";
 
 import mealPlansRouter from "./modules/meal-plans/meal-plans.routes.js";
 
 const app = express();
 
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many auth attempts, please try again later." },
+});
+
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
-app.use("/api/auth", authRouter);
+if (process.env.NODE_ENV !== "test") {
+  app.use(globalLimiter);
+  app.use("/api/auth", authLimiter, authRouter);
+} else {
+  app.use("/api/auth", authRouter);
+}
 app.use("/api/diary", requireAuth, diaryRouter);
 app.use("/api/goals", requireAuth, goalRouter);
 app.use("/api/professional", requireAuth, professionalRouter);
@@ -44,8 +66,6 @@ app.get("/api/search-by-id", requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   });
 });
-
-
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Not Found" });
