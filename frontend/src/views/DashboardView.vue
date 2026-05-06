@@ -314,6 +314,59 @@
       </RouterLink>
     </div>
 
+    <div class="mb-3 mt-5">
+      <h5 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">Recommended for You</h5>
+    </div>
+
+    <div v-if="recommendedRecipes.length > 0">
+      <div class="row g-4 mb-4">
+        <div v-for="recipe in recommendedRecipes.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
+          <div class="h-100 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+            <div style="position:relative;overflow:hidden;height:160px;">
+              <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
+                   style="width:100%;height:100%;object-fit:cover;" />
+              <span v-if="recipe.category"
+                    class="position-absolute top-0 start-0 m-2"
+                    style="background:#2e7d32;color:#fff;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:500;">
+                {{ recipe.category }}
+              </span>
+              <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-2 badge rounded-pill"
+                    style="background:#e8a820;color:#fff;font-size:0.65rem;padding:0.25rem 0.5rem;">
+                {{ recipe.reason }}
+              </span>
+            </div>
+            <div class="p-3">
+              <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;line-height:1.3;">{{ recipe.title }}</div>
+              <div class="mb-2" style="color:#6b7280;font-size:0.75rem;">
+                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
+              </div>
+              <div v-if="recipe.averageRating != null" class="mb-2" style="font-size:0.75rem;color:#fbbf24;">
+                {{ '★'.repeat(Math.round(recipe.averageRating)) }}{{ '☆'.repeat(5 - Math.round(recipe.averageRating)) }}
+                <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
+              </div>
+              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                          class="btn w-100" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem;border-radius:8px;font-size:0.8125rem;font-weight:500;">
+                View Recipe →
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="recommendedRecipes.length > 3" class="text-center">
+        <RouterLink to="/recipes" class="btn fw-semibold" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
+          View all recommendations →
+        </RouterLink>
+      </div>
+    </div>
+
+    <div v-else class="text-center py-5 rounded"
+         style="background:#f9fafb;border:2px dashed #e5e7eb;">
+      <p class="mb-3" style="color:#6b7280;font-size:0.9375rem;">No recommendations available yet. Log more meals to get personalized suggestions!</p>
+    </div>
+
   </div>
 </template>
 
@@ -446,6 +499,7 @@ async function respondToInvite(professionalId, action) {
 const quickStats = computed(() => dashboard.value?.quickStats ?? {})
 const foodDiaryPreview = computed(() => (dashboard.value?.foodDiaryPreview ?? []).filter(e => (e.items?.length ?? 0) > 0))
 const nutritionPreview = computed(() => dashboard.value?.nutritionPreview ?? [])
+const recommendedRecipes = computed(() => dashboard.value?.recommendedRecipes ?? [])
 const caloriesToday = computed(() => quickStats.value.calories_today ?? 0)
 const caloriePercent = computed(() => Math.round((caloriesToday.value / calorieBudget.value) * 100))
 const caloriesRemaining = computed(() => calorieBudget.value - Math.round(caloriesToday.value))

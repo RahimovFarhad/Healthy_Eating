@@ -3,6 +3,8 @@ import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
 import {searchFoodById, parseFoodResponse} from "../../utils/searchFood.js"
+import { fetchGoals } from "../goals/goals.repository.js";
+import { listRecipes } from "../recipes/recipes.repository.js";
 
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
@@ -326,6 +328,7 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
     const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: today.toISOString() });
     const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
         
+    const recommendedRecipes = await getRecommendedRecipes({ subscriberId: entry.subscriberId, date: today.toISOString() });
     return {
         quickStats: {
             calories_today: summary.nutrients.find(n => n.code === "calories")?.totalAmount || 0,
@@ -338,7 +341,7 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
         savedOrSuggestedRecipesPreview: [], // implement later
         professionalSupportPreview: {}, // implement later
         goalsPreview: {}, // implement later
-        recommendedRecipes: [] // implement later
+        recommendedRecipes: recommendedRecipes // implement later
     };
 
 
@@ -354,6 +357,49 @@ async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recip
     }
 
     return createDiaryEntryItem({ userId: entryCheck.userId, diaryEntryId: entryCheck.diaryEntryId, portionId, quantity: entryCheck.servings, customFood: null, fatSecret: null });
+}
+
+async function getRecommendedRecipes({ subscriberId, date }) {
+  const goals = await fetchGoals({ subscriberId, effective: true });
+  const summary = await getNutritionSummary({ subscriberId, period: 'daily', endDate: date });
+  
+  const calorieGoal = goals.find(g => g.nutrient?.code === 'calories')?.targetMax ?? 2000;
+  const proteinGoal = goals.find(g => g.nutrient?.code === 'protein')?.targetMax ?? 50;
+  
+  const currentCalories = summary.nutrients.find(n => n.code === 'calories')?.totalAmount ?? 0;
+  const currentProtein = summary.nutrients.find(n => n.code === 'protein')?.totalAmount ?? 0;
+  
+  const remainingCalories = calorieGoal - currentCalories;
+  const proteinNeeded = proteinGoal - currentProtein;
+  
+  const favorites = await listRecipes({ favoritedBySubscriberId: subscriberId });
+  const favoriteCuisines = [...new Set(favorites.map(f => f.cuisine))];
+  const favoriteCategories = [...new Set(favorites.map(f => f.category))];
+  
+  const allRecipes = await listRecipes({}); 
+  const filteredRecipes = allRecipes.filter(r =>  // only take recipes that are not so higher than remaining calories
+    r.kcal <= remainingCalories + 150
+  );
+  
+  const scoredRecipes = filteredRecipes.map(recipe => {
+    let score = 0;
+
+    if (proteinNeeded > 0) {
+        score += Math.min(recipe.protein / proteinNeeded, 1) * 50; // up to 50 points for protein content
+    }
+    if (favoriteCuisines.includes(recipe.cuisine)) {
+        score += 20; // 20 points if it's a cuisine they like
+    }
+    if (favoriteCategories.includes(recipe.category)) {
+        score += 10; // 10 points if it's a category they like
+    }
+    return { ...recipe, score };
+
+  });
+  
+  scoredRecipes.sort((a, b) => b.score - a.score);
+  
+  return scoredRecipes;
 }
 
 export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService };

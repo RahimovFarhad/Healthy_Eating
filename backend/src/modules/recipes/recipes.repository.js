@@ -43,7 +43,7 @@ const RECIPE_SELECT = {
     },
 }
 
-async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId }) {
+async function listRecipes({ category, cuisine, ingredients, favoritedBySubscriberId } = {}) {
     return prisma.recipe.findMany({
         where: {
             ...(category && { category }),
