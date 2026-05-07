@@ -1,4 +1,4 @@
-import { authenticateUser, AuthError, UserNotFoundError, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken } from "./auth.service.js";
+import { authenticateUser, AuthError, UserNotFoundError, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken, revokeRefreshToken } from "./auth.service.js";
 
 async function login(req, res) {
     const { email, password } = req.body;
@@ -99,7 +99,9 @@ async function refreshToken(req, res) {
         }
     
         const { token, email } = await refreshAccessToken(refreshToken);
-        //let's rotate refresh token
+        
+        // Rotate refresh token - delete old one and create new one
+        await revokeRefreshToken(refreshToken);
         const newRefreshToken = await generateRefreshToken(email);
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
@@ -118,7 +120,13 @@ async function refreshToken(req, res) {
 
 }
 
-async function logoutController(_req, res) {
+async function logoutController(req, res) {
+    const refreshToken = req.cookies?.refreshToken;
+    
+    if (refreshToken) {
+        await revokeRefreshToken(refreshToken);
+    }
+    
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

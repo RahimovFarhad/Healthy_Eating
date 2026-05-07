@@ -118,6 +118,7 @@ model User {
   recipeReviews                     RecipeReview[]
   plans                             Plan[]
   createdFoodItems                  FoodItem[]           @relation("FoodItemCreatedByUser")
+  refreshTokens                     RefreshToken[]
 
   @@map("user")
 }
@@ -135,6 +136,19 @@ model PendingRegistration {
   createdAt            DateTime @default(now()) @map("created_at")
 
   @@map("pending_registration")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String   @unique
+  jti       String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("refresh_token")
 }
 
 model ProfessionalClient {

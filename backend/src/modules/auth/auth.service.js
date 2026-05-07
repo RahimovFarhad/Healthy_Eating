@@ -268,8 +268,6 @@ async function resendRegistrationCode(email) {
 async function generateRefreshToken(email) {
     const normalizedEmail = normalizeEmail(email);
 
-    //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
-
     const user = await prisma.user.findUnique({
         where: { email: normalizedEmail }
     });
@@ -278,16 +276,25 @@ async function generateRefreshToken(email) {
         throw new UserNotFoundError();
     }
 
-    // This implementation is enough for now, but we will store the refreshtoken in the database later, so we can invalidate it if needed. 
-    // That means we will also include a unique identifier for the token in the payload, so we can find it in the database later.
+    const jti = randomUUID();
     const payload = { 
         userId: user.userId,
         tokenType: "refresh",
-        jti: randomUUID()
+        jti
     };
 
     const refreshToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
-    // Optionally, you can store the refresh token in the database for later validation.
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await prisma.refreshToken.create({
+        data: {
+            userId: user.userId,
+            token: refreshToken,
+            jti,
+            expiresAt
+        }
+    });
+
     return refreshToken;
 }
 
@@ -299,15 +306,21 @@ async function refreshAccessToken(refreshToken) {
             throw new AuthError("Invalid refresh token");
         }
 
-        const userId = decoded.userId;
-
-        const user = await prisma.user.findUnique({
-            where: { userId }
+        const storedToken = await prisma.refreshToken.findUnique({
+            where: { jti: decoded.jti },
+            include: { user: true }
         });
 
-        if (!user) {
-            throw new UserNotFoundError();
+        if (!storedToken || storedToken.token !== refreshToken) {
+            throw new AuthError("Invalid refresh token");
         }
+
+        if (storedToken.expiresAt < new Date()) {
+            await prisma.refreshToken.delete({ where: { jti: decoded.jti } });
+            throw new AuthError("Invalid refresh token");
+        }
+
+        const user = storedToken.user;
 
         const payload = {
             userId: user.userId,
@@ -319,11 +332,26 @@ async function refreshAccessToken(refreshToken) {
 
         const newAccessToken = sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        // I will return email too for controller to generate new refresh token if needed, but we can remove it later if we decide to store refresh tokens in the database with a unique identifier, so we can validate them without needing to query the user every time.
         return { token: newAccessToken, email: user.email };
     } catch (error) {
         throw new AuthError("Invalid refresh token");
     }
 }
 
-export { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken };
+async function revokeRefreshToken(refreshToken) {
+    try {
+        const decoded = verify(refreshToken, process.env.JWT_SECRET);
+
+        if (decoded.tokenType !== "refresh") {
+            return;
+        }
+
+        await prisma.refreshToken.delete({
+            where: { jti: decoded.jti }
+        });
+    } catch (error) {
+        // Do nothing (maybe logging in the future)
+    }
+}
+
+export { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken, revokeRefreshToken };
