@@ -21,6 +21,36 @@
 
     <div v-if="error" class="alert alert-danger mb-4" style="border-radius:8px;">{{ error }}</div>
 
+    <div v-if="pendingInvites.length > 0" class="mb-4">
+      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Pending Invitations</h6>
+      <div v-for="inv in pendingInvites" :key="inv.id"
+           class="p-3 mb-3 d-flex flex-row align-items-center justify-content-between gap-3 rounded"
+           style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <div class="avatar-circle" style="width:42px;height:42px;font-size:0.9rem;">
+            {{ initialsFor(inv.professional?.fullName ?? '') }}
+          </div>
+          <div>
+            <div class="fw-bold" style="font-size:0.875rem;color:#1b4d1b;">{{ inv.professional?.fullName ?? 'A nutritionist' }}</div>
+            <div style="font-size:0.75rem;color:#6b7280;">{{ inv.professional?.email }}</div>
+            <div style="font-size:0.7rem;color:#6b7280;">Wants to be your assigned nutrition professional.</div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-shrink-0">
+          <button class="btn btn-sm fw-semibold" :disabled="inv._busy"
+                  @click="respondToInvite(inv, 'accept')"
+                  style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
+            {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
+          </button>
+          <button class="btn btn-sm" :disabled="inv._busy"
+                  @click="respondToInvite(inv, 'reject')"
+                  style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
+            {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="row g-3 mb-4">
 
       <div class="col-md-5">
@@ -227,6 +257,20 @@
                   <div style="color:#6b7280;font-size:0.75rem;">Your assigned nutritionist</div>
                 </div>
               </div>
+              <div v-if="professional && latestMessage"
+                   class="p-2 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-semibold" style="font-size:0.7rem;color:#1b4d1b;">
+                    {{ latestMessage.sentBy === 'professional' ? professional.professional.fullName : 'You' }}
+                  </span>
+                  <span style="font-size:0.7rem;color:#9ca3af;">
+                    {{ new Date(latestMessage.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) }}
+                  </span>
+                </div>
+                <p class="mb-0" style="font-size:0.75rem;color:#6b7280;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                  {{ latestMessage.message }}
+                </p>
+              </div>
               <div v-for="inv in pendingInvites" :key="inv.professionalId ?? inv.id"
                    class="p-2 rounded mb-2" style="background:#fffbf0;border:1px solid #fbbf24;">
                 <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.8125rem;">
@@ -236,13 +280,15 @@
                 <div class="d-flex gap-2">
                   <button class="btn btn-sm fw-semibold"
                           style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
-                          @click.prevent="respondToInvite(inv.professionalId ?? inv.professional?.userId, 'accept')">
-                    Accept
+                          :disabled="inv._busy"
+                          @click.prevent="respondToInvite(inv, 'accept')">
+                    {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
                   </button>
                   <button class="btn btn-sm"
                           style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
-                          @click.prevent="respondToInvite(inv.professionalId ?? inv.professional?.userId, 'reject')">
-                    Decline
+                          :disabled="inv._busy"
+                          @click.prevent="respondToInvite(inv, 'reject')">
+                    {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
                   </button>
                 </div>
               </div>
@@ -418,6 +464,7 @@ const error = ref('')
 
 const professional = ref(null)
 const loadingPro = ref(true)
+const latestMessage = ref(null)
 
 const goals = ref([])
 const loadingGoals = ref(true)
@@ -433,7 +480,7 @@ onMounted(async () => {
       viewDate.value = dateFromQuery
     }
   }
-  await Promise.all([loadDashboard(), loadProfessional(), loadGoals(), loadFavourites()])
+  await Promise.all([loadDashboard(), loadProfessional(), loadGoals(), loadFavourites(), loadInvitations()])
 })
 
 watch(viewDate, () => {
@@ -467,11 +514,24 @@ async function loadProfessional() {
   try {
     const res = await apiFetch('/api/client/professionals')
     const data = await res.json().catch(() => ({}))
-    if (res.ok) professional.value = (data.professionals ?? [])[0] ?? null
+    if (res.ok) {
+      professional.value = (data.professionals ?? [])[0] ?? null
+      if (professional.value) await loadLatestMessage()
+    }
   } catch {
     // non-critical, silently ignore
   } finally {
     loadingPro.value = false
+  }
+}
+
+async function loadLatestMessage() {
+  try {
+    const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}/messages`)
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) latestMessage.value = (data.messages ?? []).at(-1) ?? null
+  } catch {
+    // non-critical, silently ignore
   }
 }
 
@@ -488,17 +548,29 @@ async function loadGoals() {
   }
 }
 
-async function respondToInvite(professionalId, action) {
+async function loadInvitations() {
   try {
-    const res = await apiFetch(`/api/client/professionals/${professionalId}/respond`, {
-      method: 'POST',
-      body: JSON.stringify({ action })
-    })
+    const res = await apiFetch('/api/client/client-invitations')
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) pendingInvites.value = (data.invitations ?? []).map(i => ({ ...i, _busy: false, _action: '' }))
+  } catch {
+    // non-critical, silently ignore
+  }
+}
+
+async function respondToInvite(inv, action) {
+  inv._busy = true
+  inv._action = action
+  try {
+    const res = await apiFetch(`/api/client/client-invitations/${inv.professionalId}/${action}`, { method: 'POST' })
     if (res.ok) {
-      await loadProfessional()
+      await Promise.all([loadProfessional(), loadInvitations()])
     }
-  } catch (err) {
-    console.error('Failed to respond to invite:', err)
+  } catch {
+    // non-critical
+  } finally {
+    inv._busy = false
+    inv._action = ''
   }
 }
 
