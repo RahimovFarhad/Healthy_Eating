@@ -156,6 +156,12 @@ async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) {
 async function getDiaryEntryById({ diaryEntryId, subscriberId }) {
     const entries = validateEntryDetails({ diaryEntryId, subscriberId }); // validation on data
 
+    const ownershipCheck = await checkDiaryEntryOwnership({ userId: entries.subscriberId, diaryEntryId: entries.diaryEntryId });
+
+    if (!ownershipCheck) {
+        throw new DiaryEntryError("Unauthorised access");
+    }
+
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
