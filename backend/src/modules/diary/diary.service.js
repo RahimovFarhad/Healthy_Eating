@@ -2,7 +2,7 @@ import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntrie
 import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
 import { formatISO } from "date-fns";
-import {searchFoodById} from "../../utils/searchFood.js"
+import { searchFoodById, parseFoodResponse } from "../../utils/searchFood.js";
 import { fetchGoals } from "../goals/goals.repository.js";
 import { listRecipes } from "../recipes/recipes.repository.js";
 
@@ -185,7 +185,8 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
     var parsed = null;
     
     if (fatSecret != null) {
-        parsed = await searchFoodById(fatSecret.externalId);
+        const response = await searchFoodById(fatSecret.externalId);
+        parsed = response?.portions ? response : parseFoodResponse(response);
     }
     
     const foodItem = await createFoodItem({
@@ -197,6 +198,9 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
     });
 
     if (fatSecret != null) {
+        if (!parsed || !Array.isArray(parsed.portions) || parsed.portions.length === 0) {
+            throw new DiaryEntryError("FatSecret food portion not found");
+        }
         const portion = parsed.portions[0]; // for simplicity, we just take the first portion returned by the API. In a real implementation, we might want to allow user to select from multiple portions or enter custom portion details.
         const foodPortion = await createFoodPortion({
             foodItemId: foodItem.foodItemId,
@@ -327,7 +331,13 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
     const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: today.toISOString() });
     const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
         
-    const recommendedRecipes = await getRecommendedRecipes({ subscriberId: entry.subscriberId, date: today.toISOString() });
+    let recommendedRecipes = [];
+    try {
+        recommendedRecipes = await getRecommendedRecipes({ subscriberId: entry.subscriberId, date: today.toISOString() });
+    } catch {
+        // Keep dashboard resilient even if recommendation dependencies are unavailable.
+        recommendedRecipes = [];
+    }
     return {
         quickStats: {
             calories_today: summary.nutrients.find(n => n.code === "calories")?.totalAmount || 0,
