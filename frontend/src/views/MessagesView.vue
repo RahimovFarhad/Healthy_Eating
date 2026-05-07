@@ -84,8 +84,10 @@
             Select a client to start messaging.
           </div>
           <div v-else class="rounded flex-grow-1" style="min-height:0;display:flex;flex-direction:column;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;">
-            <div class="fw-semibold p-3" style="background:#fff;border-bottom:1px solid #f3f4f6;font-size:0.875rem;color:#1b4d1b;">
-              Conversation with {{ selectedClient.subscriber.fullName }}
+            <div class="d-flex justify-content-between align-items-center p-3" style="background:#fff;border-bottom:1px solid #f3f4f6;">
+              <span class="fw-semibold" style="font-size:0.875rem;color:#1b4d1b;">Conversation with {{ selectedClient.subscriber.fullName }}</span>
+              <button @click="selectedClient = null"
+                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;cursor:pointer;">✕ Close</button>
             </div>
 
             <div class="overflow-auto flex-grow-1 p-3" ref="proChatBody">

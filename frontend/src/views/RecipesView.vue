@@ -7,12 +7,33 @@
         <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Recipe Library</h2>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Browse and discover healthy recipes</p>
       </div>
-      <div class="d-flex gap-2" style="max-width:420px;flex:1;margin-left:2rem;">
+      <div class="d-flex gap-2 align-items-center" style="flex:1;margin-left:2rem;">
         <input type="text" class="form-control"
                style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
                placeholder="Search recipes..."
                v-model="searchQuery"
                @input="currentPage = 1">
+        <select v-model="categoryFilter"
+                @change="currentPage = 1"
+                style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#1b4d1b;background:#fff;white-space:nowrap;flex-shrink:0;">
+          <option value="">All Categories</option>
+          <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <select v-model="cuisineFilter"
+                @change="currentPage = 1"
+                style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#1b4d1b;background:#fff;white-space:nowrap;flex-shrink:0;">
+          <option value="">All Cuisines</option>
+          <option v-for="c in availableCuisines" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <input type="text" v-model="ingredientFilter"
+               @input="currentPage = 1"
+               placeholder="Ingredient…"
+               style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;min-width:140px;" />
+        <button v-if="hasActiveFilters"
+                @click="cuisineFilter = ''; categoryFilter = ''; ingredientFilter = ''; currentPage = 1"
+                style="background:#f3f4f6;color:#6b7280;border:none;padding:0.625rem 0.875rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;flex-shrink:0;cursor:pointer;">
+          ✕ Clear
+        </button>
       </div>
     </div>
 
@@ -40,46 +61,70 @@
     <template v-else>
       <div class="row g-4 mb-4">
         <div class="col-lg-4 col-md-6" v-for="recipe in pagedRecipes" :key="recipe.recipeId">
-          <div class="h-100 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;"
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
 
-            <div style="position:relative;overflow:hidden;height:200px;">
+            <div style="width:300px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    class="position-absolute top-0 start-0 m-2"
-                    style="background:#2e7d32;color:#fff;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:500;">
+                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
-              </span>
-              <span class="position-absolute top-0 end-0 m-2"
-                    style="cursor:pointer;font-size:1.25rem;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.3);"
-                    :title="recipe.isFavorited ? 'Remove from favourites' : 'Save to favourites'"
-                    @click.stop="toggleFavorite(recipe)"
-                    :style="recipe.isFavorited ? 'color:#d94f4f;' : 'color:#fff;'">
-                {{ recipe._favLoading ? '…' : '♥' }}
               </span>
             </div>
 
-            <div class="p-3">
-              <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.9375rem;line-height:1.3;">{{ recipe.title }}</div>
-              <div class="mb-1" style="color:#6b7280;font-size:0.8125rem;">{{ recipe.category }} · {{ recipe.cuisine }}</div>
-              <div class="mb-2" style="color:#6b7280;font-size:0.8125rem;">
-                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
-              </div>
-              <div class="d-flex align-items-center justify-content-between mb-3" style="font-size:0.8125rem;color:#6b7280;">
-                <span>{{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null" style="color:#fbbf24;">
-                  {{ '★'.repeat(Math.round(recipe.averageRating)) }}{{ '☆'.repeat(5 - Math.round(recipe.averageRating)) }}
-                  <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
+            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
+              <!-- Title + heart -->
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
+                <span style="cursor:pointer;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;"
+                      :title="recipe.isFavorited ? 'Remove from favourites' : 'Save to favourites'"
+                      @click.stop="toggleFavorite(recipe)"
+                      :style="recipe.isFavorited ? 'color:#d94f4f;' : 'color:#d1d5db;'">
+                  {{ recipe._favLoading ? '…' : '♥' }}
                 </span>
               </div>
-              <div class="d-flex gap-2">
+
+              <!-- Cuisine tag -->
+              <div class="mb-3">
+                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
+                  {{ recipe.cuisine }}
+                </span>
+              </div>
+
+              <!-- Macro pills -->
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">
+                  {{ recipe.kcal }} kcal
+                </span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
+                  Protein {{ recipe.protein }}g
+                </span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
+                  Carbs {{ recipe.carbs }}g
+                </span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
+                  Fat {{ recipe.fat }}g
+                </span>
+              </div>
+
+              <!-- Cook time + rating -->
+              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
+                <span>🕐 {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                </span>
+              </div>
+
+              <!-- Buttons -->
+              <div class="d-flex gap-2 mt-3">
                 <button class="btn fw-semibold flex-fill"
-                        style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
+                        style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;"
                         @click="viewRecipe(recipe)">View Recipe</button>
                 <button v-if="!isProfessional" class="btn fw-semibold flex-fill"
-                        style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
+                        style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;"
                         @click.stop="pickMeal(recipe)">Add to Diary</button>
               </div>
             </div>
@@ -311,6 +356,9 @@ const loading = ref(true)
 const loadError = ref('')
 
 const searchQuery = ref('')
+const cuisineFilter = ref('')
+const categoryFilter = ref('')
+const ingredientFilter = ref('')
 const activeTab = ref('all')
 const currentPage = ref(1)
 const selectedRecipe = ref(null)
@@ -413,16 +461,51 @@ function switchTab(tabId) {
   activeTab.value = tabId
   currentPage.value = 1
   selectedRecipe.value = null
+  cuisineFilter.value = ''
+  categoryFilter.value = ''
+  ingredientFilter.value = ''
   if (tabId === 'fav') loadFavorites()
   else if (tabId === 'used') loadUsed()
   else loadRecipes()
 }
+
+const availableCuisines = computed(() => {
+  const seen = new Set()
+  for (const r of recipes.value) {
+    if (r.cuisine) seen.add(r.cuisine)
+  }
+  return [...seen].sort()
+})
+
+const availableCategories = computed(() => {
+  const seen = new Set()
+  for (const r of recipes.value) {
+    if (r.category) seen.add(r.category)
+  }
+  return [...seen].sort()
+})
+
+const hasActiveFilters = computed(() =>
+  cuisineFilter.value !== '' || categoryFilter.value !== '' || ingredientFilter.value.trim() !== ''
+)
 
 const filteredRecipes = computed(() => {
   let result = recipes.value
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(r => r.title.toLowerCase().includes(q))
+  }
+  if (cuisineFilter.value) {
+    result = result.filter(r => r.cuisine === cuisineFilter.value)
+  }
+  if (categoryFilter.value) {
+    result = result.filter(r => r.category === categoryFilter.value)
+  }
+  if (ingredientFilter.value.trim()) {
+    const q = ingredientFilter.value.trim().toLowerCase()
+    result = result.filter(r =>
+      (r.ingredientDetails ?? []).some(ing => ing.name.toLowerCase().includes(q))
+    )
   }
   return result
 })
