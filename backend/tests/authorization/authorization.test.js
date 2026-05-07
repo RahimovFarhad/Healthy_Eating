@@ -143,4 +143,103 @@ describe("Authorization Tests", () => {
 
     await prisma.$disconnect();
   });
+
+  describe("Vertical Privilege Escalation (Role-based)", () => {
+    describe("Professional-only endpoints", () => {
+      test("Default user cannot access professional endpoints - invite client", async () => {
+        const res = await request(app)
+          .post("/api/professional/client-invitations")
+          .set("Authorization", `Bearer ${defaultUserToken}`)
+          .send({
+            email: SUBSCRIBER_USER.email,
+          });
+
+        expect(res.statusCode).toBe(403);
+        expect(res.body.message).toContain("Forbidden");
+      });
+
+      test("Subscriber cannot access professional endpoints - invite client", async () => {
+        const res = await request(app)
+          .post("/api/professional/client-invitations")
+          .set("Authorization", `Bearer ${subscriberUserToken}`)
+          .send({
+            email: ANOTHER_USER.email,
+          });
+
+        expect(res.statusCode).toBe(403);
+        expect(res.body.message).toContain("Forbidden");
+      });
+
+      test("Default user cannot list professional clients", async () => {
+        const res = await request(app)
+          .get("/api/professional/clients")
+          .set("Authorization", `Bearer ${defaultUserToken}`);
+
+        expect(res.statusCode).toBe(403);
+        expect(res.body.message).toContain("Forbidden");
+      });
+
+      test("Subscriber cannot list professional clients", async () => {
+        const res = await request(app)
+          .get("/api/professional/clients")
+          .set("Authorization", `Bearer ${subscriberUserToken}`);
+
+        expect(res.statusCode).toBe(403);
+        expect(res.body.message).toContain("Forbidden");
+      });
+
+      test("Professional can access professional endpoints", async () => {
+        const res = await request(app)
+          .get("/api/professional/clients")
+          .set("Authorization", `Bearer ${professionalUserToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty("clients");
+      });
+    });
+
+    describe("Authentication required endpoints", () => {
+      test("Unauthenticated user cannot access diary entries", async () => {
+        const res = await request(app).get("/api/diary/entries");
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.message).toContain("Authorization header missing");
+      });
+
+      test("Unauthenticated user cannot access goals", async () => {
+        const res = await request(app).get("/api/goals");
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.message).toContain("Authorization header missing");
+      });
+
+      test("Invalid token is rejected", async () => {
+        const res = await request(app)
+          .get("/api/diary/entries")
+          .set("Authorization", "Bearer invalid-token");
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.message).toContain("Invalid token");
+      });
+
+      test("Refresh token cannot be used as access token", async () => {
+        const refreshToken = sign(
+          {
+            userId: subscriberUserId,
+            tokenType: "refresh",
+            jti: "test-jti",
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        const res = await request(app)
+          .get("/api/diary/entries")
+          .set("Authorization", `Bearer ${refreshToken}`);
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.message).toContain("Invalid token");
+      });
+    });
+  });
 });
