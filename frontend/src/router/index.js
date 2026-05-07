@@ -32,7 +32,7 @@ const routes = [
   { path: '/dashboard', component: DashboardSwitch, meta: { requiresAuth: true } },
   { path: '/diary', component: FoodDiaryView, meta: { requiresAuth: true, subscriberOnly: true } },
   { path: '/nutrition', component: NutritionView, meta: { requiresAuth: true, subscriberOnly: true } },
-  { path: '/recipes/:id?', component: RecipesView, meta: { requiresAuth: true, subscriberOnly: true } },
+  { path: '/recipes/:id?', component: RecipesView, meta: { requiresAuth: true } },
   { path: '/goals', component: GoalsView, meta: { requiresAuth: true, subscriberOnly: true } },
   { path: '/messages', component: MessagesView, meta: { requiresAuth: true } },
   { path: '/profile', component: ProfileView, meta: { requiresAuth: true } },

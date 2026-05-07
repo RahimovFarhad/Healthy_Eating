@@ -43,11 +43,11 @@
             <RouterLink class="nav-link" to="/nutrition"
                         :class="{ active: $route.path === '/nutrition' }">Nutrition</RouterLink>
           </li>
-          <li class="nav-item">
-            <RouterLink class="nav-link" to="/recipes"
-                        :class="{ active: $route.path === '/recipes' }">Recipes</RouterLink>
-          </li>
         </template>
+        <li class="nav-item">
+          <RouterLink class="nav-link" to="/recipes"
+                      :class="{ active: $route.path.startsWith('/recipes') }">Recipes</RouterLink>
+        </li>
         <li class="nav-item">
           <RouterLink class="nav-link" to="/messages"
                       :class="{ active: $route.path === '/messages' }">Messages</RouterLink>
