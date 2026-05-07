@@ -28,7 +28,8 @@ const expiredRefreshToken = sign(
     userId: 9999,
     email: "",
     role: "default",
-    tokenType: "refresh"
+    tokenType: "refresh",
+    jti: "expired-test-jti"
   },
   process.env.JWT_SECRET,
   { expiresIn: "-1h" }
@@ -47,6 +48,9 @@ describe("Auth API", () => {
       // ignore if any errors occur during cleanup
     }
     if (createdUserId) {
+      await prisma.refreshToken.deleteMany({
+        where: { userId: createdUserId },
+      });
       await prisma.user.deleteMany({
         where: {
           userId: createdUserId,
@@ -301,6 +305,9 @@ describe("Auth API", () => {
       );
       expect(rotatedRefreshTokenCookie).toBeDefined();
       expect(rotatedRefreshTokenCookie).not.toEqual(refreshCookie);
+      
+      // Update refreshCookie for logout test
+      refreshCookie = rotatedRefreshTokenCookie;
     });
 
     test ("Refresh rejects missing token", async () => {
@@ -321,6 +328,31 @@ describe("Auth API", () => {
 
       expect(res.statusCode).toBe(401);
       expect(res.body).toEqual({
+        message: "Invalid refresh token"
+      });
+    });
+  });
+
+  describe("Logout", () => {
+    test("Logout clears cookie and deletes refresh token from database", async () => {
+      expect(refreshCookie).toBeDefined();
+
+      const res = await request(app)
+        .post("/api/auth/logout")
+        .set("Cookie", refreshCookie);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        message: "Logged out successfully"
+      });
+
+      // Verify the refresh token no longer works
+      const refreshRes = await request(app)
+        .get("/api/auth/refresh")
+        .set("Cookie", refreshCookie);
+
+      expect(refreshRes.statusCode).toBe(401);
+      expect(refreshRes.body).toEqual({
         message: "Invalid refresh token"
       });
     });

@@ -5,6 +5,9 @@ const mockFindFirst = jest.fn();
 const mockPendingUpsert = jest.fn();
 const mockPendingFindUnique = jest.fn();
 const mockPendingUpdate = jest.fn();
+const mockRefreshTokenCreate = jest.fn();
+const mockRefreshTokenFindUnique = jest.fn();
+const mockRefreshTokenDelete = jest.fn();
 const mockVerifyPassword = jest.fn();
 const mockHashPassword = jest.fn();
 const mockSendVerificationEmail = jest.fn();
@@ -25,6 +28,11 @@ jest.unstable_mockModule("../../src/db/prisma.js", () => ({
       upsert: mockPendingUpsert,
       findUnique: mockPendingFindUnique,
       update: mockPendingUpdate,
+    },
+    refreshToken: {
+      create: mockRefreshTokenCreate,
+      findUnique: mockRefreshTokenFindUnique,
+      delete: mockRefreshTokenDelete,
     },
     $transaction: mockTx,
   },
@@ -50,7 +58,7 @@ jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
   ensureDefaultGoalsForUser: mockEnsureDefaultGoalsForUser,
 }));
 
-const { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken,refreshAccessToken, AuthError, UserNotFoundError } = await import(
+const { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken, revokeRefreshToken, AuthError, UserNotFoundError } = await import(
   "../../src/modules/auth/auth.service.js"
 );
 
@@ -308,13 +316,20 @@ describe("Authentication Service", () => {
       ).rejects.toBeInstanceOf(UserNotFoundError);
     });
 
-    test("returns signed refresh token for existing user", async () => {
+    test("returns signed refresh token and stores it in database for existing user", async () => {
       mockFindUnique.mockResolvedValue({
         userId: 10,
         email: "refresh@example.com",
         role: "default",
       });
       mockSign.mockReturnValue("mock.refresh.token");
+      mockRefreshTokenCreate.mockResolvedValue({
+        id: 1,
+        userId: 10,
+        token: "mock.refresh.token",
+        jti: expect.any(String),
+        expiresAt: expect.any(Date),
+      });
 
       const token = await generateRefreshToken("refresh@example.com");
 
@@ -331,7 +346,14 @@ describe("Authentication Service", () => {
         "unit-test-secret",
         { expiresIn: "7d" }
       );
-      expect(token).toBe("mock.refresh.token");
+      expect(mockRefreshTokenCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          userId: 10,
+          token: "mock.refresh.token",
+          jti: expect.any(String),
+          expiresAt: expect.any(Date),
+        }),
+      });
     });
 
     test("normalizes email to lowercase and trims before user lookup", async () => {
@@ -341,6 +363,7 @@ describe("Authentication Service", () => {
         role: "default",
       });
       mockSign.mockReturnValue("mock.refresh.token");
+      mockRefreshTokenCreate.mockResolvedValue({});
 
       await generateRefreshToken("  REFRESH@EXAMPLE.COM ");
 
@@ -631,6 +654,7 @@ describe("Authentication Service", () => {
       mockVerify.mockReturnValue({
         userId: 7,
         tokenType: "access",
+        jti: "some-jti",
       });
 
       await expect(refreshAccessToken("access.token")).rejects.toEqual(
@@ -640,15 +664,96 @@ describe("Authentication Service", () => {
       );
     });
 
+    test("throws AuthError when token is not found in database", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+        jti: "missing-jti",
+      });
+      mockRefreshTokenFindUnique.mockResolvedValue(null);
+
+      await expect(refreshAccessToken("invalid.refresh.token")).rejects.toEqual(
+        expect.objectContaining({
+          message: "Invalid refresh token",
+        })
+      );
+    });
+
+    test("throws AuthError when token value does not match database", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+        jti: "valid-jti",
+      });
+      mockRefreshTokenFindUnique.mockResolvedValue({
+        id: 1,
+        userId: 7,
+        token: "different.token",
+        jti: "valid-jti",
+        expiresAt: new Date(Date.now() + 60000),
+        user: {
+          userId: 7,
+          email: "valid@example.com",
+          role: "default",
+        },
+      });
+
+      await expect(refreshAccessToken("valid.refresh.token")).rejects.toEqual(
+        expect.objectContaining({
+          message: "Invalid refresh token",
+        })
+      );
+    });
+
+    test("throws AuthError and deletes token when token is expired", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+        jti: "expired-jti",
+      });
+      mockRefreshTokenFindUnique.mockResolvedValue({
+        id: 1,
+        userId: 7,
+        token: "expired.refresh.token",
+        jti: "expired-jti",
+        expiresAt: new Date(Date.now() - 60000),
+        user: {
+          userId: 7,
+          email: "valid@example.com",
+          role: "default",
+        },
+      });
+      mockRefreshTokenDelete.mockResolvedValue({});
+
+      await expect(refreshAccessToken("expired.refresh.token")).rejects.toEqual(
+        expect.objectContaining({
+          message: "Invalid refresh token",
+        })
+      );
+
+      expect(mockRefreshTokenDelete).toHaveBeenCalledWith({
+        where: { jti: "expired-jti" },
+      });
+    });
+
     test("returns signed access token for valid refresh token", async () => {
       mockVerify.mockReturnValue({
         userId: 7,
         tokenType: "refresh",
+        jti: "valid-jti",
       });
-      mockFindUnique.mockResolvedValue({
+      mockRefreshTokenFindUnique.mockResolvedValue({
+        id: 1,
         userId: 7,
-        email: "valid@example.com",
-        role: "default",
+        token: "valid.refresh.token",
+        jti: "valid-jti",
+        expiresAt: new Date(Date.now() + 60000),
+        user: {
+          userId: 7,
+          email: "valid@example.com",
+          fullName: "Valid User",
+          role: "default",
+        },
       });
       mockSign.mockReturnValue("mock.new.access.token");
 
@@ -658,19 +763,73 @@ describe("Authentication Service", () => {
         token: "mock.new.access.token",
         email: "valid@example.com",
       });
-      expect(mockFindUnique).toHaveBeenCalledWith({
-        where: { userId: 7 },
+      expect(mockRefreshTokenFindUnique).toHaveBeenCalledWith({
+        where: { jti: "valid-jti" },
+        include: { user: true },
       });
       expect(mockSign).toHaveBeenCalledWith(
         {
           userId: 7,
           email: "valid@example.com",
+          fullName: "Valid User",
           role: "default",
           tokenType: "access",
         },
         "unit-test-secret",
         { expiresIn: "1h" }
       );
+    });
+  });
+
+  describe("revokeRefreshToken (unit)", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.JWT_SECRET = "unit-test-secret";
+    });
+
+    test("deletes token from database when valid", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+        jti: "valid-jti",
+      });
+      mockRefreshTokenDelete.mockResolvedValue({});
+
+      await revokeRefreshToken("valid.refresh.token");
+
+      expect(mockRefreshTokenDelete).toHaveBeenCalledWith({
+        where: { jti: "valid-jti" },
+      });
+    });
+
+    test("silently fails (does not throw error) when token is invalid", async () => {
+      mockVerify.mockImplementation(() => {
+        throw new Error("jwt invalid");
+      });
+
+      await expect(revokeRefreshToken("invalid.token")).resolves.toBeUndefined();
+      expect(mockRefreshTokenDelete).not.toHaveBeenCalled();
+    });
+
+    test("silently fails (does not throw error) when token type is not refresh", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "access",
+      });
+
+      await expect(revokeRefreshToken("access.token")).resolves.toBeUndefined();
+      expect(mockRefreshTokenDelete).not.toHaveBeenCalled();
+    });
+
+    test("silently fails (does not throw error) when database delete fails", async () => {
+      mockVerify.mockReturnValue({
+        userId: 7,
+        tokenType: "refresh",
+        jti: "valid-jti",
+      });
+      mockRefreshTokenDelete.mockRejectedValue(new Error("db error"));
+
+      await expect(revokeRefreshToken("valid.refresh.token")).resolves.toBeUndefined();
     });
   });
 });

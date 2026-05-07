@@ -38,6 +38,7 @@ jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   verifyRegistrationCode: mockVerifyRegistrationCode,
   resendRegistrationCode: mockResendRegistrationCode,
   refreshAccessToken: mockRefreshToken,
+  revokeRefreshToken: jest.fn(),
 }));
 
 const { login, register, verifyRegistration, resendVerificationCode, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
