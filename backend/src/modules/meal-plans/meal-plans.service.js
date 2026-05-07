@@ -1,5 +1,5 @@
-import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem } from "./meal-plans.validator.js";
-import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem } from "./meal-plans.repository.js";
+import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem, validateRemovePlanItemInput } from "./meal-plans.validator.js";
+import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem, removePlanItem } from "./meal-plans.repository.js";
 
 async function createMealPlanService({ subscriberId, startDate, endDate, planType, items }) {
   const data = validateCreateMealPlanInput({ subscriberId, startDate, endDate, planType, items });
@@ -13,11 +13,11 @@ async function listMealPlansService({ subscriberId, startDate, endDate }) {
 }
 
 async function getMealPlanByIdService({ planId, subscriberId }) {
-  const data = validateGetMealPlanByIdInput({ planId, subscriberId }); 
+  const data = validateGetMealPlanByIdInput({ planId, subscriberId });
   return getMealPlanById(data); // no need to security check here; On the repo layer, only return if both subscriberid and planid
 }
 
-async function addPlanItemService({ planId, subscriberId, item }) { 
+async function addPlanItemService({ planId, subscriberId, item }) {
   const data = validateGetMealPlanByIdInput({ planId, subscriberId }); // no need to do separate validation, because they have the exact same input
   const validatedItem = validatePlanItem(item); 
   const mealPlan = await getMealPlanById(data);
@@ -41,10 +41,16 @@ async function deleteMealPlanService({ planId, subscriberId }) {
 
 }
 
+async function removePlanItemService({ planItemId, planId, subscriberId }) {
+  const data = validateRemovePlanItemInput({ planItemId, planId, subscriberId });
+  return removePlanItem(data);
+}
+
 export {
   createMealPlanService,
   listMealPlansService,
   getMealPlanByIdService,
   addPlanItemService,
   deleteMealPlanService,
+  removePlanItemService,
 };

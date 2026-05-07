@@ -2,10 +2,8 @@ import { ref, computed } from 'vue'
 import { apiFetch } from './auth.js'
 import recipesData from './recipes.json'
 
-// static recipe data (recipes not yet wired to backend)
 export const recipes = ref(recipesData.map((r, i) => ({ id: i + 1, saved: false, ...r })))
 
-// which day the user is currently viewing
 export const viewDate = ref(new Date())
 
 export function prevDay() {
@@ -111,6 +109,7 @@ export async function loadDiary() {
       apiFetch(`/api/diary/entries?start=${start.toISOString()}&end=${end.toISOString()}`),
       apiFetch(`/api/diary/summary?period=daily&endDate=${end.toISOString()}`),
     ])
+
 
     if (entriesRes.ok) {
       const data = await entriesRes.json()

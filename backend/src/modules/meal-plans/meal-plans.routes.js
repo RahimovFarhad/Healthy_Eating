@@ -5,6 +5,7 @@ import {
   getMealPlanById,
   addPlanItem,
   deleteMealPlan,
+  removePlanItem,
 } from "./meal-plans.controller.js";
 
 const mealPlansRouter = Router();
@@ -16,6 +17,7 @@ mealPlansRouter.get("/", listMealPlans);
 mealPlansRouter.get("/:planId", getMealPlanById);
 mealPlansRouter.delete("/:planId", deleteMealPlan);
 
-mealPlansRouter.post("/:planId/addItem", addPlanItem); // adding new items
+mealPlansRouter.post("/:planId/addItem", addPlanItem);
+mealPlansRouter.delete("/:planId/items/:itemId", removePlanItem);
 
 export default mealPlansRouter;

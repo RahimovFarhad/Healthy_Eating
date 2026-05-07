@@ -257,19 +257,21 @@
                   <div style="color:#6b7280;font-size:0.75rem;">Your assigned nutritionist</div>
                 </div>
               </div>
-              <div v-if="professional && latestMessage"
-                   class="p-2 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="fw-semibold" style="font-size:0.7rem;color:#1b4d1b;">
-                    {{ latestMessage.sentBy === 'professional' ? professional.professional.fullName : 'You' }}
-                  </span>
-                  <span style="font-size:0.7rem;color:#9ca3af;">
-                    {{ new Date(latestMessage.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) }}
-                  </span>
+              <div v-if="professional && recentMessages.length" class="d-flex flex-column gap-2">
+                <div v-for="msg in recentMessages" :key="msg.id"
+                     class="p-2 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-semibold" style="font-size:0.7rem;color:#1b4d1b;">
+                      {{ msg.sentBy === 'professional' ? professional.professional.fullName : 'You' }}
+                    </span>
+                    <span style="font-size:0.7rem;color:#9ca3af;">
+                      {{ new Date(msg.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) }}
+                    </span>
+                  </div>
+                  <p class="mb-0" style="font-size:0.75rem;color:#6b7280;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                    {{ msg.message }}
+                  </p>
                 </div>
-                <p class="mb-0" style="font-size:0.75rem;color:#6b7280;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-                  {{ latestMessage.message }}
-                </p>
               </div>
               <div v-for="inv in pendingInvites" :key="inv.professionalId ?? inv.id"
                    class="p-2 rounded mb-2" style="background:#fffbf0;border:1px solid #fbbf24;">
@@ -312,34 +314,47 @@
 
     <div v-else-if="favourites.length > 0">
       <div class="row g-4 mb-4">
-        <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
-          <div class="h-100 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;"
+        <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-lg-4 col-md-6">
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
-            <div style="position:relative;overflow:hidden;height:160px;">
+            <div style="width:300px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    class="position-absolute top-0 start-0 m-2"
-                    style="background:#2e7d32;color:#fff;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:500;">
+                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
-              <span class="position-absolute top-0 end-0 m-2"
-                    style="color:#d94f4f;font-size:1.125rem;">♥</span>
             </div>
-            <div class="p-3">
-              <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;line-height:1.3;">{{ recipe.title }}</div>
-              <div class="mb-2" style="color:#6b7280;font-size:0.75rem;">
-                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
+            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
+                <span style="color:#d94f4f;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;">♥</span>
               </div>
-              <div v-if="recipe.averageRating != null" class="mb-2" style="font-size:0.75rem;color:#fbbf24;">
-                {{ '★'.repeat(Math.round(recipe.averageRating)) }}{{ '☆'.repeat(5 - Math.round(recipe.averageRating)) }}
-                <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
+              <div v-if="recipe.cuisine" class="mb-3">
+                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
+                  {{ recipe.cuisine }}
+                </span>
               </div>
-              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
-                          class="btn w-100" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem;border-radius:8px;font-size:0.8125rem;font-weight:500;">
-                View Recipe →
-              </RouterLink>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">{{ recipe.kcal }} kcal</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Protein {{ recipe.protein }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Carbs {{ recipe.carbs }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
+                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                </span>
+              </div>
+              <div class="mt-3">
+                <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                            class="btn fw-semibold w-100" style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;">
+                  View Recipe
+                </RouterLink>
+              </div>
             </div>
           </div>
         </div>
@@ -366,36 +381,48 @@
 
     <div v-if="recommendedRecipes.length > 0">
       <div class="row g-4 mb-4">
-        <div v-for="recipe in recommendedRecipes.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
-          <div class="h-100 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;"
+        <div v-for="recipe in recommendedRecipes.slice(0, 3)" :key="recipe.recipeId" class="col-lg-4 col-md-6">
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
-            <div style="position:relative;overflow:hidden;height:160px;">
+            <div style="width:300px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    class="position-absolute top-0 start-0 m-2"
-                    style="background:#2e7d32;color:#fff;padding:0.25rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:500;">
+                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
-              <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-2 badge rounded-pill"
+              <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-1 badge rounded-pill"
                     style="background:#e8a820;color:#fff;font-size:0.65rem;padding:0.25rem 0.5rem;">
                 {{ recipe.reason }}
               </span>
             </div>
-            <div class="p-3">
-              <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;line-height:1.3;">{{ recipe.title }}</div>
-              <div class="mb-2" style="color:#6b7280;font-size:0.75rem;">
-                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
+            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
+              <div class="fw-bold mb-2" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
+              <div v-if="recipe.cuisine" class="mb-3">
+                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
+                  {{ recipe.cuisine }}
+                </span>
               </div>
-              <div v-if="recipe.averageRating != null" class="mb-2" style="font-size:0.75rem;color:#fbbf24;">
-                {{ '★'.repeat(Math.round(recipe.averageRating)) }}{{ '☆'.repeat(5 - Math.round(recipe.averageRating)) }}
-                <span style="color:#9ca3af;">({{ recipe.reviewCount }})</span>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">{{ recipe.kcal }} kcal</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Protein {{ recipe.protein }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Carbs {{ recipe.carbs }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
               </div>
-              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
-                          class="btn w-100" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem;border-radius:8px;font-size:0.8125rem;font-weight:500;">
-                View Recipe →
-              </RouterLink>
+              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
+                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                </span>
+              </div>
+              <div class="mt-3">
+                <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                            class="btn fw-semibold w-100" style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;">
+                  View Recipe
+                </RouterLink>
+              </div>
             </div>
           </div>
         </div>
@@ -464,7 +491,7 @@ const error = ref('')
 
 const professional = ref(null)
 const loadingPro = ref(true)
-const latestMessage = ref(null)
+const recentMessages = ref([])
 
 const goals = ref([])
 const loadingGoals = ref(true)
@@ -529,7 +556,7 @@ async function loadLatestMessage() {
   try {
     const res = await apiFetch(`/api/client/professionals/${professional.value.professionalId}/messages`)
     const data = await res.json().catch(() => ({}))
-    if (res.ok) latestMessage.value = (data.messages ?? []).at(-1) ?? null
+    if (res.ok) recentMessages.value = (data.messages ?? []).slice(0, 2).reverse()
   } catch {
     // non-critical, silently ignore
   }
@@ -605,7 +632,7 @@ const MAX_BAR_H = 90
 const weekBars = computed(() => {
   const trend = dashboard.value?.weeklyCaloryTrend ?? []
   if (!trend.length) {
-    return Array.from({ length: 7 }, (_, i) => ({ day: '-', date: '', val: '-', height: 0, over: false, isToday: false }))
+    return Array.from({ length: 7 }, () => ({ day: '-', date: '', val: '-', height: 0, over: false, isToday: false }))
   }
   const maxCal = Math.max(...trend.map(d => d.calories), calorieBudget.value)
   return trend.map((d) => {

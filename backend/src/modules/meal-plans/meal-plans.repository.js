@@ -15,6 +15,7 @@ const PLAN_SELECT = {
       mealType: true,
       recipeId: true,
       servings: true,
+      recipe: { select: { title: true } },
     },
     orderBy: [{ plannedDate: "asc" }, { planItemId: "asc" }],
   },
@@ -90,4 +91,10 @@ async function addPlanItem({ planId, item }) {
 
 }
 
-export { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem };
+async function removePlanItem({ planItemId, planId, subscriberId }) {
+  const plan = await prisma.plan.findFirst({ where: { planId, subscriberId } });
+  if (!plan) return { count: 0 };
+  return prisma.planItem.deleteMany({ where: { planItemId, planId } });
+}
+
+export { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem, removePlanItem };

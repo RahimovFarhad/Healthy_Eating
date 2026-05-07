@@ -56,6 +56,10 @@
           <RouterLink class="nav-link" to="/goals"
                       :class="{ active: $route.path === '/goals' }">Goals</RouterLink>
         </li>
+        <li v-if="!isProfessional" class="nav-item">
+          <RouterLink class="nav-link" to="/meal-plans"
+                      :class="{ active: $route.path === '/meal-plans' }">Meal Plans</RouterLink>
+        </li>
         <li class="nav-item">
           <RouterLink to="/profile" class="text-decoration-none"
                       :title="`View profile (${currentUser.name || 'account'})`">

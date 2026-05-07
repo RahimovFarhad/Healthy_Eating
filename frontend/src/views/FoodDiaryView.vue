@@ -46,6 +46,25 @@
       </div>
     </div>
 
+    <div v-if="planDayForDate" class="mb-4">
+      <div class="d-flex justify-content-between align-items-center p-3 rounded"
+           style="background:#e8f5e9;border:1.25px solid #a7d7a7;border-radius:12px;">
+        <div>
+          <span class="fw-semibold" style="color:#1b4d1b;font-size:0.9375rem;">Meal plan for this day</span>
+          <span style="color:#4a7c59;font-size:0.875rem;margin-left:0.75rem;">
+            {{ planItemCount }} item{{ planItemCount !== 1 ? 's' : '' }} planned
+          </span>
+        </div>
+        <button class="btn fw-semibold"
+                style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;"
+                :disabled="applyingMealPlan"
+                @click="handleApplyMealPlan">
+          {{ applyingMealPlan ? 'Importing…' : 'Import to Diary' }}
+        </button>
+      </div>
+      <div v-if="applyMealPlanError" class="mt-2 px-1" style="color:#d94f4f;font-size:0.875rem;">{{ applyMealPlanError }}</div>
+    </div>
+
     <div v-for="meal in mainMeals" :key="meal.id" class="mb-5">
 
       <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3"
@@ -235,9 +254,10 @@
     </div>
 
     <div class="mb-4">
-      <div class="meal-section-header d-flex justify-content-between">
-        <span>SNACKS &amp; DRINKS</span>
-        <span>Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
+      <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3"
+           style="background:#f9fafb;border:0.75px solid #1b4d1b;">
+        <span style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;">SNACKS &amp; DRINKS</span>
+        <span style="color:#6b7280;font-size:0.875rem;font-weight:500;">Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
       </div>
 
       <div v-for="entry in (snackMeal?.entries ?? [])" :key="entry.itemId" class="diary-entry-row mt-1">
@@ -355,6 +375,7 @@ import {
   addFatSecretItem, addCustomItem, addRecipeToDiary,
   updateItem, removeItem,
 } from '../diaryStore.js'
+import { loadPlans, plans, groupItemsByDay, applyDayToDiary } from '../mealPlanStore.js'
 import { apiFetch } from '../auth.js'
 
 const route = useRoute()
@@ -393,6 +414,48 @@ async function loadCalorieGoal() {
 
 const caloriesRemaining = computed(() => calorieBudget.value - headerTotals.value.kcal)
 
+const planDayForDate = computed(() => {
+  const y = viewDate.value.getFullYear()
+  const m = String(viewDate.value.getMonth() + 1).padStart(2, '0')
+  const d = String(viewDate.value.getDate()).padStart(2, '0')
+  const dateKey = `${y}-${m}-${d}`
+  for (const plan of plans.value) {
+    const days = groupItemsByDay(plan)
+    const day = days.find(day => day.date === dateKey)
+    if (day) {
+      const total = day.breakfast.length + day.lunch.length + day.dinner.length + day.snack.length
+      if (total > 0) return day
+    }
+  }
+  return null
+})
+
+const planItemCount = computed(() => {
+  if (!planDayForDate.value) return 0
+  const d = planDayForDate.value
+  return d.breakfast.length + d.lunch.length + d.dinner.length + d.snack.length
+})
+
+const applyingMealPlan = ref(false)
+const applyMealPlanError = ref('')
+
+async function handleApplyMealPlan() {
+  applyingMealPlan.value = true
+  applyMealPlanError.value = ''
+  try {
+    await applyDayToDiary(planDayForDate.value)
+    await loadDiary()
+  } catch (e) {
+    applyMealPlanError.value = e.message
+  } finally {
+    applyingMealPlan.value = false
+  }
+}
+
+function loadDiaryRecipes() {
+  // recipes are loaded statically from recipes.json via diaryStore
+}
+
 onMounted(() => {
   // Check if there's a date in the URL query parameter
   if (route.query.date) {
@@ -403,6 +466,7 @@ onMounted(() => {
   }
   loadDiary()
   loadCalorieGoal()
+  loadPlans()
 })
 watch(viewDate, () => {
   loadDiary()
