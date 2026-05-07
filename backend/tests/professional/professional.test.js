@@ -211,14 +211,14 @@ describe("Professional API", () => {
 
   describe("GET /professional/client-invitations", () => {
     test("rejects unauthorized requests", async () => {
-      const res = await request(app).get("/professional/client-invitations");
+      const res = await request(app).get("/api/professional/client-invitations");
 
       expect(res.statusCode).toBe(401);
     });
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get("/professional/client-invitations")
+        .get("/api/professional/client-invitations")
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);
@@ -475,7 +475,7 @@ describe("Professional API", () => {
   describe("POST /professional/clients/:clientId/shared-recipes", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .post(`/api/professional/clients/${subscriber.userId}/shared-recipes`)
         .send({
           recipeId: testRecipeId || 1,
         });
@@ -485,7 +485,7 @@ describe("Professional API", () => {
 
     test("rejects invalid clientId", async () => {
       const res = await request(app)
-        .post("/professional/clients/invalid/shared-recipes")
+        .post("/api/professional/clients/invalid/shared-recipes")
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           recipeId: testRecipeId || 1,
@@ -496,7 +496,7 @@ describe("Professional API", () => {
 
     test("rejects missing recipeId", async () => {
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .post(`/api/professional/clients/${subscriber.userId}/shared-recipes`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({});
 
@@ -509,7 +509,7 @@ describe("Professional API", () => {
       }
 
       const res = await request(app)
-        .post(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .post(`/api/professional/clients/${subscriber.userId}/shared-recipes`)
         .set("Authorization", `Bearer ${validAccessToken}`)
         .send({
           recipeId: testRecipeId,
@@ -526,14 +526,14 @@ describe("Professional API", () => {
   describe("GET /professional/clients/:clientId/shared-recipes", () => {
     test("rejects unauthorized requests", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/shared-recipes`);
+        .get(`/api/professional/clients/${subscriber.userId}/shared-recipes`);
 
       expect(res.statusCode).toBe(401);
     });
 
     test("rejects invalid clientId", async () => {
       const res = await request(app)
-        .get("/professional/clients/invalid/shared-recipes")
+        .get("/api/professional/clients/invalid/shared-recipes")
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(400);
@@ -541,7 +541,7 @@ describe("Professional API", () => {
 
     test("success on valid input", async () => {
       const res = await request(app)
-        .get(`/professional/clients/${subscriber.userId}/shared-recipes`)
+        .get(`/api/professional/clients/${subscriber.userId}/shared-recipes`)
         .set("Authorization", `Bearer ${validAccessToken}`);
 
       expect(res.statusCode).toBe(200);

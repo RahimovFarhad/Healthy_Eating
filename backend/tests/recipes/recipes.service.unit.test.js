@@ -5,12 +5,14 @@ const listRecipes = jest.fn();
 const findRecipeById = jest.fn();
 const createRecipeReview = jest.fn();
 const toggleRecipeFavorite = jest.fn();
+const toggleRecipeUsage = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/recipes/recipes.repository.js", () => ({
   listRecipes,
   findRecipeById,
   createRecipeReview,
   toggleRecipeFavorite,
+  toggleRecipeUsage,
 }));
 
 const {

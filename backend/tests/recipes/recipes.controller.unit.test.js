@@ -5,14 +5,18 @@ const listRecipesService = jest.fn();
 const getRecipeByIdService = jest.fn();
 const submitRecipeReviewService = jest.fn();
 const toggleRecipeFavoriteService = jest.fn();
+const toggleRecipeUsageService = jest.fn();
 const getFavoriteRecipesService = jest.fn();
+const getUsedRecipesService = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/recipes/recipes.service.js", () => ({
   listRecipesService,
   getRecipeByIdService,
   submitRecipeReviewService,
   toggleRecipeFavoriteService,
+  toggleRecipeUsageService,
   getFavoriteRecipesService,
+  getUsedRecipesService,
 }));
 
 const {
