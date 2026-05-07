@@ -6,6 +6,7 @@ const listMealPlansService = jest.fn();
 const getMealPlanByIdService = jest.fn();
 const addPlanItemService = jest.fn();
 const deleteMealPlanService = jest.fn();
+const removePlanItemService = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/meal-plans/meal-plans.service.js", () => ({
   createMealPlanService,
@@ -13,6 +14,7 @@ jest.unstable_mockModule("../../src/modules/meal-plans/meal-plans.service.js", (
   getMealPlanByIdService,
   addPlanItemService,
   deleteMealPlanService,
+  removePlanItemService,
 }));
 
 const {
@@ -21,6 +23,7 @@ const {
   getMealPlanById,
   addPlanItem,
   deleteMealPlan,
+  removePlanItem,
 } = await import("../../src/modules/meal-plans/meal-plans.controller.js");
 
 function mockResponse() {
@@ -303,7 +306,7 @@ describe("Meal Plans Controller", () => {
       await getMealPlanById(req, res, next);
 
       expect(getMealPlanByIdService).toHaveBeenCalledWith({
-        planId: "1",
+        planId: 1,
         subscriberId: 2,
       });
       expect(res.status).toHaveBeenCalledWith(200);
@@ -410,7 +413,7 @@ describe("Meal Plans Controller", () => {
       await addPlanItem(req, res, next);
 
       expect(addPlanItemService).toHaveBeenCalledWith({
-        planId: "1",
+        planId: 1,
         subscriberId: 2,
         item: {
           plannedDate: "2026-05-03",
@@ -498,7 +501,7 @@ describe("Meal Plans Controller", () => {
       await deleteMealPlan(req, res, next);
 
       expect(deleteMealPlanService).toHaveBeenCalledWith({
-        planId: "1",
+        planId: 1,
         subscriberId: 2,
       });
       expect(res.status).toHaveBeenCalledWith(200);
@@ -572,6 +575,86 @@ describe("Meal Plans Controller", () => {
       const next = jest.fn();
 
       await deleteMealPlan(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("removePlanItem", () => {
+    test("returns 200 when remove succeeds", async () => {
+      removePlanItemService.mockResolvedValue({ count: 1 });
+
+      const req = {
+        user: { userId: 2 },
+        params: { planId: "1", itemId: "10" },
+      };
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await removePlanItem(req, res, next);
+
+      expect(removePlanItemService).toHaveBeenCalledWith({
+        planItemId: 10,
+        planId: 1,
+        subscriberId: 2,
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ count: 1 });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("returns 404 when no item is removed", async () => {
+      removePlanItemService.mockResolvedValue({ count: 0 });
+
+      const req = {
+        user: { userId: 2 },
+        params: { planId: "1", itemId: "10" },
+      };
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await removePlanItem(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Plan item not found or you don't have permission to delete it",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("returns meal-plan error status for MealPlanError", async () => {
+      removePlanItemService.mockRejectedValue(
+        new MealPlanError("Plan item ID must be a positive integer")
+      );
+
+      const req = {
+        user: { userId: 2 },
+        params: { planId: "1", itemId: "invalid" },
+      };
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await removePlanItem(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Plan item ID must be a positive integer",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test("calls next for unexpected errors", async () => {
+      const error = new Error("Unexpected error");
+      removePlanItemService.mockRejectedValue(error);
+
+      const req = {
+        user: { userId: 2 },
+        params: { planId: "1", itemId: "10" },
+      };
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await removePlanItem(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

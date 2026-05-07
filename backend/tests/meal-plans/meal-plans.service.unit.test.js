@@ -6,6 +6,7 @@ const listMealPlans = jest.fn();
 const getMealPlanById = jest.fn();
 const deleteMealPlan = jest.fn();
 const addPlanItem = jest.fn();
+const removePlanItem = jest.fn();
 
 jest.unstable_mockModule("../../src/modules/meal-plans/meal-plans.repository.js", () => ({
   createMealPlan,
@@ -13,6 +14,7 @@ jest.unstable_mockModule("../../src/modules/meal-plans/meal-plans.repository.js"
   getMealPlanById,
   deleteMealPlan,
   addPlanItem,
+  removePlanItem,
 }));
 
 const {
@@ -21,6 +23,7 @@ const {
   getMealPlanByIdService,
   addPlanItemService,
   deleteMealPlanService,
+  removePlanItemService,
 } = await import("../../src/modules/meal-plans/meal-plans.service.js");
 
 describe("Meal Plans Service", () => {
@@ -272,6 +275,38 @@ describe("Meal Plans Service", () => {
       ).rejects.toThrow(MealPlanError);
 
       expect(deleteMealPlan).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("removePlanItemService", () => {
+    test("removes a plan item when input is valid", async () => {
+      const deleted = { count: 1 };
+      removePlanItem.mockResolvedValue(deleted);
+
+      const result = await removePlanItemService({
+        planItemId: "10",
+        planId: "1",
+        subscriberId: "2",
+      });
+
+      expect(removePlanItem).toHaveBeenCalledWith({
+        planItemId: 10,
+        planId: 1,
+        subscriberId: 2,
+      });
+      expect(result).toEqual(deleted);
+    });
+
+    test("throws MealPlanError when input is invalid", async () => {
+      await expect(
+        removePlanItemService({
+          planItemId: "invalid",
+          planId: "1",
+          subscriberId: "2",
+        })
+      ).rejects.toThrow(MealPlanError);
+
+      expect(removePlanItem).not.toHaveBeenCalled();
     });
   });
 });
