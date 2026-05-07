@@ -59,74 +59,57 @@
     <div v-if="loading" class="text-center py-5" style="color:#9ca3af;"><small>Loading recipes…</small></div>
 
     <template v-else>
-      <div class="row g-4 mb-4">
-        <div class="col-lg-4 col-md-6" v-for="recipe in pagedRecipes" :key="recipe.recipeId">
-          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
-               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+      <div class="row g-3 mb-4">
+        <div class="col-md-4" v-for="recipe in pagedRecipes" :key="recipe.recipeId">
+          <div class="card recipe-card h-100">
 
-            <div style="width:300px;flex-shrink:0;position:relative;overflow:hidden;">
+            <div style="position:relative;overflow:hidden;height:220px;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
+                    style="background:#5a9e56;">
                 {{ recipe.category }}
               </span>
             </div>
 
-            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
-              <!-- Title + heart -->
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
-                <span style="cursor:pointer;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;"
+            <div class="card-body pb-1">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <h6 class="fw-bold mb-0">{{ recipe.title }}</h6>
+                <span 
                       :title="recipe.isFavorited ? 'Remove from favourites' : 'Save to favourites'"
                       @click.stop="toggleFavorite(recipe)"
-                      :style="recipe.isFavorited ? 'color:#d94f4f;' : 'color:#d1d5db;'">
+                      style="cursor:pointer;font-size:1.25rem;flex-shrink:0;margin-left:0.5rem;transition:color 0.2s;"
+                      :style="{ color: recipe.isFavorited ? '#d94f4f' : '#ccc' }"
+                      @mouseenter="$event.target.style.color='#d94f4f'"
+                      @mouseleave="$event.target.style.color=recipe.isFavorited ? '#d94f4f' : '#ccc'">
                   {{ recipe._favLoading ? '…' : '♥' }}
                 </span>
               </div>
-
-              <!-- Cuisine tag -->
-              <div class="mb-3">
-                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
-                  {{ recipe.cuisine }}
-                </span>
+              <div class="text-muted" style="font-size:0.75rem;">
+                {{ recipe.category }} · {{ recipe.cuisine }}
               </div>
-
-              <!-- Macro pills -->
-              <div class="d-flex flex-wrap gap-2 mb-3">
-                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">
-                  {{ recipe.kcal }} kcal
-                </span>
-                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
-                  Protein {{ recipe.protein }}g
-                </span>
-                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
-                  Carbs {{ recipe.carbs }}g
-                </span>
-                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">
-                  Fat {{ recipe.fat }}g
-                </span>
+              <div class="small mt-1 text-muted">
+                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
               </div>
-
-              <!-- Cook time + rating -->
-              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
-                <span>🕐 {{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+              <div class="text-muted d-flex align-items-center gap-2" style="font-size:0.75rem;">
+                <span>{{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null">
                   ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                  <span class="text-muted">({{ recipe.reviewCount }})</span>
                 </span>
               </div>
+            </div>
 
-              <!-- Buttons -->
-              <div class="d-flex gap-2 mt-3">
-                <button class="btn fw-semibold flex-fill"
-                        style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;"
-                        @click="viewRecipe(recipe)">View Recipe</button>
-                <button v-if="!isProfessional" class="btn fw-semibold flex-fill"
-                        style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;"
-                        @click.stop="pickMeal(recipe)">Add to Diary</button>
-              </div>
+            <div class="card-footer bg-transparent d-flex gap-2" style="border-top:none;">
+              <button class="btn fw-semibold flex-fill" 
+                      style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
+                      @click="viewRecipe(recipe)">View Recipe</button>
+              <button class="btn fw-semibold flex-fill"
+                      style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;"
+                      @click.stop="pickMeal(recipe)">
+                Add to Diary
+              </button>
             </div>
           </div>
         </div>
@@ -684,3 +667,5 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>
+
+
