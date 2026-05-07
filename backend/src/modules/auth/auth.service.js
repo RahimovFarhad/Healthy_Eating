@@ -7,6 +7,14 @@ import { sendVerificationEmail } from "../../utils/email.js";
 
 const { sign, verify } = jwt;
 
+function normalizeEmail(email) {
+    return email?.trim().toLowerCase();
+}
+
+function normalizeUsername(username) {
+    return username?.trim().toLowerCase();
+}
+
 export class AuthError extends Error {
     constructor(message) {
         super(message);
@@ -22,8 +30,10 @@ export class UserNotFoundError extends AuthError {
 }
 
 async function authenticateUser(email, password) {
+    const normalizedEmail = normalizeEmail(email);
+
     const user = await prisma.user.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
     });
 
     if (!user) {
@@ -47,10 +57,14 @@ async function authenticateUser(email, password) {
 }
 
 async function registerUser(email, username, password) {
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedUsername = username?.trim();
+    const normalizedUsernameKey = normalizeUsername(username);
+
     // this is a basic email format check: must contain @ with characters on both sides and end with .com
-    console.log("Registering user with email:", email);
-    const atIndex = email?.indexOf("@") ?? -1;
-    if (atIndex <= 0 || atIndex >= email.length - 1) {
+    console.log("Registering user with email:", normalizedEmail);
+    const atIndex = normalizedEmail?.indexOf("@") ?? -1;
+    if (atIndex <= 0 || atIndex >= normalizedEmail.length - 1) {
         throw new AuthError("Please enter a valid email address");
     }
 
@@ -84,8 +98,8 @@ async function registerUser(email, username, password) {
     const existingUser = await prisma.user.findFirst({
         where: {
             OR: [
-                { email: email },
-                { fullName: username }
+                { email: normalizedEmail },
+                { fullName: { equals: normalizedUsername, mode: "insensitive" } }
             ]
         },
         select: {
@@ -96,9 +110,9 @@ async function registerUser(email, username, password) {
     });
 
     if (existingUser) {
-        if (existingUser.email === email) {
+        if (existingUser.email === normalizedEmail) {
             throw new AuthError("Email already in use");
-        } else if (existingUser.fullName === username) {
+        } else if (existingUser.fullName?.toLowerCase() === normalizedUsernameKey) {
             throw new AuthError("Username already in use");
         }
     }
@@ -109,10 +123,10 @@ async function registerUser(email, username, password) {
     const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
 
     await prisma.pendingRegistration.upsert({
-        where: { email },
+        where: { email: normalizedEmail },
         create: {
-            email,
-            fullName: username,
+            email: normalizedEmail,
+            fullName: normalizedUsername,
             passwordHash,
             verificationCodeHash,
             codeExpiresAt,
@@ -121,7 +135,7 @@ async function registerUser(email, username, password) {
             attemptCount: 0
         },
         update: {
-            fullName: username,
+            fullName: normalizedUsername,
             passwordHash,
             verificationCodeHash,
             codeExpiresAt,
@@ -131,18 +145,20 @@ async function registerUser(email, username, password) {
         }
     });
 
-    await sendVerificationEmail({ to: email, code: verificationCode });
+    await sendVerificationEmail({ to: normalizedEmail, code: verificationCode });
 
-    return { email };
+    return { email: normalizedEmail };
 }
 
 async function verifyRegistrationCode(email, code) {
+    const normalizedEmail = normalizeEmail(email);
+
     if (!code || !/^\d{6}$/.test(code)) {
         throw new AuthError("Verification code must be a 6-digit number");
     }
 
     const pendingRegistration = await prisma.pendingRegistration.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
     });
 
     if (!pendingRegistration) {
@@ -160,7 +176,7 @@ async function verifyRegistrationCode(email, code) {
     const isCodeValid = await verifyPassword(code, pendingRegistration.verificationCodeHash);
     if (!isCodeValid) {
         await prisma.pendingRegistration.update({
-            where: { email },
+            where: { email: normalizedEmail },
             data: { attemptCount: { increment: 1 } }
         });
         throw new AuthError("Invalid or expired verification code");
@@ -170,7 +186,7 @@ async function verifyRegistrationCode(email, code) {
         where: {
             OR: [
                 { email: pendingRegistration.email },
-                { fullName: pendingRegistration.fullName }
+                { fullName: { equals: pendingRegistration.fullName, mode: "insensitive" } }
             ]
         },
         select: {
@@ -184,7 +200,7 @@ async function verifyRegistrationCode(email, code) {
         if (existingUser.email === pendingRegistration.email) { 
             throw new AuthError("Email already in use");
         }
-        if (existingUser.fullName === pendingRegistration.fullName) {
+        if (existingUser.fullName?.toLowerCase() === pendingRegistration.fullName?.toLowerCase()) {
             throw new AuthError("Username already in use");
         }
     }
@@ -212,8 +228,10 @@ async function verifyRegistrationCode(email, code) {
 }
 
 async function resendRegistrationCode(email) {
+    const normalizedEmail = normalizeEmail(email);
+
     const pendingRegistration = await prisma.pendingRegistration.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
     });
 
     if (!pendingRegistration) {
@@ -232,7 +250,7 @@ async function resendRegistrationCode(email) {
     const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await prisma.pendingRegistration.update({
-        where: { email },
+        where: { email: normalizedEmail },
         data: {
             verificationCodeHash,
             codeExpiresAt,
@@ -242,16 +260,18 @@ async function resendRegistrationCode(email) {
         }
     });
 
-    await sendVerificationEmail({ to: email, code: verificationCode });
+    await sendVerificationEmail({ to: normalizedEmail, code: verificationCode });
 
-    return { email };
+    return { email: normalizedEmail };
 }
 
 async function generateRefreshToken(email) {
+    const normalizedEmail = normalizeEmail(email);
+
     //I think it is redundant to check if the user exists, because this function only called in the login controller after the user is authenticated. After careful review, we will delete it
 
     const user = await prisma.user.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
     });
 
     if (!user) {

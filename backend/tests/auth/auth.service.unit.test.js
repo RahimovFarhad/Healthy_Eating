@@ -119,6 +119,23 @@ describe("Authentication Service", () => {
         { expiresIn: "1h" }
       );
     });
+
+    test("normalizes email to lowercase and trims before lookup", async () => {
+      mockFindUnique.mockResolvedValue({
+        userId: 7,
+        email: "valid@example.com",
+        role: "default",
+        passwordHash: "hashed-password",
+      });
+      mockVerifyPassword.mockResolvedValue(true);
+      mockSign.mockReturnValue("mock.jwt.token");
+
+      await authenticateUser("  VALID@EXAMPLE.COM  ", "Password123!");
+
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { email: "valid@example.com" },
+      });
+    });
   });
 
   describe("registerUser (unit)", () => {
@@ -192,6 +209,22 @@ describe("Authentication Service", () => {
       }
     });
 
+    test("treats username check as case-insensitive", async () => {
+      expect.assertions(2);
+      mockFindFirst.mockResolvedValue({
+        userId: 1,
+        email: "other@example.com",
+        fullName: TEST_USER.username.toUpperCase(),
+      });
+
+      try {
+        await registerUser(TEST_USER.email, TEST_USER.username, TEST_USER.password);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuthError);
+        expect(error.message).toBe("Username already in use");
+      }
+    });
+
     test("stores pending registration and sends verification code for valid credentials", async () => {
       mockFindFirst.mockResolvedValue(null);
       mockHashPassword
@@ -220,6 +253,41 @@ describe("Authentication Service", () => {
       );
       expect(mockSendVerificationEmail).toHaveBeenCalledWith({
         to: TEST_USER.email,
+        code: expect.stringMatching(/^\d{6}$/),
+      });
+    });
+
+    test("normalizes email for uniqueness check and pending registration storage", async () => {
+      mockFindFirst.mockResolvedValue(null);
+      mockHashPassword
+        .mockResolvedValueOnce("hashed-password")
+        .mockResolvedValueOnce("hashed-code");
+      mockPendingUpsert.mockResolvedValue({});
+      mockSendVerificationEmail.mockResolvedValue({});
+
+      const result = await registerUser("  MIXED.CASE@Example.COM  ", TEST_USER.username, TEST_USER.password);
+
+      expect(result).toEqual({ email: "mixed.case@example.com" });
+      expect(mockFindFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { email: "mixed.case@example.com" },
+              { fullName: { equals: TEST_USER.username, mode: "insensitive" } },
+            ],
+          },
+        })
+      );
+      expect(mockPendingUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { email: "mixed.case@example.com" },
+          create: expect.objectContaining({
+            email: "mixed.case@example.com",
+          }),
+        })
+      );
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+        to: "mixed.case@example.com",
         code: expect.stringMatching(/^\d{6}$/),
       });
     });
@@ -264,6 +332,21 @@ describe("Authentication Service", () => {
         { expiresIn: "7d" }
       );
       expect(token).toBe("mock.refresh.token");
+    });
+
+    test("normalizes email to lowercase and trims before user lookup", async () => {
+      mockFindUnique.mockResolvedValue({
+        userId: 10,
+        email: "refresh@example.com",
+        role: "default",
+      });
+      mockSign.mockReturnValue("mock.refresh.token");
+
+      await generateRefreshToken("  REFRESH@EXAMPLE.COM ");
+
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { email: "refresh@example.com" },
+      });
     });
   });
 
@@ -338,6 +421,31 @@ describe("Authentication Service", () => {
         message: "Invalid or expired verification code",
       }));
 
+      expect(mockPendingUpdate).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+        data: { attemptCount: { increment: 1 } },
+      });
+    });
+
+    test("normalizes email for pending registration lookup and attempt updates", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        fullName: "user",
+        codeExpiresAt: new Date(Date.now() + 60 * 1000),
+        attemptCount: 0,
+        verificationCodeHash: "hashed-code",
+      });
+      mockVerifyPassword.mockResolvedValue(false);
+
+      await expect(
+        verifyRegistrationCode("  USER@EXAMPLE.COM ", "123456")
+      ).rejects.toEqual(expect.objectContaining({
+        message: "Invalid or expired verification code",
+      }));
+
+      expect(mockPendingFindUnique).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+      });
       expect(mockPendingUpdate).toHaveBeenCalledWith({
         where: { email: "user@example.com" },
         data: { attemptCount: { increment: 1 } },
@@ -452,6 +560,32 @@ describe("Authentication Service", () => {
             attemptCount: 0,
             resendCount: { increment: 1 },
           }),
+        })
+      );
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+        to: "user@example.com",
+        code: expect.stringMatching(/^\d{6}$/),
+      });
+    });
+
+    test("normalizes email for lookup/update/send", async () => {
+      mockPendingFindUnique.mockResolvedValue({
+        email: "user@example.com",
+        lastSentAt: new Date(Date.now() - 61_000),
+      });
+      mockHashPassword.mockResolvedValueOnce("new-code-hash");
+      mockPendingUpdate.mockResolvedValue({});
+      mockSendVerificationEmail.mockResolvedValue({});
+
+      const result = await resendRegistrationCode("  USER@EXAMPLE.COM ");
+
+      expect(result).toEqual({ email: "user@example.com" });
+      expect(mockPendingFindUnique).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+      });
+      expect(mockPendingUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { email: "user@example.com" },
         })
       );
       expect(mockSendVerificationEmail).toHaveBeenCalledWith({
