@@ -43,7 +43,7 @@
       </div>
 
       <!-- Professional Info -->
-      <div class="mb-3">
+      <div v-if="!isProfessional" class="mb-3">
         <label class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Assigned Nutritionist</label>
         
         <div v-if="loadingProfessional" class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;color:#6b7280;">
@@ -97,6 +97,7 @@ const roleLabel = computed(() => {
 })
 
 const isSubscriber = computed(() => currentUser.value.role === 'subscriber')
+const isProfessional = computed(() => currentUser.value.role === 'professional')
 
 const initials = computed(() => {
   const name = currentUser.value.name || currentUser.value.fullName || ''
