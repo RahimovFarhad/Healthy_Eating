@@ -15,6 +15,7 @@ import MealPlanView from '../views/MealPlanView.vue'
 import ProfessionalRegisterView from '../views/ProfessionalRegisterView.vue'
 import VerifyEmailView from '../views/VerifyEmailView.vue'
 import VerifyEmailProfessionalView from '../views/VerifyEmailProfessionalView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 
 const DashboardSwitch = {
   name: 'DashboardSwitch',
@@ -38,6 +39,7 @@ const routes = [
   { path: '/meal-plans', component: MealPlanView, meta: { requiresAuth: true, subscriberOnly: true } },
   { path: '/messages', component: MessagesView, meta: { requiresAuth: true } },
   { path: '/profile', component: ProfileView, meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', component: NotFoundView },
 ]
 
 const router = createRouter({
@@ -57,6 +59,10 @@ router.beforeEach(async (to) => {
     if (!isAuthenticated.value) {
       await tryRefresh()
     }
+  }
+
+  if (to.path === '/' && isAuthenticated.value) {
+    return { path: '/dashboard' }
   }
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {

@@ -313,47 +313,48 @@
     </div>
 
     <div v-else-if="favourites.length > 0">
-      <div class="row g-3 mb-4">
-        <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-md-4">
-          <div class="card recipe-card h-100">
-            <div style="position:relative;overflow:hidden;height:220px;">
+      <div class="row g-4 mb-4">
+        <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-lg-4 col-md-6">
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+            <div style="width:220px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
-                    style="background:#5a9e56;">
+                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
             </div>
-            <div class="card-body pb-1">
-              <div class="d-flex justify-content-between align-items-start mb-1">
-                <h6 class="fw-bold mb-0">{{ recipe.title }}</h6>
-                <span 
-                      title="Saved to favourites"
-                      style="cursor:pointer;font-size:1.25rem;flex-shrink:0;margin-left:0.5rem;transition:color 0.2s;color:#d94f4f;"
-                      @mouseenter="$event.target.style.color='#b91c1c'"
-                      @mouseleave="$event.target.style.color='#d94f4f'">♥</span>
+            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
+                <span style="color:#d94f4f;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;">♥</span>
               </div>
-              <div class="text-muted" style="font-size:0.75rem;">
-                {{ recipe.category }} · {{ recipe.cuisine }}
-              </div>
-              <div class="small mt-1 text-muted">
-                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
-              </div>
-              <div class="text-muted d-flex align-items-center gap-2" style="font-size:0.75rem;">
-                <span v-if="recipe.cookTime">{{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null">
-                  ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span class="text-muted">({{ recipe.reviewCount }})</span>
+              <div v-if="recipe.cuisine" class="mb-3">
+                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
+                  {{ recipe.cuisine }}
                 </span>
               </div>
-            </div>
-            <div class="card-footer bg-transparent d-flex gap-2" style="border-top:none;">
-              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
-                          class="btn fw-semibold flex-fill" 
-                          style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;">
-                View Recipe
-              </RouterLink>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">{{ recipe.kcal }} kcal</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Protein {{ recipe.protein }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Carbs {{ recipe.carbs }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
+                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                </span>
+              </div>
+              <div class="mt-3">
+                <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                            class="btn fw-semibold w-100" style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;">
+                  View Recipe
+                </RouterLink>
+              </div>
             </div>
           </div>
         </div>
@@ -379,44 +380,49 @@
     </div>
 
     <div v-if="recommendedRecipes.length > 0">
-      <div class="row g-3 mb-4">
-        <div v-for="recipe in displayedRecommendedRecipes" :key="recipe.recipeId" class="col-md-4">
-          <div class="card recipe-card h-100">
-            <div style="position:relative;overflow:hidden;height:220px;">
+      <div class="row g-4 mb-4">
+        <div v-for="recipe in displayedRecommendedRecipes" :key="recipe.recipeId" class="col-lg-4 col-md-6">
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
+               @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+            <div style="width:220px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
-                    class="position-absolute top-0 start-0 m-2 recipe-badge text-white"
-                    style="background:#5a9e56;">
+                    style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
-              <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-2 badge rounded-pill"
+              <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-1 badge rounded-pill"
                     style="background:#e8a820;color:#fff;font-size:0.65rem;padding:0.25rem 0.5rem;">
                 {{ recipe.reason }}
               </span>
             </div>
-            <div class="card-body pb-1">
-              <h6 class="fw-bold mb-1">{{ recipe.title }}</h6>
-              <div class="text-muted" style="font-size:0.75rem;">
-                {{ recipe.category }} · {{ recipe.cuisine }}
-              </div>
-              <div class="small mt-1 text-muted">
-                {{ recipe.kcal }} kcal · P:{{ recipe.protein }}g · C:{{ recipe.carbs }}g · F:{{ recipe.fat }}g
-              </div>
-              <div class="text-muted d-flex align-items-center gap-2" style="font-size:0.75rem;">
-                <span v-if="recipe.cookTime">{{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null">
-                  ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span class="text-muted">({{ recipe.reviewCount }})</span>
+            <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
+              <div class="fw-bold mb-2" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
+              <div v-if="recipe.cuisine" class="mb-3">
+                <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
+                  {{ recipe.cuisine }}
                 </span>
               </div>
-            </div>
-            <div class="card-footer bg-transparent d-flex gap-2" style="border-top:none;">
-              <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
-                          class="btn fw-semibold flex-fill" 
-                          style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.875rem;border-radius:8px;font-size:0.875rem;">
-                View Recipe
-              </RouterLink>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span style="background:#f0f7f0;color:#1b4d1b;font-size:0.8125rem;font-weight:600;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #c8e6c8;">{{ recipe.kcal }} kcal</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Protein {{ recipe.protein }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Carbs {{ recipe.carbs }}g</span>
+                <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
+                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
+                  ★ {{ recipe.averageRating.toFixed(1) }}
+                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                </span>
+              </div>
+              <div class="mt-3">
+                <RouterLink :to="`/recipes?highlight=${recipe.recipeId}`"
+                            class="btn fw-semibold w-100" style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.8125rem;">
+                  View Recipe
+                </RouterLink>
+              </div>
             </div>
           </div>
         </div>

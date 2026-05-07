@@ -16,6 +16,7 @@ import { rateLimit } from "express-rate-limit";
 import mealPlansRouter from "./modules/meal-plans/meal-plans.routes.js";
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security headers with helmet - configured to not break existing functionality
 // Safe for both HTTP (development) and HTTPS (production)
