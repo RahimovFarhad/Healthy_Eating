@@ -24,9 +24,6 @@ const mockInsertMessage = jest.fn();
 const mockListMessages = jest.fn();
 const mockListSharedRecipes = jest.fn();
 
-// ensureProfessionalClientRelation mock (from client.service)
-const mockEnsureProfessionalClientRelation = jest.fn();
-
 jest.unstable_mockModule("../../src/modules/client/client.validator.js", () => ({
     ClientError: ClientError,
     validateClientId: mockValidateClientId,
@@ -44,10 +41,6 @@ jest.unstable_mockModule("../../src/modules/client/client.repository.js", () => 
     insertMessage: mockInsertMessage,
     listMessages: mockListMessages,
     listSharedRecipes: mockListSharedRecipes
-}));
-
-jest.unstable_mockModule("../../src/modules/client/client.service.js", () => ({
-    ensureProfessionalClientRelation: mockEnsureProfessionalClientRelation
 }));
 
 const {
@@ -69,7 +62,6 @@ describe("Client service", () => {
         mockValidateProfessionalId.mockImplementation((id) => id);
         mockValidateClientProfessionalInput.mockImplementation(() => true);
         mockValidateMessageInput.mockImplementation(() => true);
-        mockEnsureProfessionalClientRelation.mockImplementation(() => true);
 
     });
     describe("acceptInvitationService (unit)", () => {
@@ -81,7 +73,7 @@ describe("Client service", () => {
             };
             const invitation = {
                 ...validatedInput,
-                status: "invitated"
+                status: "invited"
             };
             const accepted = {
                 ...validatedInput,
@@ -94,8 +86,8 @@ describe("Client service", () => {
             const result = await acceptInvitationService(validatedInput);
 
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith(validatedInput);
-            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validated);
-            expect(mockAcceptProfessionalInvitation).toHaveBeenCalledWith(validated);
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
+            expect(mockAcceptProfessionalInvitation).toHaveBeenCalledWith(validatedInput);
             expect(result).toEqual(accepted);
         });
         // invalid paths
@@ -148,7 +140,7 @@ describe("Client service", () => {
             mockValidateClientProfessionalInput.mockReturnValue(validatedInput);
             mockFindProfessionalClientLink.mockResolvedValue(invitation);
 
-            await expect(acceptInvitationService(validatedInput)).rejects.toThrow("Invitation already found");
+            await expect(acceptInvitationService(validatedInput)).rejects.toThrow("Invitation already active");
             expect(mockAcceptProfessionalInvitation).not.toHaveBeenCalled();
         });
         test("throws ClientError when invitation is already disabled", async () => {
@@ -189,7 +181,7 @@ describe("Client service", () => {
             };
             const invitation = {
                 ...validatedInput,
-                status: "invitated"
+                status: "invited"
             };
             const rejected = {
                 ...validatedInput,
@@ -202,8 +194,8 @@ describe("Client service", () => {
             const result = await rejectInvitationService(validatedInput);
 
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith(validatedInput);
-            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validated);
-            expect(mockRejectProfessionalInvitation).toHaveBeenCalledWith(validated);
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
+            expect(mockRejectProfessionalInvitation).toHaveBeenCalledWith(validatedInput);
             expect(result).toEqual(rejected);
         });
         // invalid paths
@@ -242,7 +234,7 @@ describe("Client service", () => {
             mockFindProfessionalClientLink.mockResolvedValue(null);
 
             await expect(rejectInvitationService(validatedInput)).rejects.toThrow("Invitation not found");
-            expect(rejectInvitationService).not.toHaveBeenCalled();
+            expect(mockRejectProfessionalInvitation).not.toHaveBeenCalled();
         });
         test("throws ClientError when invitation is already active", async () => {
             const validatedInput = {
@@ -256,7 +248,7 @@ describe("Client service", () => {
             mockValidateClientProfessionalInput.mockReturnValue(validatedInput);
             mockFindProfessionalClientLink.mockResolvedValue(invitation);
 
-            await expect(rejectInvitationService(validatedInput)).rejects.toThrow("Invitation already found");
+            await expect(rejectInvitationService(validatedInput)).rejects.toThrow("Invitation already active");
             expect(mockRejectProfessionalInvitation).not.toHaveBeenCalled();
         });
         test("throws ClientError when invitation is already disabled", async () => {
@@ -361,8 +353,8 @@ describe("Client service", () => {
             const result = await removeProfessionalService(validatedInput);
 
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith(validatedInput);
-            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validated);
-            expect(mockDisableProfessionalClientLink).toHaveBeenCalledWith(validated);
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
+            expect(mockDisableProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
             expect(result).toEqual({
                 ...validatedInput,
                 status: "disabled"
@@ -434,7 +426,7 @@ describe("Client service", () => {
                 ...validatedMessage
             })
 
-            const result = await sendMessageToProfessional(validatedInput);
+            const result = await sendMessageToProfessional(validatedMessage);
 
             expect(mockValidateMessageInput).toHaveBeenCalledWith(validatedMessage);
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith({
@@ -550,7 +542,7 @@ describe("Client service", () => {
             });
             mockListMessages.mockResolvedValue(messages);
 
-            const result = await removeProfessionalService(validatedInput);
+            const result = await listMessagesService(validatedInput);
 
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith(validatedInput);
             expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
@@ -629,8 +621,8 @@ describe("Client service", () => {
             const result = await listSharedRecipesService(validatedInput);
 
             expect(mockValidateClientProfessionalInput).toHaveBeenCalledWith(validatedInput);
-            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validated);
-            expect(mockListSharedRecipes).toHaveBeenCalledWith(validated);
+            expect(mockFindProfessionalClientLink).toHaveBeenCalledWith(validatedInput);
+            expect(mockListSharedRecipes).toHaveBeenCalledWith(validatedInput);
             expect(result).toEqual(recipes);
         });
         // invalid paths

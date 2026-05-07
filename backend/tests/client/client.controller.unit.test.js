@@ -17,7 +17,7 @@ const mockSendMessageToProfessional = jest.fn();
 const mockListMessagesService = jest.fn();
 const mockListSharedRecipesService = jest.fn();
 
-jest.unstable_mockModule("../src/modules/client/client.service.js"), () => ({
+jest.unstable_mockModule("../../src/modules/client/client.service.js", () => ({
     acceptInvitationService: mockAcceptInvitationService,
     rejectInvitationService: mockRejectInvitationService,
     listProfessionalsService: mockListProfessionalsService,
@@ -25,7 +25,7 @@ jest.unstable_mockModule("../src/modules/client/client.service.js"), () => ({
     sendMessageToProfessional: mockSendMessageToProfessional,
     listMessagesService: mockListMessagesService,
     listSharedRecipesService: mockListSharedRecipesService,
-})
+}));
 
 const {
     acceptInvitation,
@@ -73,12 +73,12 @@ describe("Client Controller", () => {
 
       await acceptInvitation(req,res,next);
 
-      expect(mockAcceptInvitationService).toHaveBeenCalled({
+      expect(mockAcceptInvitationService).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockAcceptInvitationService).toHaveBeenCalledWith({ message: "Invitation accepted successfully" });
+      expect(res.json).toHaveBeenCalledWith({ message: "Invitation accepted successfully" });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -99,7 +99,7 @@ describe("Client Controller", () => {
       await acceptInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockAcceptInvitationService).toHaveBeenCalledWith({ error: "Invitation is not in invited status" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation is not in invited status" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 404 when invitation is not found", async () => {
@@ -119,7 +119,7 @@ describe("Client Controller", () => {
       await acceptInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(mockAcceptInvitationService).toHaveBeenCalledWith({ error: "Invitation not found" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation not found" });
       expect(next).not.toHaveBeenCalledWith();  
     });
     test("Returns error code 409 when invitation status is already active", async () => {
@@ -139,7 +139,7 @@ describe("Client Controller", () => {
       await acceptInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(409);
-      expect(mockAcceptInvitationService).toHaveBeenCalledWith({ error: "Invitation already active" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation already active" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 409 when invitation status is already disabled", async () => {
@@ -159,7 +159,7 @@ describe("Client Controller", () => {
       await acceptInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(409);
-      expect(mockAcceptInvitationService).toHaveBeenCalledWith({ error: "Invitation already disabled" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation already disabled" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -186,12 +186,12 @@ describe("Client Controller", () => {
 
       await rejectInvitation(req,res,next);
 
-      expect(mockRejectInvitationService).toHaveBeenCalled({
+      expect(mockRejectInvitationService).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockRejectInvitationService).toHaveBeenCalledWith({ message: "Invitation rejected successfully" });
+      expect(res.json).toHaveBeenCalledWith({ message: "Invitation rejected successfully" });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -212,7 +212,7 @@ describe("Client Controller", () => {
       await rejectInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockRejectInvitationService).toHaveBeenCalledWith({ error: "Invitation is not in invited status" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation is not in invited status" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 404 when invitation is not found", async () => {
@@ -232,7 +232,7 @@ describe("Client Controller", () => {
       await rejectInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(mockRejectInvitationService).toHaveBeenCalledWith({ error: "Invitation not found" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation not found" });
       expect(next).not.toHaveBeenCalledWith();  
     });
     test("Returns error code 409 when invitation status is already active", async () => {
@@ -252,7 +252,7 @@ describe("Client Controller", () => {
       await rejectInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(409);
-      expect(mockRejectInvitationService).toHaveBeenCalledWith({ error: "Invitation already active" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation already active" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 409 when invitation status is already disabled", async () => {
@@ -272,7 +272,7 @@ describe("Client Controller", () => {
       await rejectInvitation(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(409);
-      expect(mockRejectInvitationService).toHaveBeenCalledWith({ error: "Invitation already disabled" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invitation already disabled" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -296,12 +296,11 @@ describe("Client Controller", () => {
 
       await listProfessionals(req,res,next);
 
-      expect(mockListProfessionalsService).toHaveBeenCalled({
-        clientId: TEST_CLIENTID,
-        status: "active"
+      expect(mockListProfessionalsService).toHaveBeenCalledWith({
+        clientId: TEST_CLIENTID
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ list });
+      expect(res.json).toHaveBeenCalledWith({ professionals: list });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -319,7 +318,7 @@ describe("Client Controller", () => {
       await listProfessionals(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when status is invalid", async () =>{
@@ -336,7 +335,7 @@ describe("Client Controller", () => {
       await listProfessionals(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ error: "Invalid status value" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid status value" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -363,12 +362,12 @@ describe("Client Controller", () => {
 
       await removeProfessional(req,res,next);
 
-      expect(mockRemoveProfessionalService).toHaveBeenCalled({
+      expect(mockRemoveProfessionalService).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockRemoveProfessionalService).toHaveBeenCalledWith({ message: "Professional removed successfully" });
+      expect(res.json).toHaveBeenCalledWith({ message: "Professional removed successfully" });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -389,7 +388,7 @@ describe("Client Controller", () => {
       await removeProfessional(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockRemoveProfessionalService).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when professional ID is missing or invalid", async () => {
@@ -409,7 +408,7 @@ describe("Client Controller", () => {
       await removeProfessional(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockRemoveProfessionalService).toHaveBeenCalledWith({ error: "Professional ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Professional ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 403 when client is not assigned to the professional", async () => {
@@ -429,7 +428,7 @@ describe("Client Controller", () => {
       await removeProfessional(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockRemoveProfessionalService).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -460,13 +459,16 @@ describe("Client Controller", () => {
 
       await sendMessage(req,res,next);
 
-      expect(mockSendMessageToProfessional).toHaveBeenCalled({
+      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID,
         message: "success"
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({ message: "Message sent successfully" });
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Message sent successfully",
+        sentMessage: details,
+      });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -490,7 +492,7 @@ describe("Client Controller", () => {
       await sendMessage(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when professional ID is missing or invalid", async () => {
@@ -513,7 +515,7 @@ describe("Client Controller", () => {
       await sendMessage(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({ error: "Professional ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Professional ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when message is missing, not a string or invalid", async () => {
@@ -536,7 +538,7 @@ describe("Client Controller", () => {
       await sendMessage(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({ error: "message is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "message is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 403 when client is not assigned to the professional", async () => {
@@ -559,7 +561,7 @@ describe("Client Controller", () => {
       await sendMessage(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockSendMessageToProfessional).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -586,12 +588,12 @@ describe("Client Controller", () => {
 
       await listMessages(req,res,next);
 
-      expect(mockListMessagesService).toHaveBeenCalled({
+      expect(mockListMessagesService).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID,
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockListMessagesService).toHaveBeenCalledWith({ details });
+      expect(res.json).toHaveBeenCalledWith({ messages: details });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -612,7 +614,7 @@ describe("Client Controller", () => {
       await listMessages(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListMessagesService).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when professional ID is missing or invalid", async () => {
@@ -632,7 +634,7 @@ describe("Client Controller", () => {
       await listMessages(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListMessagesService).toHaveBeenCalledWith({ error: "Professional ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Professional ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 403 when client is not assigned to the professional", async () => {
@@ -652,7 +654,7 @@ describe("Client Controller", () => {
       await listMessages(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockListMessagesService).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -676,12 +678,12 @@ describe("Client Controller", () => {
 
       await listInvitations(req,res,next);
 
-      expect(mockListProfessionalsService).toHaveBeenCalled({
+      expect(mockListProfessionalsService).toHaveBeenCalledWith({
         clientId: TEST_CLIENTID,
-        status: "active"
+        status: "invited"
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ invitations });
+      expect(res.json).toHaveBeenCalledWith({ invitations });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -699,7 +701,7 @@ describe("Client Controller", () => {
       await listInvitations(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when status is invalid", async () =>{
@@ -716,7 +718,7 @@ describe("Client Controller", () => {
       await listInvitations(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListProfessionalsService).toHaveBeenCalledWith({ error: "Invalid status value" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Invalid status value" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });
@@ -743,12 +745,12 @@ describe("Client Controller", () => {
 
       await listSharedRecipes(req,res,next);
 
-      expect(mockListSharedRecipesService).toHaveBeenCalled({
+      expect(mockListSharedRecipesService).toHaveBeenCalledWith({
         professionalId: TEST_PROFESSIONALID,
         clientId: TEST_CLIENTID
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(mockListSharedRecipesService).toHaveBeenCalledWith({ sharedRecipes });
+      expect(res.json).toHaveBeenCalledWith({ sharedRecipes });
       expect(next).not.toHaveBeenCalledWith();
     });
     // failure paths
@@ -769,7 +771,7 @@ describe("Client Controller", () => {
       await listSharedRecipes(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListSharedRecipesService).toHaveBeenCalledWith({ error: "Client ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 400 when professional ID is missing or invalid", async () => {
@@ -789,7 +791,7 @@ describe("Client Controller", () => {
       await listSharedRecipes(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockListSharedRecipesService).toHaveBeenCalledWith({ error: "Professional ID is required" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Professional ID is required" });
       expect(next).not.toHaveBeenCalledWith();
     });
     test("Returns error code 403 when client is not assigned to the professional", async () => {
@@ -809,7 +811,7 @@ describe("Client Controller", () => {
       await listSharedRecipes(req,res,next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(mockListSharedRecipesService).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Client is not assigned to this professional" });
       expect(next).not.toHaveBeenCalledWith();
     });
   });

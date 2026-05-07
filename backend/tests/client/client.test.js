@@ -24,17 +24,17 @@ describe("Client API", () => {
         const clientUser = await prisma.user.create({
             data: {
                 fullName: "Test User",
-                email: testUserEmail,
+                email: clientEmail,
                 passwordHash: "test_password",
                 role: "default",
             }
         });
         clientUserId = clientUser.userId;
 
-        validAccessToken = sign(
+        accessToken = sign(
             {
-                userId: testUserId,
-                email: testUserEmail,
+                userId: clientUserId,
+                email: clientEmail,
                 role: "default",
                 tokenType: "access",
             },
@@ -55,6 +55,14 @@ describe("Client API", () => {
                 data: {
                     fullName: "Professional Invited Accept",
                     email: `pro-inv-accept-${now}@example.com`,
+                    passwordHash: "test_password",
+                    role: "professional",
+                },
+            }),
+            prisma.user.create({
+                data: {
+                    fullName: "Professional Invited Reject",
+                    email: `pro-inv-reject-${now}@example.com`,
                     passwordHash: "test_password",
                     role: "professional",
                 },
@@ -256,36 +264,6 @@ describe("Client API", () => {
         });
     });
 
-    describe("Remove Professional", () => {
-        test("DELETE /api/client/professionals/:professionalId removes active professional", async () => {
-            const res = await request(app)
-                .delete(`/api/client/professionals/${professionalActiveId}`)
-                .set("Authorization", `Bearer ${accessToken}`);
-
-            expect(res.statusCode).toBe(200);
-            expect(res.body).toEqual({ message: "Professional removed successfully" });
-
-            const updated = await prisma.professionalClient.findUnique({
-                where: {
-                    professionalId_subscriberId: {
-                        professionalId: professionalActiveId,
-                        subscriberId: clientUserId,
-                    },
-                }
-            });
-            expect(updated?.status).toBe("disabled");
-        });
-        
-        test("DELETE /api/client/professionals/:professionalId rejects invalid professional ID", async () => {
-            const res = await request(app)
-                .delete("/api/client/professionals/bad_professionalId")
-                .set("Authorization", `Bearer ${accessToken}`);
-
-            expect(res.statusCode).toBe(400);
-            expect(res.body).toEqual({ error: "Professional ID is required" });
-        }); 
-    });
-
     describe("Messages", () => {
         test("GET /api/client/professionals/:professionalId/messages returns message list", async () => {
             const res = await request(app)
@@ -339,6 +317,36 @@ describe("Client API", () => {
             expect(res.body).toEqual({
                 error: "Client is not assigned to this professional",
             });
+        });
+    });
+
+    describe("Remove Professional", () => {
+        test("DELETE /api/client/professionals/:professionalId removes active professional", async () => {
+            const res = await request(app)
+                .delete(`/api/client/professionals/${professionalActiveId}`)
+                .set("Authorization", `Bearer ${accessToken}`);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toEqual({ message: "Professional removed successfully" });
+
+            const updated = await prisma.professionalClient.findUnique({
+                where: {
+                    professionalId_subscriberId: {
+                        professionalId: professionalActiveId,
+                        subscriberId: clientUserId,
+                    },
+                }
+            });
+            expect(updated?.status).toBe("disabled");
+        });
+
+        test("DELETE /api/client/professionals/:professionalId rejects invalid professional ID", async () => {
+            const res = await request(app)
+                .delete("/api/client/professionals/bad_professionalId")
+                .set("Authorization", `Bearer ${accessToken}`);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body).toEqual({ error: "Professional ID is required" });
         });
     });
 });
