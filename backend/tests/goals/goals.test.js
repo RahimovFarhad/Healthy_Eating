@@ -9,11 +9,18 @@ let testUserId = null;
 let testUserEmail = null;
 let validAccessToken = null;
 let createdGoalId = null;
+let dynamicStartDateIso = null;
+let dynamicEndDateIso = null;
 
 describe("Goals API", () => {
     beforeAll(async () => {
         const now = Date.now();
         testUserEmail = `test-goals-${now}@example.com`;
+        const start = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + 1);
+        dynamicStartDateIso = start.toISOString();
+        dynamicEndDateIso = end.toISOString();
 
         const createdUser = await prisma.user.create({
             data: {
@@ -99,8 +106,8 @@ describe("Goals API", () => {
                 .send({
                     goal: {
                         notes: "eat one more root vegetable",
-                        startDate: "2026-05-01T12:00:00.000Z",
-                        endDate: "2026-05-02T12:00:00.000Z"
+                        startDate: dynamicStartDateIso,
+                        endDate: dynamicEndDateIso
                     }
                 });
 
@@ -252,4 +259,3 @@ describe("Goals API", () => {
         });
     });
 });
-

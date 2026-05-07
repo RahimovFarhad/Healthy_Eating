@@ -31,6 +31,7 @@ const mockCreateManyGoals = jest.fn();
 const mockFindGoalCheckInByDate = jest.fn();
 const mockCreateGoalCheckIn = jest.fn();
 const mockUpdateGoalCheckIn = jest.fn();
+const mockUpsertGoalCheckIn = jest.fn();
 const mockArchiveGoalsForNutrient = jest.fn();
 const mockListNutrients = jest.fn();
 
@@ -57,6 +58,7 @@ jest.unstable_mockModule("../../src/modules/goals/goals.repository.js", () => ({
     findGoalCheckInByDate: mockFindGoalCheckInByDate,
     createGoalCheckIn: mockCreateGoalCheckIn,
     updateGoalCheckIn: mockUpdateGoalCheckIn,
+    upsertGoalCheckIn: mockUpsertGoalCheckIn,
     archiveGoalsForNutrient: mockArchiveGoalsForNutrient,
     listNutrients: mockListNutrients,
 }));
