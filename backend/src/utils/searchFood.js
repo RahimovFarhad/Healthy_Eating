@@ -64,6 +64,11 @@ async function searchFoodById(id) {
 
 const parser = new XMLParser({ ignoreAttributes: false });
 
+function sodiumMgToSaltG(sodiumMg) {
+    // Convert sodium in mg to salt in g: salt = sodium * 2.5 / 1000
+    return Number((((parseFloat(sodiumMg) || 0) * 2.5) / 1000).toFixed(3));
+}
+
 function parseFoodResponse(xml) {
     try {
         const result = parser.parse(xml);
@@ -96,7 +101,7 @@ function parseFoodResponse(xml) {
                     { nutrientId: 4, amount: parseFloat(s.fat)           || 0 },
                     { nutrientId: 5, amount: parseFloat(s.fiber)         || 0 },
                     { nutrientId: 6, amount: parseFloat(s.sugar)         || 0 },
-                    { nutrientId: 7, amount: parseFloat(s.sodium)        || 0 },
+                    { nutrientId: 7, amount: sodiumMgToSaltG(s.sodium) },
                 ]
             }))
         };

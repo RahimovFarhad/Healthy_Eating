@@ -82,7 +82,6 @@ export async function sendVerificationEmail({ to, code }) {
       },
     });
   } catch (error) {
-    console.error("Failed to send verification email:", error);
     throw new Error("Gmail email failed");
   }
 }
