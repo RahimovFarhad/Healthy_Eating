@@ -4,71 +4,81 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Recipe Library</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Recipe Library</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Browse and discover healthy recipes</p>
       </div>
       <div class="d-flex gap-2 align-items-center" style="flex:1;margin-left:2rem;">
-        <input type="text" class="form-control"
+        <label for="recipe-search" class="visually-hidden">Search recipes</label>
+        <input id="recipe-search" type="text" class="form-control"
                style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;"
                placeholder="Search recipes..."
                v-model="searchQuery"
                @input="currentPage = 1">
-        <select v-model="categoryFilter"
+        <label for="category-filter" class="visually-hidden">Filter by category</label>
+        <select id="category-filter" v-model="categoryFilter"
                 @change="currentPage = 1"
                 style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#1b4d1b;background:#fff;white-space:nowrap;flex-shrink:0;">
           <option value="">All Categories</option>
           <option v-for="c in availableCategories" :key="c" :value="c">{{ c }}</option>
         </select>
-        <select v-model="cuisineFilter"
+        <label for="cuisine-filter" class="visually-hidden">Filter by cuisine</label>
+        <select id="cuisine-filter" v-model="cuisineFilter"
                 @change="currentPage = 1"
                 style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#1b4d1b;background:#fff;white-space:nowrap;flex-shrink:0;">
           <option value="">All Cuisines</option>
           <option v-for="c in availableCuisines" :key="c" :value="c">{{ c }}</option>
         </select>
-        <input type="text" v-model="ingredientFilter"
+        <label for="ingredient-filter" class="visually-hidden">Filter by ingredient</label>
+        <input id="ingredient-filter" type="text" v-model="ingredientFilter"
                @input="currentPage = 1"
                placeholder="Ingredient…"
                style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.9375rem;min-width:140px;" />
         <button v-if="hasActiveFilters"
                 @click="cuisineFilter = ''; categoryFilter = ''; ingredientFilter = ''; currentPage = 1"
-                style="background:#f3f4f6;color:#6b7280;border:none;padding:0.625rem 0.875rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;flex-shrink:0;cursor:pointer;">
-          ✕ Clear
+                style="background:#f3f4f6;color:#4b5563;border:none;padding:0.625rem 0.875rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;flex-shrink:0;cursor:pointer;">
+          <span aria-hidden="true">✕</span> Clear filters
         </button>
       </div>
     </div>
 
-    <div v-if="loadError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
+    <div v-if="loadError" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
 
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom:1px solid #f3f4f6;">
-      <div class="d-flex gap-2">
+      <div role="tablist" aria-label="Recipe view" class="d-flex gap-2" @keydown="handleTablistKeydown">
         <button v-for="tab in tabs" :key="tab.id"
+                role="tab"
+                :id="`tab-${tab.id}`"
+                :aria-selected="activeTab === tab.id"
+                :aria-controls="`panel-recipes`"
+                :tabindex="activeTab === tab.id ? 0 : -1"
                 class="btn"
                 :style="activeTab === tab.id
                   ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'
-                  : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+                  : 'background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
                 @click="switchTab(tab.id)">
           {{ tab.label }}
         </button>
       </div>
-      <small style="color:#6b7280;font-size:0.875rem;">
+      <small aria-live="polite" aria-atomic="true" style="color:#6b7280;font-size:0.875rem;">
         <span v-if="loading">Loading…</span>
         <span v-else>Showing {{ filteredRecipes.length }} recipes</span>
       </small>
     </div>
 
-    <div v-if="loading" class="text-center py-5" style="color:#9ca3af;"><small>Loading recipes…</small></div>
+    <div v-if="loading" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;"><small>Loading recipes…</small></div>
 
+    <!-- recipe grid — each card shows the image, macros, and a heart button for favouriting -->
     <template v-else>
-      <div class="row g-4 mb-4">
+      <div id="panel-recipes" role="tabpanel" :aria-labelledby="`tab-${activeTab}`" class="row g-4 mb-4">
         <div class="col-lg-4 col-md-6" v-for="recipe in pagedRecipes" :key="recipe.recipeId">
-          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
+          <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
                @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
 
             <div style="width:220px;flex-shrink:0;position:relative;overflow:hidden;">
               <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
                    style="width:100%;height:100%;object-fit:cover;" />
-              <span v-if="recipe.category"
+              <span v-if="recipe.category" aria-hidden="true"
                     style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
@@ -77,12 +87,16 @@
             <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
-                <span style="cursor:pointer;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;"
-                      :title="recipe.isFavorited ? 'Remove from favourites' : 'Save to favourites'"
-                      @click.stop="toggleFavorite(recipe)"
-                      :style="recipe.isFavorited ? 'color:#d94f4f;' : 'color:#d1d5db;'">
-                  {{ recipe._favLoading ? '…' : '♥' }}
-                </span>
+                <button type="button"
+                        class="btn-icon-only ms-2 flex-shrink-0"
+                        :aria-label="recipe.isFavorited ? `Remove ${recipe.title} from favourites` : `Save ${recipe.title} to favourites`"
+                        :aria-pressed="recipe.isFavorited"
+                        @click.stop="toggleFavorite(recipe)">
+                  <span aria-hidden="true" style="font-size:1.25rem;line-height:1;"
+                        :style="recipe.isFavorited ? 'color:#c0392b;' : 'color:#6b7280;'">
+                    {{ recipe._favLoading ? '…' : '♥' }}
+                  </span>
+                </button>
               </div>
 
               <div class="mb-3">
@@ -107,10 +121,11 @@
               </div>
 
               <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
-                <span>🕐 {{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
-                  ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                <span><span role="img" aria-label="Cook time">🕐</span> {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null">
+                  <span role="img" :aria-label="`Rated ${recipe.averageRating.toFixed(1)} out of 5`" style="color:#b45309;font-weight:600;">★</span>
+                  <span style="color:#b45309;font-weight:600;" aria-hidden="true"> {{ recipe.averageRating.toFixed(1) }}</span>
+                  <span style="color:#6b7280;font-weight:400;">({{ recipe.reviewCount }})</span>
                 </span>
               </div>
 
@@ -135,36 +150,46 @@
 
       <div class="d-flex justify-content-center gap-1 mb-4">
         <button class="btn btn-sm"
-                style="background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;"
+                style="background:#f3f4f6;color:#4b5563;border:none;border-radius:6px;"
+                :aria-label="`Previous page, currently on page ${currentPage}`"
                 :disabled="currentPage === 1"
-                @click="currentPage--">‹</button>
+                @click="currentPage--">
+          <span aria-hidden="true">‹</span>
+        </button>
 
         <template v-for="item in pageItems" :key="item">
-          <span v-if="item === '...'" class="btn btn-sm disabled" style="color:#9ca3af;">…</span>
+          <span v-if="item === '...'" aria-hidden="true" style="color:#6b7280;padding:0.25rem 0.375rem;">…</span>
           <button v-else class="btn btn-sm"
                   :style="item === currentPage
                     ? 'background:#1b4d1b;color:#fff;border:none;border-radius:6px;'
-                    : 'background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;'"
+                    : 'background:#f3f4f6;color:#4b5563;border:none;border-radius:6px;'"
+                  :aria-label="`Page ${item}${item === currentPage ? ' (current page)' : ''}`"
+                  :aria-current="item === currentPage ? 'page' : undefined"
                   @click="currentPage = item">{{ item }}</button>
         </template>
 
         <button class="btn btn-sm"
-                style="background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;"
+                style="background:#f3f4f6;color:#4b5563;border:none;border-radius:6px;"
+                :aria-label="`Next page, currently on page ${currentPage} of ${totalPages}`"
                 :disabled="currentPage === totalPages"
-                @click="currentPage++">›</button>
+                @click="currentPage++">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </template>
 
+    <!-- recipe detail panel — appears below the grid when a card is opened, no separate page needed -->
     <div v-if="selectedRecipe"
          id="recipe-detail"
          class="p-4 rounded mb-4"
          style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
 
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0 fw-semibold" style="color:#1b4d1b;font-size:1.25rem;">{{ selectedRecipe.title }}</h5>
+        <h2 class="mb-0 fw-semibold" style="color:#1b4d1b;font-size:1.25rem;">{{ selectedRecipe.title }}</h2>
         <button class="btn"
-                style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
-                @click="closeRecipe">✕ Close</button>
+                style="background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
+                :aria-label="`Close recipe: ${selectedRecipe.title}`"
+                @click="closeRecipe"><span aria-hidden="true">✕</span> Close</button>
       </div>
 
       <div class="row g-4">
@@ -208,7 +233,7 @@
           </div>
 
           <div class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
-            <h6 class="fw-semibold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Nutrition Per Serving</h6>
+            <h3 class="fw-semibold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Nutrition Per Serving</h3>
             <div style="font-size:0.8125rem;color:#6b7280;">
               <div class="d-flex justify-content-between py-1" style="border-bottom:1px solid #f3f4f6;">
                 <span>Calories</span><span class="fw-semibold" style="color:#1b4d1b;">{{ selectedRecipe.kcal }} kcal</span>
@@ -239,52 +264,66 @@
         </div>
 
         <div class="col-md-4">
-          <h6 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Ingredients</h6>
+          <h3 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Ingredients</h3>
           <ul class="ps-3 mb-4" style="font-size:0.875rem;color:#6b7280;line-height:1.7;">
             <li v-for="(ing, i) in (selectedRecipe.ingredientDetails ?? [])" :key="i">
               {{ ing.quantity }} {{ ing.name }}
             </li>
           </ul>
-          <h6 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Method</h6>
+          <h3 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Method</h3>
           <ol class="ps-3 mb-0" style="font-size:0.875rem;color:#6b7280;line-height:1.7;">
             <li v-for="(step, i) in selectedRecipeSteps" :key="i" class="mb-2">{{ step }}</li>
           </ol>
         </div>
 
         <div class="col-md-4">
-          <h6 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">
+          <h3 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">
             Reviews
             <span v-if="selectedRecipe.averageRating != null" class="ms-2 fw-normal" style="font-size:0.8125rem;color:#6b7280;">
               ★ {{ selectedRecipe.averageRating.toFixed(1) }} ({{ selectedRecipe.reviewCount }})
             </span>
-          </h6>
+          </h3>
 
-          <div v-if="(selectedRecipe.reviews ?? []).length > 0" class="mb-4" style="max-height:340px;overflow-y:auto;">
+          <div v-if="(selectedRecipe.reviews ?? []).length > 0"
+               role="region" aria-label="Recipe reviews"
+               class="mb-4" style="max-height:340px;overflow-y:auto;">
             <div v-for="rev in selectedRecipe.reviews" :key="rev.reviewId"
                  class="p-3 mb-2 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <span style="color:#fbbf24;font-size:0.875rem;">{{ '★'.repeat(rev.rating) }}{{ '☆'.repeat(5 - rev.rating) }}</span>
-                <small style="color:#9ca3af;font-size:0.75rem;">{{ formatDate(rev.createdAt) }}</small>
+                <span role="img" :aria-label="`${rev.rating} out of 5 stars`" style="color:#b45309;font-size:0.875rem;">
+                  <span aria-hidden="true">{{ '★'.repeat(rev.rating) }}{{ '☆'.repeat(5 - rev.rating) }}</span>
+                </span>
+                <small style="color:#6b7280;font-size:0.75rem;">{{ formatDate(rev.createdAt) }}</small>
               </div>
               <div v-if="rev.comment" style="font-size:0.875rem;color:#6b7280;">{{ rev.comment }}</div>
             </div>
           </div>
-          <div v-else class="mb-4" style="color:#9ca3af;font-size:0.875rem;">No reviews yet — be the first!</div>
+          <div v-else class="mb-4" style="color:#6b7280;font-size:0.875rem;">No reviews yet — be the first!</div>
 
           <div v-if="!userReviewExists">
             <div class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="fw-semibold" style="font-size:0.875rem;color:#1b4d1b;">Rate this recipe:</span>
-                <span v-for="star in 5" :key="star"
-                      style="cursor:pointer;font-size:1.25rem;"
-                      :style="star <= reviewDraft.rating ? 'color:#fbbf24;' : 'color:#d1d5db;'"
-                      @click="reviewDraft.rating = star">★</span>
-              </div>
-              <textarea class="form-control mb-2" rows="2"
+              <fieldset class="mb-2" style="border:none;padding:0;margin:0;">
+                <legend class="fw-semibold mb-1" style="font-size:0.875rem;color:#1b4d1b;">Rate this recipe:</legend>
+                <div class="star-rating">
+                  <label v-for="star in 5" :key="star" :for="`star-${selectedRecipe?.recipeId}-${star}`">
+                    <input type="radio"
+                           :id="`star-${selectedRecipe?.recipeId}-${star}`"
+                           name="recipe-rating"
+                           :value="star"
+                           v-model.number="reviewDraft.rating"
+                           class="visually-hidden" />
+                    <span aria-hidden="true"
+                          :style="star <= reviewDraft.rating ? 'color:#b45309;' : 'color:#6b7280;'">★</span>
+                    <span class="visually-hidden">{{ star }} star{{ star > 1 ? 's' : '' }}</span>
+                  </label>
+                </div>
+              </fieldset>
+              <label for="review-comment" class="visually-hidden">Comment (optional)</label>
+              <textarea id="review-comment" class="form-control mb-2" rows="2"
                         placeholder="Leave a comment (optional)…"
                         v-model="reviewDraft.comment"
                         style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;resize:none;"></textarea>
-              <div v-if="reviewError" class="mb-2" style="color:#d94f4f;font-size:0.875rem;">{{ reviewError }}</div>
+              <div v-if="reviewError" role="alert" class="mb-2" style="color:#d94f4f;font-size:0.875rem;">{{ reviewError }}</div>
               <button class="btn fw-semibold w-100"
                       style="background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
                       :disabled="reviewDraft.rating === 0 || reviewSubmitting"
@@ -293,7 +332,7 @@
               </button>
             </div>
           </div>
-          <div v-else class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;color:#9ca3af;font-size:0.875rem;">
+          <div v-else class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;color:#6b7280;font-size:0.875rem;">
             You have already reviewed this recipe.
           </div>
         </div>
@@ -301,13 +340,20 @@
       </div>
     </div>
 
+    <!-- diary modal in a Teleport so it sits on top of everything without z-index fights -->
     <Teleport to="body">
       <div v-if="pendingRecipe"
            style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1050;display:flex;align-items:center;justify-content:center;"
-           @click.self="pendingRecipe = null">
-        <div class="p-4 rounded bg-white" style="min-width:300px;max-width:380px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
-          <h6 class="fw-semibold mb-1" style="color:#1b4d1b;">Add to Diary</h6>
-          <p class="mb-3" style="color:#6b7280;font-size:0.875rem;">{{ pendingRecipe.title }} — choose a meal:</p>
+           @click.self="pendingRecipe = null"
+           @keydown="diaryModalKeydown">
+        <div ref="diaryModalRef"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="diary-modal-title"
+             aria-describedby="diary-modal-desc"
+             class="p-4 rounded bg-white" style="min-width:300px;max-width:380px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+          <h2 id="diary-modal-title" class="fw-semibold mb-1" style="color:#1b4d1b;font-size:1.1rem;">Add to Diary</h2>
+          <p id="diary-modal-desc" class="mb-3" style="color:#6b7280;font-size:0.875rem;">{{ pendingRecipe.title }} — choose a meal:</p>
           <div class="d-grid gap-2">
             <button v-for="meal in MEAL_OPTIONS" :key="meal.id"
                     class="btn fw-semibold"
@@ -317,7 +363,7 @@
             </button>
           </div>
           <button class="btn w-100 mt-3"
-                  style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem;border-radius:8px;font-size:0.875rem;"
+                  style="background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem;border-radius:8px;font-size:0.875rem;"
                   @click="pendingRecipe = null">Cancel</button>
         </div>
       </div>
@@ -331,11 +377,14 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiFetch, currentUser } from '../auth.js'
 import { addRecipeToDiary } from '../diaryStore.js'
+import { useFocusTrap } from '../composables/useFocusTrap.js'
+import { useToast } from '../composables/useToast.js'
 
 const isProfessional = computed(() => currentUser.value.role === 'professional')
 
 const route = useRoute()
 const router = useRouter()
+const { addToast } = useToast()
 
 const PAGE_SIZE = 6
 
@@ -358,6 +407,13 @@ const activeTab = ref('all')
 const currentPage = ref(1)
 const selectedRecipe = ref(null)
 const pendingRecipe = ref(null)
+const diaryModalRef = ref(null)
+const isDiaryModalOpen = computed(() => pendingRecipe.value !== null)
+const { handleKeydown: diaryModalKeydown } = useFocusTrap(
+  isDiaryModalOpen,
+  diaryModalRef,
+  () => { pendingRecipe.value = null },
+)
 
 const reviewDraft = ref({ rating: 0, comment: '' })
 const reviewSubmitting = ref(false)
@@ -400,6 +456,7 @@ async function handleRouteRecipeId() {
   }
 }
 
+// when navigating from the dashboard recommendations, the URL has ?highlight=id — scroll straight to that recipe
 async function handleHighlight() {
   const id = Number(route.query.highlight)
   if (!id) return
@@ -512,6 +569,7 @@ const pagedRecipes = computed(() => {
   return filteredRecipes.value.slice(start, start + PAGE_SIZE)
 })
 
+// smart pagination — shows 1, current±1, last, and "..." in between to keep the bar compact
 const pageItems = computed(() => {
   const total = totalPages.value
   const cur = currentPage.value
@@ -531,6 +589,7 @@ const selectedRecipeSteps = computed(() => {
   return selectedRecipe.value.instructions.split(/\n+/).filter(s => s.trim())
 })
 
+// hides the review form if the user has already reviewed this recipe — backend enforces it too, this just cleans up the UI
 const userReviewExists = computed(() => {
   if (!selectedRecipe.value) return false
   const uid = currentUser.value.userId
@@ -542,11 +601,32 @@ async function viewRecipe(recipe) {
   reviewDraft.value = { rating: 0, comment: '' }
   reviewError.value = ''
 
-  // Update URL with recipe ID
   router.push({ path: `/recipes/${recipe.recipeId}`, hash: '#recipe-detail' })
 
   await nextTick()
-  document.getElementById('recipe-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  await nextTick()
+  const detailEl = document.getElementById('recipe-detail')
+  detailEl?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const heading = detailEl?.querySelector('h3')
+  if (heading) {
+    heading.setAttribute('tabindex', '-1')
+    heading.focus({ preventScroll: true })
+  }
+}
+
+function handleTablistKeydown(e) {
+  const idx = tabs.findIndex(t => t.id === activeTab.value)
+  if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    const next = tabs[(idx + 1) % tabs.length]
+    switchTab(next.id)
+    document.getElementById(`tab-${next.id}`)?.focus()
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    const prev = tabs[(idx - 1 + tabs.length) % tabs.length]
+    switchTab(prev.id)
+    document.getElementById(`tab-${prev.id}`)?.focus()
+  }
 }
 
 function closeRecipe() {
@@ -581,8 +661,9 @@ function pickMeal(recipe) {
 async function confirmAdd(mealId) {
   try {
     await addRecipeToDiary(pendingRecipe.value, mealId)
+    addToast(`${pendingRecipe.value.title} added to diary`)
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   } finally {
     pendingRecipe.value = null
   }
@@ -595,19 +676,19 @@ async function toggleFavorite(recipe) {
     const res = await apiFetch(`/api/recipes/${recipe.recipeId}/favorite`, { method: 'POST' })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      alert(data.error || 'Failed to update favourite')
+      addToast(data.error || 'Failed to update favourite', { type: 'error' })
       return
     }
     recipe.isFavorited = data.favorite?.favorited ?? !recipe.isFavorited
     if (selectedRecipe.value?.recipeId === recipe.recipeId) {
       selectedRecipe.value.isFavorited = recipe.isFavorited
     }
-    // If on favourites tab and unfavorited, remove from list
+    addToast(recipe.isFavorited ? 'Added to favourites' : 'Removed from favourites')
     if (activeTab.value === 'fav' && !recipe.isFavorited) {
       recipes.value = recipes.value.filter(r => r.recipeId !== recipe.recipeId)
     }
   } catch {
-    alert('Network error — could not update favourite')
+    addToast('Network error — could not update favourite', { type: 'error' })
   } finally {
     recipe._favLoading = false
   }
@@ -620,19 +701,19 @@ async function toggleUsed(recipe) {
     const res = await apiFetch(`/api/recipes/${recipe.recipeId}/usage`, { method: 'POST' })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      alert(data.error || 'Failed to update usage')
+      addToast(data.error || 'Failed to update usage', { type: 'error' })
       return
     }
     recipe.isUsed = data.usage?.used ?? !recipe.isUsed
     if (selectedRecipe.value?.recipeId === recipe.recipeId) {
       selectedRecipe.value.isUsed = recipe.isUsed
     }
-    // If on used tab and unmarked, remove from list
+    addToast(recipe.isUsed ? 'Marked as used' : 'Removed from used')
     if (activeTab.value === 'used' && !recipe.isUsed) {
       recipes.value = recipes.value.filter(r => r.recipeId !== recipe.recipeId)
     }
   } catch {
-    alert('Network error — could not update usage')
+    addToast('Network error — could not update usage', { type: 'error' })
   } finally {
     recipe._usedLoading = false
   }
@@ -666,6 +747,7 @@ async function submitReview() {
       listEntry.averageRating = selectedRecipe.value.averageRating
       listEntry.reviewCount = selectedRecipe.value.reviewCount
     }
+    addToast('Review submitted')
     reviewDraft.value = { rating: 0, comment: '' }
   } catch {
     reviewError.value = 'Network error'

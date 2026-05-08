@@ -2,6 +2,7 @@
 <template>
   <div>
 
+    <!-- hero section — the background image carries the visual weight, text sits over it with text-shadow for legibility -->
     <section class="py-5" style="background:url('/src/assets/diet-menu-healthy-vegetarian-salad-fresh-vegetables-tomatoes-cucumber-sweet-peppers-porridge-bowl-vegan-food-flat-lay-top-view_2829-19941.png') center/cover no-repeat;min-height:75vh;display:flex;align-items:flex-end;position:relative;background-color:#f5f5f5;">
       <div class="container" style="position:relative;z-index:1;padding-bottom:4rem;">
         <div class="row align-items-center">
@@ -13,9 +14,9 @@
             <p style="color:#2d5a2d;font-size:1rem;font-weight:400;max-width:460px;line-height:1.7;margin-bottom:2.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-shadow:0 0 25px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.7), 1px 1px 3px rgba(255,255,255,0.8);">
               Track your meals, analyze your nutrition, and get personalized guidance from certified professionals.
             </p>
-            <a href="#auth-section" style="color:#1b4d1b;font-weight:500;font-size:0.95rem;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.02em;display:inline-flex;align-items:center;gap:0.5rem;border-bottom:1px solid #1b4d1b;padding-bottom:2px;transition:opacity 0.2s;text-shadow:0 0 25px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.9), 1px 1px 3px rgba(255,255,255,0.8);" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">
+            <a href="#auth-section" style="color:#1b4d1b;font-weight:500;font-size:0.95rem;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:0.02em;display:inline-flex;align-items:center;gap:0.5rem;border-bottom:1px solid #1b4d1b;padding-bottom:2px;transition:opacity 0.2s;text-shadow:0 0 25px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.9), 1px 1px 3px rgba(255,255,255,0.8);" @mouseenter="$event.currentTarget.style.opacity='0.6'" @mouseleave="$event.currentTarget.style.opacity='1'">
               Get Started
-              <span style="font-size:1.2rem;">→</span>
+              <span aria-hidden="true" style="font-size:1.2rem;">→</span>
             </a>
           </div>
 
@@ -26,6 +27,7 @@
       </div>
     </section>
 
+    <!-- feature highlight cards — clicking any card opens the detail modal below -->
     <section id="features" class="py-5" style="background:#f9fdf9;">
       <div class="container">
         <div class="text-center mb-5">
@@ -36,43 +38,59 @@
         <div class="row g-4">
           <div class="col-md-6 col-lg-3" v-for="feature in features" :key="feature.title">
             <div class="h-100"
+                 role="button"
+                 tabindex="0"
+                 :aria-label="`${feature.title}: learn more`"
                  :style="`background:url('${feature.bgImage}') center/cover;border-radius:12px;padding:2rem 1.5rem;cursor:pointer;transition:all 0.3s;border:1px solid #d4e7d4;box-shadow:0 2px 8px rgba(27,77,27,0.1);position:relative;overflow:hidden;`"
                  @click="activeFeature = feature"
+                 @keydown.enter.space.prevent="activeFeature = feature"
                  @mouseenter="$event.currentTarget.style.transform='translateY(-8px)';$event.currentTarget.style.boxShadow='0 12px 32px rgba(27,77,27,0.2)'"
-                 @mouseleave="$event.currentTarget.style.transform='translateY(0)';$event.currentTarget.style.boxShadow='0 2px 8px rgba(27,77,27,0.1)'">
+                 @mouseleave="$event.currentTarget.style.transform='translateY(0)';$event.currentTarget.style.boxShadow='0 2px 8px rgba(27,77,27,0.1)'"
+                 @focusin="$event.currentTarget.style.transform='translateY(-8px)';$event.currentTarget.style.boxShadow='0 12px 32px rgba(27,77,27,0.2)'"
+                 @focusout="$event.currentTarget.style.transform='translateY(0)';$event.currentTarget.style.boxShadow='0 2px 8px rgba(27,77,27,0.1)'">
               <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(249,253,249,0.85);backdrop-filter:blur(2px);"></div>
               <div style="position:relative;z-index:1;">
-                <h5 style="color:#1b4d1b;font-weight:500;margin-bottom:1rem;font-size:1.2rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ feature.title }}</h5>
+                <h3 style="color:#1b4d1b;font-weight:500;margin-bottom:1rem;font-size:1.2rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ feature.title }}</h3>
                 <ul class="list-unstyled mb-0">
                   <li v-for="item in feature.items.slice(0, 3)" :key="item" class="mb-2" style="color:#2d5a2d;font-size:0.9rem;display:flex;align-items:start;gap:0.5rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                    <span style="color:#2e7d32;font-weight:700;">•</span>
+                    <span aria-hidden="true" style="color:#2e7d32;font-weight:700;">•</span>
                     <span>{{ item }}</span>
                   </li>
                 </ul>
-                <div class="mt-3" style="color:#1b4d1b;font-size:0.85rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Learn more →</div>
+                <div class="mt-3" aria-hidden="true" style="color:#1b4d1b;font-size:0.85rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Learn more →</div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- teleported to body so z-index stacking with the navbar isn't a problem -->
         <Teleport to="body">
           <div v-if="activeFeature"
                style="position:fixed;inset:0;background:rgba(27,77,27,0.4);backdrop-filter:blur(4px);z-index:1050;display:flex;align-items:center;justify-content:center;"
-               @click.self="activeFeature = null">
-            <div style="background:#ffffff;border-radius:12px;max-width:500px;width:90%;padding:2.5rem;position:relative;box-shadow:0 20px 60px rgba(27,77,27,0.3);">
+               @click.self="activeFeature = null"
+               @keydown="featureModalKeydown">
+            <div ref="featureModalRef"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="feature-modal-title"
+                 aria-describedby="feature-modal-desc"
+                 style="background:#ffffff;border-radius:12px;max-width:500px;width:90%;padding:2.5rem;position:relative;box-shadow:0 20px 60px rgba(27,77,27,0.3);">
               <button @click="activeFeature = null"
+                      aria-label="Close dialog"
                       style="position:absolute;top:16px;right:16px;background:#f9fdf9;border:none;font-size:1.5rem;color:#2d5a2d;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
-                      onmouseover="this.style.background='#e8f5e8';this.style.color='#1b4d1b'"
-                      onmouseout="this.style.background='#f9fdf9';this.style.color='#2d5a2d'">×</button>
-              <h4 class="fw-bold mb-2" style="color:#1b4d1b;font-size:1.8rem;font-family:Georgia,'Times New Roman',serif;font-weight:400;">{{ activeFeature.title }}</h4>
-              <p class="mb-4" style="color:#2d5a2d;font-size:1rem;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ activeFeature.detail }}</p>
+                      @mouseenter="$event.currentTarget.style.background='#e8f5e8';$event.currentTarget.style.color='#1b4d1b'"
+                      @mouseleave="$event.currentTarget.style.background='#f9fdf9';$event.currentTarget.style.color='#2d5a2d'">
+                <span aria-hidden="true">×</span>
+              </button>
+              <h2 id="feature-modal-title" class="fw-bold mb-2" style="color:#1b4d1b;font-size:1.8rem;font-family:Georgia,'Times New Roman',serif;font-weight:400;">{{ activeFeature.title }}</h2>
+              <p id="feature-modal-desc" class="mb-4" style="color:#2d5a2d;font-size:1rem;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ activeFeature.detail }}</p>
               <ul class="list-unstyled mb-4">
                 <li v-for="item in activeFeature.items" :key="item" class="mb-3 d-flex align-items-start gap-2">
-                  <span style="color:#2e7d32;font-weight:700;font-size:1.2rem;">•</span>
+                  <span aria-hidden="true" style="color:#2e7d32;font-weight:700;font-size:1.2rem;">•</span>
                   <span style="color:#2d5a2d;font-size:0.95rem;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ item }}</span>
                 </li>
               </ul>
-              <a href="#auth-section" class="btn w-100" @click="activeFeature = null" style="background:#1b4d1b;color:#ffffff;font-weight:500;padding:0.9rem;border-radius:6px;border:none;font-size:1rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" onmouseover="this.style.background='#2e7d32'" onmouseout="this.style.background='#1b4d1b'">Get Started</a>
+              <a href="#auth-section" class="btn w-100" @click="activeFeature = null" style="background:#1b4d1b;color:#ffffff;font-weight:500;padding:0.9rem;border-radius:6px;border:none;font-size:1rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" @mouseenter="$event.currentTarget.style.background='#2e7d32'" @mouseleave="$event.currentTarget.style.background='#1b4d1b'">Get Started</a>
             </div>
           </div>
         </Teleport>
@@ -81,6 +99,7 @@
 
     <div style="height:1px;background:linear-gradient(to right, transparent, #d4e7d4 20%, #d4e7d4 80%, transparent);margin:0 auto;max-width:80%;"></div>
 
+    <!-- steps walkthrough — helps new users understand what they're signing up for before they hit the form -->
     <section class="py-5" style="background:#ffffff;position:relative;">
       <div class="container">
         <div class="text-center mb-5">
@@ -90,11 +109,11 @@
         <div class="row g-4" style="position:relative;">
           <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:#d4e7d4;z-index:0;transform:translateY(-50%);"></div>
           <div class="col-md-6 col-lg-3" v-for="step in steps" :key="step.num">
-            <div class="h-100 text-center" style="background:#ffffff;border-radius:12px;padding:2rem 1.5rem;border:1px solid #d4e7d4;transition:all 0.3s;position:relative;z-index:1;box-shadow:0 2px 8px rgba(27,77,27,0.06);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 8px 20px rgba(27,77,27,0.12)';this.style.borderColor='#2e7d32'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(27,77,27,0.06)';this.style.borderColor='#d4e7d4'">
+            <div class="h-100 text-center" style="background:#ffffff;border-radius:12px;padding:2rem 1.5rem;border:1px solid #d4e7d4;transition:all 0.3s;position:relative;z-index:1;box-shadow:0 2px 8px rgba(27,77,27,0.06);" @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 20px rgba(27,77,27,0.12)';$event.currentTarget.style.borderColor='#2e7d32'" @mouseleave="$event.currentTarget.style.transform='translateY(0)';$event.currentTarget.style.boxShadow='0 2px 8px rgba(27,77,27,0.06)';$event.currentTarget.style.borderColor='#d4e7d4'">
               <div style="width:55px;height:55px;background:#ffffff;border:1px solid #2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;position:relative;">
                 <span style="font-size:1.5rem;font-weight:500;color:#2e7d32;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.num }}</span>
               </div>
-              <h5 class="mb-3" style="color:#1b4d1b;font-size:1.2rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.title }}</h5>
+              <h3 class="mb-3" style="color:#1b4d1b;font-size:1.2rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.title }}</h3>
               <p class="mb-3" style="color:#2d5a2d;font-size:0.9rem;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.desc }}</p>
               <span style="background:#e8f5e8;color:#1b5e20;padding:0.35rem 0.9rem;border-radius:16px;display:inline-block;font-weight:500;font-size:0.8rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ step.note }}</span>
             </div>
@@ -105,6 +124,7 @@
 
     <div style="height:1px;background:linear-gradient(to right, transparent, #d4e7d4 20%, #d4e7d4 80%, transparent);margin:0 auto;max-width:80%;"></div>
 
+    <!-- auth section — login and signup side by side so users can see both without scrolling -->
     <section id="auth-section" class="py-5" style="background:#ffffff;">
       <div class="container">
         <div class="text-center mb-5">
@@ -115,122 +135,150 @@
         <div class="row g-4 justify-content-center">
 
           <div class="col-md-6 col-lg-5">
-            <div style="background:#ffffff;border-radius:12px;padding:2.5rem;box-shadow:0 4px 20px rgba(27,77,27,0.08);border:1px solid #d4e7d4;">
+            <div id="login-panel" style="background:#ffffff;border-radius:12px;padding:2.5rem;box-shadow:0 4px 20px rgba(27,77,27,0.08);border:1px solid #d4e7d4;">
               <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #f9fdf9;">
-                <h5 class="mb-1" style="color:#1b4d1b;font-size:1.5rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Welcome Back</h5>
+                <h3 class="mb-1" style="color:#1b4d1b;font-size:1.5rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Welcome Back</h3>
                 <p style="color:#2d5a2d;font-size:0.9rem;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Log in to your account</p>
               </div>
 
+              <form @submit.prevent="handleLogin">
               <div class="mb-3">
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Email Address</label>
-                <input type="email" class="form-control"
+                <label for="login-email" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Email Address</label>
+                <input id="login-email" type="email" class="form-control"
                        placeholder="user@example.com"
+                       autocomplete="email"
                        v-model="loginForm.email"
-                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                       onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
-                       onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
+                       :aria-invalid="!!loginError ? 'true' : undefined"
+                       aria-describedby="login-error"
+                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
               </div>
 
               <div class="mb-2">
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Password</label>
-                <input type="password" class="form-control"
+                <label for="login-password" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Password</label>
+                <input id="login-password" type="password" class="form-control"
                        placeholder="••••••••"
+                       autocomplete="current-password"
                        v-model="loginForm.password"
-                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                       onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
-                       onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
+                       :aria-invalid="!!loginError ? 'true' : undefined"
+                       aria-describedby="login-error"
+                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
               </div>
 
-              <div v-if="loginError" style="background:#ffebee;border:1px solid #ef5350;border-radius:6px;padding:0.75rem 1rem;margin-top:1rem;margin-bottom:0;">
+              <div id="login-error" v-show="loginError" role="alert" aria-atomic="true"
+                   style="background:#ffebee;border:1px solid #ef5350;border-radius:6px;padding:0.75rem 1rem;margin-top:1rem;margin-bottom:0;">
                 <span style="color:#c62828;font-size:0.9rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ loginError }}</span>
               </div>
 
-              <button class="w-100 mt-4" @click="handleLogin" :disabled="loginLoading"
+              <button type="submit" class="w-100 mt-4" :disabled="loginLoading"
+                      :aria-busy="loginLoading ? 'true' : undefined"
                       style="background:#1b4d1b;color:#ffffff;font-weight:500;padding:0.9rem;border-radius:6px;border:none;font-size:1rem;transition:all 0.2s;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                      onmouseover="if(!this.disabled){this.style.background='#2e7d32'}"
-                      onmouseout="this.style.background='#1b4d1b'">
-                <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                      @mouseenter="$event.currentTarget.style.background = $event.currentTarget.disabled ? '#1b4d1b' : '#2e7d32'"
+                      @mouseleave="$event.currentTarget.style.background='#1b4d1b'">
+                <span v-if="loginLoading" aria-hidden="true" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loginLoading ? 'Logging In...' : 'Log In' }}
               </button>
+              </form>
             </div>
           </div>
 
           <div class="col-md-6 col-lg-5">
-            <div style="background:#ffffff;border-radius:12px;padding:2.5rem;box-shadow:0 4px 20px rgba(27,77,27,0.08);border:1px solid #d4e7d4;">
+            <div id="signup-panel" style="background:#ffffff;border-radius:12px;padding:2.5rem;box-shadow:0 4px 20px rgba(27,77,27,0.08);border:1px solid #d4e7d4;">
               <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #f9fdf9;">
-                <h5 class="mb-1" style="color:#1b4d1b;font-size:1.5rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Create Account</h5>
+                <h3 class="mb-1" style="color:#1b4d1b;font-size:1.5rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Create Account</h3>
                 <p style="color:#2d5a2d;font-size:0.9rem;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Join us for free today</p>
               </div>
 
+              <form @submit.prevent="handleSignup">
+              <p style="color:#6b7280;font-size:0.8rem;margin-bottom:1rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                Fields marked <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden">with an asterisk</span> are required.
+              </p>
               <div class="mb-3">
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Full Name</label>
-                <input type="text" class="form-control"
+                <label for="signup-name" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Full Name <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+                <input id="signup-name" type="text" class="form-control"
                        placeholder="Your name"
+                       autocomplete="name"
                        v-model="signupForm.name"
-                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                       onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
-                       onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
+                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
               </div>
 
               <div class="mb-3">
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Email Address</label>
-                <input type="email" class="form-control"
+                <label for="signup-email" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Email Address <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+                <input id="signup-email" type="email" class="form-control"
                        placeholder="user@example.com"
+                       autocomplete="email"
                        v-model="signupForm.email"
-                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                       onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
-                       onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
+                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
               </div>
 
               <div class="mb-3">
-                <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Password</label>
-                <input type="password" class="form-control"
+                <label for="signup-password" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.9rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Password <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+                <input id="signup-password" type="password" class="form-control"
                        placeholder="Min. 8 characters"
+                       autocomplete="new-password"
                        v-model="signupForm.password"
                        maxlength="30"
-                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                       onfocus="this.style.borderColor='#2e7d32';this.style.boxShadow='0 0 0 3px rgba(46,125,50,0.1)'"
-                       onblur="this.style.borderColor='#d4e7d4';this.style.boxShadow='none'">
-                
-                <div v-if="signupForm.password" class="mt-2" style="font-size:0.8rem;">
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">8-30 characters</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">One uppercase letter</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">One lowercase letter</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">One number</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">One special character (!@#$%^&*...)</span>
-                  </div>
-                </div>
+                       aria-describedby="pwd-requirements"
+                       :aria-invalid="signupForm.password && !isPasswordValid ? 'true' : undefined"
+                       style="border:1px solid #d4e7d4;border-radius:6px;padding:0.75rem 1rem;font-size:0.95rem;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+                <ul v-show="signupForm.password" id="pwd-requirements"
+                    class="list-unstyled mt-2 mb-0" style="font-size:0.8rem;">
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <span aria-hidden="true" :style="`color:${passwordValidation.length ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#4b5563'}`">
+                      8–30 characters
+                      <span class="visually-hidden">{{ passwordValidation.length ? '(met)' : '(not met)' }}</span>
+                    </span>
+                  </li>
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <span aria-hidden="true" :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#4b5563'}`">
+                      One uppercase letter
+                      <span class="visually-hidden">{{ passwordValidation.uppercase ? '(met)' : '(not met)' }}</span>
+                    </span>
+                  </li>
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <span aria-hidden="true" :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#4b5563'}`">
+                      One lowercase letter
+                      <span class="visually-hidden">{{ passwordValidation.lowercase ? '(met)' : '(not met)' }}</span>
+                    </span>
+                  </li>
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <span aria-hidden="true" :style="`color:${passwordValidation.number ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#4b5563'}`">
+                      One number
+                      <span class="visually-hidden">{{ passwordValidation.number ? '(met)' : '(not met)' }}</span>
+                    </span>
+                  </li>
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <span aria-hidden="true" :style="`color:${passwordValidation.special ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#4b5563'}`">
+                      One special character (!@#$%^&amp;*…)
+                      <span class="visually-hidden">{{ passwordValidation.special ? '(met)' : '(not met)' }}</span>
+                    </span>
+                  </li>
+                </ul>
               </div>
 
-
-              <div v-if="signupError" style="background:#ffebee;border:1px solid #ef5350;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
+              <div v-if="signupError" id="signup-error" role="alert"
+                   style="background:#ffebee;border:1px solid #ef5350;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
                 <span style="color:#c62828;font-size:0.9rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ signupError }}</span>
               </div>
-              <div v-if="signupSuccess" style="background:#e8f5e8;border:1px solid #2e7d32;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
+              <div v-if="signupSuccess" role="status" aria-live="polite"
+                   style="background:#e8f5e8;border:1px solid #2e7d32;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
                 <span style="color:#1b5e20;font-size:0.9rem;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">{{ signupSuccess }}</span>
               </div>
 
-              <button class="w-100" @click="handleSignup" :disabled="signupLoading"
+              <button type="submit" class="w-100" :disabled="signupLoading"
+                      :aria-busy="signupLoading ? 'true' : undefined"
                       style="background:#1b4d1b;color:#ffffff;font-weight:500;padding:0.9rem;border-radius:6px;border:none;font-size:1rem;transition:all 0.2s;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
-                      onmouseover="if(!this.disabled){this.style.background='#2e7d32'}"
-                      onmouseout="this.style.background='#1b4d1b'">
-                <span v-if="signupLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                      @mouseenter="$event.currentTarget.style.background = $event.currentTarget.disabled ? '#1b4d1b' : '#2e7d32'"
+                      @mouseleave="$event.currentTarget.style.background='#1b4d1b'">
+                <span v-if="signupLoading" aria-hidden="true" class="spinner-border spinner-border-sm me-2"></span>
                 {{ signupLoading ? 'Creating Account...' : 'Create My Account' }}
               </button>
+              </form>
             </div>
           </div>
 
@@ -245,6 +293,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, authError } from '../auth.js'
+import { useFocusTrap } from '../composables/useFocusTrap.js'
 
 const router = useRouter()
 
@@ -257,6 +306,7 @@ const signupLoading = ref(false)
 const signupError = ref('')
 const signupSuccess = ref('')
 
+// all five criteria must pass before the submit button becomes active
 const passwordValidation = computed(() => {
   const pwd = signupForm.value.password
   return {
@@ -273,7 +323,7 @@ const isPasswordValid = computed(() => {
 })
 
 async function handleLogin() {
-  loginError.value = ''
+  loginError.value = '' // clear the old error immediately so it doesn't linger
   loginLoading.value = true
   try {
     const ok = await login(loginForm.value.email, loginForm.value.password)
@@ -292,6 +342,7 @@ function isValidEmail(email) {
   return atIndex > 0 && atIndex < email.length - 1
 }
 
+// validate locally first so the user gets instant feedback before we hit the API
 async function handleSignup() {
   signupError.value = ''
   signupSuccess.value = ''
@@ -321,6 +372,13 @@ async function handleSignup() {
 }
 
 const activeFeature = ref(null)
+const featureModalRef = ref(null)
+const isFeatureModalOpen = computed(() => activeFeature.value !== null)
+const { handleKeydown: featureModalKeydown } = useFocusTrap(
+  isFeatureModalOpen,
+  featureModalRef,
+  () => { activeFeature.value = null },
+)
 
 const features = [
   {

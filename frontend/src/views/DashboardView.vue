@@ -4,13 +4,20 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Welcome back</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Welcome back</h1>
         <div class="d-flex align-items-center gap-2">
           <button class="btn" @click="handlePrevDay"
-                  style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">‹</button>
+                  aria-label="Previous day"
+                  style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;">
+            <span aria-hidden="true">‹</span>
+          </button>
           <span class="rounded px-3 py-1" style="background:#fff;border:1px solid #1b4d1b;font-size:0.875rem;font-weight:500;color:#1b4d1b;">{{ formattedDate }}</span>
+          <span aria-live="polite" aria-atomic="true" class="visually-hidden">{{ dateAnnouncement }}</span>
           <button class="btn" @click="handleNextDay" :disabled="isToday"
-                  :style="isToday ? 'background:#e5e7eb;color:#9ca3af;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;'">›</button>
+                  :aria-label="isToday ? 'Next day (today is the most recent)' : 'Next day'"
+                  :style="isToday ? 'background:#e5e7eb;color:#6b7280;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.625rem;border-radius:8px;font-size:0.875rem;font-weight:600;'">
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
       </div>
       <RouterLink :to="`/diary?date=${referenceDate}`" class="btn fw-semibold"
@@ -19,10 +26,11 @@
       </RouterLink>
     </div>
 
-    <div v-if="error" class="alert alert-danger mb-4" style="border-radius:8px;">{{ error }}</div>
+    <div v-if="error" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ error }}</div>
 
+    <!-- pending professional invitations — shown above everything else so they're hard to miss -->
     <div v-if="pendingInvites.length > 0" class="mb-4">
-      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Pending Invitations</h6>
+      <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Pending Invitations</h2>
       <div v-for="inv in pendingInvites" :key="inv.id"
            class="p-3 mb-3 d-flex flex-row align-items-center justify-content-between gap-3 rounded"
            style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
@@ -32,19 +40,21 @@
           </div>
           <div>
             <div class="fw-bold" style="font-size:0.875rem;color:#1b4d1b;">{{ inv.professional?.fullName ?? 'A nutritionist' }}</div>
-            <div style="font-size:0.75rem;color:#6b7280;">{{ inv.professional?.email }}</div>
-            <div style="font-size:0.7rem;color:#6b7280;">Wants to be your assigned nutrition professional.</div>
+            <div style="font-size:0.75rem;color:#4b5563;">{{ inv.professional?.email }}</div>
+            <div style="font-size:0.7rem;color:#4b5563;">Wants to be your assigned nutrition professional.</div>
           </div>
         </div>
         <div class="d-flex gap-2 flex-shrink-0">
           <button class="btn btn-sm fw-semibold" :disabled="inv._busy"
+                  :aria-label="`Accept invitation from ${inv.professional?.fullName ?? 'nutritionist'}`"
                   @click="respondToInvite(inv, 'accept')"
                   style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
             {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
           </button>
           <button class="btn btn-sm" :disabled="inv._busy"
+                  :aria-label="`Decline invitation from ${inv.professional?.fullName ?? 'nutritionist'}`"
                   @click="respondToInvite(inv, 'reject')"
-                  style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
+                  style="background:#fde8e8;border:1px solid #d99;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
             {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
           </button>
         </div>
@@ -53,11 +63,12 @@
 
     <div class="row g-3 mb-4">
 
+      <!-- calorie ring and macro mini-bars for today -->
       <div class="col-md-5">
         <div class="h-100 p-3 rounded"
              style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-          <h6 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">Calories Today</h6>
-          <div v-if="loading" class="text-center text-muted py-3"><small>Loading…</small></div>
+          <h2 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">Calories Today</h2>
+          <div v-if="loading" role="status" aria-live="polite" class="text-center text-muted py-3"><small>Loading…</small></div>
           <template v-else>
             <div class="d-flex justify-content-between align-items-end mb-3">
               <div>
@@ -76,7 +87,13 @@
                 </span>
               </div>
             </div>
-            <div class="mb-3" style="height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden;">
+            <div class="mb-3"
+                 role="progressbar"
+                 :aria-valuenow="Math.min(Math.round(caloriePercent), 100)"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 :aria-label="`Calories: ${Math.round(caloriesToday)} of ${calorieBudget} kcal`"
+                 style="height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden;">
               <div style="height:100%;border-radius:6px;transition:width 0.5s;"
                    :style="`width:${Math.min(caloriePercent, 100)}%;background:${caloriePercent > 100 ? '#d94f4f' : '#2e7d32'};`">
               </div>
@@ -86,14 +103,19 @@
                 <div class="p-2 rounded" style="background:#f9fafb;">
                   <div class="fw-bold mb-1" style="color:#1b4d1b;font-size:1rem;">{{ m.amount }}{{ m.unit }}</div>
                   <div style="font-size:0.75rem;color:#6b7280;">{{ m.label }}</div>
-                  <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-top:6px;overflow:hidden;">
+                  <div role="progressbar"
+                       :aria-valuenow="m.pct"
+                       aria-valuemin="0"
+                       aria-valuemax="100"
+                       :aria-label="`${m.label}: ${m.amount}${m.unit} (${m.pct}% of goal)`"
+                       style="height:3px;background:#e5e7eb;border-radius:2px;margin-top:6px;overflow:hidden;">
                     <div style="height:100%;border-radius:2px;background:#2e7d32;transition:width 0.5s;"
                          :style="`width:${m.pct}%;`"></div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="text-center mt-2" style="font-size:0.75rem;color:#9ca3af;">
+            <div class="text-center mt-2" style="font-size:0.75rem;color:#6b7280;">
               Daily goal: {{ calorieBudget }} kcal
             </div>
           </template>
@@ -103,66 +125,86 @@
       <div class="col-md-7">
         <div class="h-100 p-3 rounded"
              style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b">
-          <h6 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">This Week's Calories</h6>
-          <div v-if="loading" class="text-center text-muted py-3"><small>Loading…</small></div>
+          <h2 class="mb-3" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;letter-spacing:0.01em;">This Week's Calories</h2>
+          <div v-if="loading" role="status" aria-live="polite" class="text-center text-muted py-3"><small>Loading…</small></div>
           <template v-else>
-            <div class="d-flex align-items-end gap-2" style="height:100px;">
-              <div v-for="bar in weekBars" :key="bar.date"
-                   class="d-flex flex-column align-items-center"
-                   style="flex:1;">
-                <span style="font-size:0.7rem;margin-bottom:4px;font-weight:600;"
-                      :style="`color:${bar.over ? '#d94f4f' : bar.val === '-' ? '#d1d5db' : '#1b4d1b'};`">
-                  {{ bar.val }}
+            <!-- visual bar chart — screen readers use the accessible table that follows -->
+            <div aria-hidden="true">
+              <div class="d-flex align-items-end gap-2" style="height:100px;">
+                <div v-for="bar in weekBars" :key="bar.date"
+                     class="d-flex flex-column align-items-center"
+                     style="flex:1;">
+                  <span style="font-size:0.7rem;margin-bottom:4px;font-weight:600;"
+                        :style="`color:${bar.over ? '#d94f4f' : bar.val === '-' ? '#6b7280' : '#1b4d1b'};`">
+                    {{ bar.val }}
+                  </span>
+                  <div style="width:100%;border-radius:6px 6px 0 0;transition:height 0.4s;min-height:4px;"
+                       :style="`height:${bar.height}px;background:${bar.isToday ? '#2e7d32' : bar.over ? '#fecaca' : '#f3f4f6'};`">
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end mt-2">
+                <span style="font-size:0.75rem;color:#6b7280;">
+                  Goal: {{ calorieBudget }} kcal/day
                 </span>
-                <div style="width:100%;border-radius:6px 6px 0 0;transition:height 0.4s;min-height:4px;"
-                     :style="`height:${bar.height}px;background:${bar.isToday ? '#2e7d32' : bar.over ? '#fecaca' : '#f3f4f6'};`">
+              </div>
+              <div class="d-flex gap-2 mt-2">
+                <div v-for="bar in weekBars" :key="bar.date + '-label'"
+                     class="text-center" style="flex:1;">
+                  <span style="font-size:0.75rem;"
+                        :style="`color:${bar.isToday ? '#1b4d1b' : '#6b7280'};font-weight:${bar.isToday ? '600' : '400'};`">
+                    {{ bar.day }}
+                  </span>
                 </div>
               </div>
             </div>
-            <div class="d-flex justify-content-end mt-2">
-              <span style="font-size:0.75rem;color:#9ca3af;">
-                Goal: {{ calorieBudget }} kcal/day
-              </span>
-            </div>
-            <div class="d-flex gap-2 mt-2">
-              <div v-for="bar in weekBars" :key="bar.date + '-label'"
-                   class="text-center" style="flex:1;">
-                <span style="font-size:0.75rem;"
-                      :style="`color:${bar.isToday ? '#1b4d1b' : '#6b7280'};font-weight:${bar.isToday ? '600' : '400'};`">
-                  {{ bar.day }}
-                </span>
-              </div>
-            </div>
+            <!-- Accessible text alternative for the bar chart -->
+            <table class="visually-hidden">
+              <caption>This week's calorie intake. Daily goal: {{ calorieBudget }} kcal.</caption>
+              <thead>
+                <tr><th scope="col">Day</th><th scope="col">Calories</th><th scope="col">Status</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="bar in weekBars" :key="bar.date + '-table'">
+                  <td>{{ bar.day }}</td>
+                  <td>{{ bar.val === '-' ? 'No data' : `${bar.val} kcal` }}</td>
+                  <td>{{ bar.over ? 'Over goal' : bar.val === '-' ? '—' : 'Within goal' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </template>
         </div>
       </div>
     </div>
 
-    <h5 class="fw-bold mb-3" style="color:#5a9e56;">Your Overview</h5>
+    <!-- overview cards linking to the main feature pages -->
+    <h2 class="fw-bold mb-3" style="color:#5a9e56;font-size:1.25rem;">Your Overview</h2>
 
     <div class="row g-3 mb-4">
 
       <div class="col-md-6">
-        <RouterLink :to="`/diary?date=${referenceDate}`" class="text-decoration-none">
+        <RouterLink to="/diary" class="overview-card-link text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Food Diary</h6>
-              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All →</span>
+              <h3 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Food Diary</h3>
+              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All <span aria-hidden="true">→</span></span>
             </div>
-            <div v-if="loading" class="py-2 text-center text-muted"><small>Loading…</small></div>
+            <div v-if="loading" role="status" aria-live="polite" class="py-2 text-center text-muted"><small>Loading…</small></div>
             <ul v-else-if="foodDiaryPreview.length > 0" class="list-unstyled mb-0">
               <li v-for="entry in foodDiaryPreview" :key="entry.diaryEntryId"
                   class="d-flex justify-content-between align-items-center py-2"
                   style="border-bottom:1px solid #f3f4f6;">
                 <span class="fw-semibold text-capitalize" style="color:#1b4d1b;font-size:0.875rem;">{{ entry.mealType }}</span>
-                <span class="badge rounded-pill" style="background:#f3f4f6;color:#6b7280;font-weight:500;font-size:0.75rem;padding:0.25rem 0.625rem;">
+                <span class="badge rounded-pill" style="background:#f3f4f6;color:#4b5563;font-weight:500;font-size:0.75rem;padding:0.25rem 0.625rem;">
                   {{ entry.items?.length ?? 0 }} {{ (entry.items?.length ?? 0) === 1 ? 'item' : 'items' }}
                 </span>
               </li>
             </ul>
-            <div v-else class="py-3 text-center" style="color:#9ca3af;">
+            <div v-else class="py-3 text-center" style="color:#6b7280;">
               <p class="mb-0" style="font-size:0.8125rem;">No meals logged today yet.</p>
             </div>
           </div>
@@ -170,28 +212,35 @@
       </div>
 
       <div class="col-md-6">
-        <RouterLink :to="`/nutrition?date=${referenceDate}`" class="text-decoration-none">
+        <RouterLink :to="`/nutrition?date=${referenceDate}`" class="overview-card-link text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Nutrition Today</h6>
-              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Details →</span>
+              <h3 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Nutrition Today</h3>
+              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Details <span aria-hidden="true">→</span></span>
             </div>
-            <div v-if="loading" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-if="loading" role="status" aria-live="polite" class="text-center text-muted py-2"><small>Loading…</small></div>
             <div v-else-if="nutritionPreview.length > 0">
               <div v-for="n in nutritionPreview" :key="n.code" class="mb-2">
                 <div class="d-flex justify-content-between mb-1">
                   <span class="fw-semibold" style="color:#1b4d1b;font-size:0.8125rem;">{{ nutrientLabels[n.code] ?? n.name }}</span>
                   <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">{{ formatAmount(n) }}</span>
                 </div>
-                <div style="height:5px;background:#f3f4f6;border-radius:4px;overflow:hidden;">
+                <div role="progressbar"
+                     :aria-valuenow="nutrientPercent(n)"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     :aria-label="`${nutrientLabels[n.code] ?? n.name}: ${formatAmount(n)} (${nutrientPercent(n)}% of goal)`"
+                     style="height:5px;background:#f3f4f6;border-radius:4px;overflow:hidden;">
                   <div style="height:100%;border-radius:4px;background:#2e7d32;transition:width 0.4s;"
                        :style="`width:${nutrientPercent(n)}%;`"></div>
                 </div>
               </div>
             </div>
-            <div v-else class="text-center py-3" style="color:#9ca3af;">
+            <div v-else class="text-center py-3" style="color:#6b7280;">
               <p class="mb-0" style="font-size:0.8125rem;">No data yet. Log meals to see your breakdown.</p>
             </div>
           </div>
@@ -202,16 +251,18 @@
     <div class="row g-3 mb-4">
 
       <div class="col-md-6">
-        <RouterLink to="/goals" class="text-decoration-none">
+        <RouterLink to="/goals" class="overview-card-link text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Goals & Progress</h6>
-              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All →</span>
+              <h3 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Goals & Progress</h3>
+              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">View All <span aria-hidden="true">→</span></span>
             </div>
-            <div v-if="loadingGoals" class="text-center text-muted py-2"><small>Loading…</small></div>
-            <div v-else-if="goals.length === 0" class="text-center py-3" style="color:#9ca3af;">
+            <div v-if="loadingGoals" role="status" aria-live="polite" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-else-if="goals.length === 0" class="text-center py-3" style="color:#6b7280;">
               <p class="mb-0" style="font-size:0.8125rem;">No active goals yet.</p>
             </div>
             <div v-else>
@@ -225,11 +276,11 @@
                   <div style="color:#6b7280;font-size:0.75rem;">{{ goalRange(goal) }}</div>
                 </div>
                 <span class="badge rounded-pill"
-                      :style="`background:${goal.source === 'professional_defined' ? '#2e7d32' : '#f3f4f6'};color:${goal.source === 'professional_defined' ? '#fff' : '#6b7280'};font-weight:500;font-size:0.75rem;padding:0.25rem 0.625rem;`">
+                      :style="`background:${goal.source === 'professional_defined' ? '#2e7d32' : '#e5e7eb'};color:${goal.source === 'professional_defined' ? '#fff' : '#374151'};font-weight:500;font-size:0.75rem;padding:0.25rem 0.625rem;`">
                   {{ goal.source === 'professional_defined' ? 'Pro' : 'Personal' }}
                 </span>
               </div>
-              <div v-if="goals.length > 3" class="text-center mt-2" style="color:#9ca3af;font-size:0.75rem;">
+              <div v-if="goals.length > 3" class="text-center mt-2" style="color:#6b7280;font-size:0.75rem;">
                 +{{ goals.length - 3 }} more
               </div>
             </div>
@@ -238,15 +289,17 @@
       </div>
 
       <div class="col-md-6">
-        <RouterLink to="/messages" class="text-decoration-none">
+        <RouterLink to="/messages" class="overview-card-link text-decoration-none">
           <div class="h-100 p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;cursor:pointer;transition:all 0.2s;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Professional Support</h6>
-              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Messages →</span>
+              <h3 class="mb-0" style="color:#1b4d1b;font-weight:600;font-size:0.875rem;">Professional Support</h3>
+              <span style="color:#2e7d32;font-size:0.8125rem;font-weight:500;">Messages <span aria-hidden="true">→</span></span>
             </div>
-            <div v-if="loadingPro" class="text-center text-muted py-2"><small>Loading…</small></div>
+            <div v-if="loadingPro" role="status" aria-live="polite" class="text-center text-muted py-2"><small>Loading…</small></div>
             <template v-else>
               <div v-if="professional" class="d-flex align-items-center gap-2 mb-2">
                 <div class="avatar-circle flex-shrink-0" style="width:40px;height:40px;font-size:0.875rem;">
@@ -264,7 +317,7 @@
                     <span class="fw-semibold" style="font-size:0.7rem;color:#1b4d1b;">
                       {{ msg.sentBy === 'professional' ? professional.professional.fullName : 'You' }}
                     </span>
-                    <span style="font-size:0.7rem;color:#9ca3af;">
+                    <span style="font-size:0.7rem;color:#6b7280;">
                       {{ new Date(msg.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) }}
                     </span>
                   </div>
@@ -278,23 +331,25 @@
                 <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.8125rem;">
                   {{ inv.professional?.fullName ?? 'A nutritionist' }} has invited you
                 </div>
-                <div class="mb-2" style="color:#6b7280;font-size:0.75rem;">Would you like to accept this invitation?</div>
+                <div class="mb-2" style="color:#4b5563;font-size:0.75rem;">Would you like to accept this invitation?</div>
                 <div class="d-flex gap-2">
                   <button class="btn btn-sm fw-semibold"
                           style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
                           :disabled="inv._busy"
+                          :aria-label="`Accept invitation from ${inv.professional?.fullName ?? 'nutritionist'}`"
                           @click.prevent="respondToInvite(inv, 'accept')">
                     {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
                   </button>
                   <button class="btn btn-sm"
-                          style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
+                          style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
                           :disabled="inv._busy"
+                          :aria-label="`Decline invitation from ${inv.professional?.fullName ?? 'nutritionist'}`"
                           @click.prevent="respondToInvite(inv, 'reject')">
                     {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
                   </button>
                 </div>
               </div>
-              <div v-if="!professional && pendingInvites.length === 0" class="text-center py-3" style="color:#9ca3af;">
+              <div v-if="!professional && pendingInvites.length === 0" class="text-center py-3" style="color:#6b7280;">
                 <p class="mb-0" style="font-size:0.8125rem;">No nutritionist linked yet.</p>
               </div>
             </template>
@@ -304,11 +359,12 @@
 
     </div>
 
+    <!-- favourite recipes — pulled from the store which caches them to avoid refetching -->
     <div class="mb-3">
-      <h5 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">My Favourite Recipes</h5>
+      <h2 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">My Favourite Recipes</h2>
     </div>
 
-    <div v-if="loadingFavs" class="text-center text-muted py-5">
+    <div v-if="loadingFavs" role="status" aria-live="polite" class="text-center text-muted py-5">
       <small>Loading favourites…</small>
     </div>
 
@@ -317,9 +373,11 @@
         <div v-for="recipe in favourites.slice(0, 3)" :key="recipe.recipeId" class="col-lg-4 col-md-6">
           <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div style="width:220px;flex-shrink:0;position:relative;overflow:hidden;">
-              <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
+              <img :src="recipe.image || '/src/assets/hero.png'" alt=""
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
                     style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -329,7 +387,8 @@
             <div class="d-flex flex-column flex-grow-1" style="min-width:0;padding:1.25rem 1rem 1rem;">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="fw-bold" style="color:#1b4d1b;font-size:1rem;line-height:1.35;">{{ recipe.title }}</div>
-                <span style="color:#d94f4f;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;">♥</span>
+                <span aria-hidden="true" style="color:#c0392b;font-size:1.25rem;line-height:1;flex-shrink:0;margin-left:0.5rem;">♥</span>
+                <span class="visually-hidden">Saved as favourite</span>
               </div>
               <div v-if="recipe.cuisine" class="mb-3">
                 <span style="background:#f0f7f0;color:#2e7d32;font-size:0.75rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;border:1px solid #c8e6c8;">
@@ -343,10 +402,11 @@
                 <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
-                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
-                  ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                <span v-if="recipe.cookTime"><span role="img" aria-label="Cook time">🕐</span> {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null">
+                  <span style="color:#b45309;font-weight:600;" aria-hidden="true">★</span>
+                  <span style="color:#b45309;font-weight:600;">{{ recipe.averageRating.toFixed(1) }}</span>
+                  <span style="color:#6b7280;font-weight:400;">({{ recipe.reviewCount }})</span>
                 </span>
               </div>
               <div class="mt-3">
@@ -362,7 +422,7 @@
 
       <div v-if="favourites.length > 3" class="text-center">
         <RouterLink to="/recipes" class="btn fw-semibold" style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
-          View all {{ favourites.length }} favourites →
+          View all {{ favourites.length }} favourites <span aria-hidden="true">→</span>
         </RouterLink>
       </div>
     </div>
@@ -375,8 +435,9 @@
       </RouterLink>
     </div>
 
+    <!-- recommendations - the backend figures these out based on diary gaps and past food choices -->
     <div class="mb-3 mt-5">
-      <h5 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">Recommended for You</h5>
+      <h2 style="color:#1b4d1b;font-weight:600;font-size:1rem;margin-bottom:1rem;">Recommended for You</h2>
     </div>
 
     <div v-if="recommendedRecipes.length > 0">
@@ -384,16 +445,18 @@
         <div v-for="recipe in displayedRecommendedRecipes" :key="recipe.recipeId" class="col-lg-4 col-md-6">
           <div class="h-100 d-flex rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;overflow:hidden;transition:all 0.2s;cursor:pointer;min-height:300px;"
                @mouseenter="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
-               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
+               @mouseleave="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'"
+               @focusin="$event.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';$event.currentTarget.style.transform='translateY(-2px)'"
+               @focusout="$event.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)';$event.currentTarget.style.transform='translateY(0)'">
             <div style="width:220px;flex-shrink:0;position:relative;overflow:hidden;">
-              <img :src="recipe.image || '/src/assets/hero.png'" :alt="recipe.title"
+              <img :src="recipe.image || '/src/assets/hero.png'" alt=""
                    style="width:100%;height:100%;object-fit:cover;" />
               <span v-if="recipe.category"
                     style="position:absolute;bottom:0;left:0;right:0;background:rgba(27,77,27,0.8);color:#fff;font-size:0.7rem;font-weight:500;padding:0.25rem 0.5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {{ recipe.category }}
               </span>
               <span v-if="recipe.reason" class="position-absolute top-0 end-0 m-1 badge rounded-pill"
-                    style="background:#e8a820;color:#fff;font-size:0.65rem;padding:0.25rem 0.5rem;">
+                    style="background:#e8a820;color:#3d2900;font-size:0.65rem;padding:0.25rem 0.5rem;">
                 {{ recipe.reason }}
               </span>
             </div>
@@ -411,10 +474,11 @@
                 <span style="background:#f9fafb;color:#374151;font-size:0.8125rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid #e5e7eb;">Fat {{ recipe.fat }}g</span>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-auto" style="font-size:0.8125rem;color:#6b7280;">
-                <span v-if="recipe.cookTime">🕐 {{ recipe.cookTime }}</span>
-                <span v-if="recipe.averageRating != null" style="color:#fbbf24;font-weight:600;">
-                  ★ {{ recipe.averageRating.toFixed(1) }}
-                  <span style="color:#9ca3af;font-weight:400;">({{ recipe.reviewCount }})</span>
+                <span v-if="recipe.cookTime"><span role="img" aria-label="Cook time">🕐</span> {{ recipe.cookTime }}</span>
+                <span v-if="recipe.averageRating != null">
+                  <span style="color:#b45309;font-weight:600;" aria-hidden="true">★</span>
+                  <span style="color:#b45309;font-weight:600;">{{ recipe.averageRating.toFixed(1) }}</span>
+                  <span style="color:#6b7280;font-weight:400;">({{ recipe.reviewCount }})</span>
                 </span>
               </div>
               <div class="mt-3">
@@ -453,6 +517,7 @@ const route = useRoute()
 const router = useRouter()
 
 const viewDate = ref(new Date())
+const dateAnnouncement = ref('')
 
 const formattedDate = computed(() =>
   viewDate.value.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -477,12 +542,14 @@ function handlePrevDay() {
   const d = new Date(viewDate.value)
   d.setDate(d.getDate() - 1)
   viewDate.value = d
+  dateAnnouncement.value = `Navigated to ${formattedDate.value}`
 }
 
 function handleNextDay() {
   const d = new Date(viewDate.value)
   d.setDate(d.getDate() + 1)
   viewDate.value = d
+  dateAnnouncement.value = `Navigated to ${formattedDate.value}`
 }
 
 const dashboard = ref(null)
@@ -522,6 +589,7 @@ watch(viewDate, () => {
   router.replace({ query: { date: referenceDate.value } })
 })
 
+// single request returns diary entries, nutrition preview and weekly trend all at once
 async function loadDashboard() {
   loading.value = true
   error.value = ''
@@ -660,6 +728,7 @@ const macroSummary = computed(() =>
 const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MAX_BAR_H = 90
 
+// bar heights are relative to the tallest day so the chart never overflows its container
 const weekBars = computed(() => {
   const trend = dashboard.value?.weeklyCaloryTrend ?? []
   if (!trend.length) {
@@ -709,3 +778,19 @@ function goalRange(goal) {
   return ''
 }
 </script>
+
+<style scoped>
+/* RouterLink (<a>) is inline by default — force block so the outline
+   draws as a full rectangle around the card, not an inline snippet. */
+.overview-card-link {
+  display: block;
+}
+
+/* Match the card's 12px radius and give a bit more offset so the ring
+   sits clearly outside the card's existing dark-green border. */
+.overview-card-link:focus-visible {
+  outline: 3px solid var(--gf-green);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+</style>

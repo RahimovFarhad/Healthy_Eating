@@ -15,7 +15,7 @@
           <div style="width:60px;height:60px;background:#e8f4e6;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
             <span style="color:#2e7d32;font-size:1.8rem;">✉</span>
           </div>
-          <h5 style="color:#1b4d1b;font-weight:700;margin-bottom:0.5rem;">Verify Your Email</h5>
+          <h1 style="color:#1b4d1b;font-weight:700;margin-bottom:0.5rem;font-size:1.25rem;">Verify Your Email</h1>
           <p style="color:#6a8f6a;font-size:0.9rem;margin:0;">
             We sent a 6-digit code to<br>
             <strong style="color:#2e7d32;">{{ email }}</strong>
@@ -98,6 +98,7 @@ onUnmounted(() => {
   }
 })
 
+// prevents the user from hammering resend — 10 second cooldown between attempts
 function startCooldown() {
   resendCooldown.value = 10
   cooldownInterval = setInterval(() => {

@@ -4,34 +4,38 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Nutritional Overview</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Nutritional Overview</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Detailed breakdown of your nutritional intake</p>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <div class="d-flex gap-2">
+        <div role="group" aria-label="Select time period" class="d-flex gap-2">
           <button v-for="p in PERIOD_OPTIONS" :key="p.value"
                   class="btn"
-                  :style="period === p.value ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+                  :aria-pressed="period === p.value"
+                  :style="period === p.value ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
                   @click="period = p.value; load()">
             {{ p.label }}
           </button>
         </div>
-        <input type="date" class="form-control" style="width:150px;border-radius:8px;"
+        <label for="nutrition-end-date" class="visually-hidden">End date</label>
+        <input id="nutrition-end-date" type="date" class="form-control" style="width:150px;border-radius:8px;"
                v-model="endDate" :max="maxDate" @change="load()">
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading…</div>
-    <div v-else-if="error" class="alert alert-danger mb-4" style="border-radius:8px;">{{ error }}</div>
+    <div v-if="loading" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading…</div>
+    <div v-else-if="error" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ error }}</div>
 
     <template v-else>
 
+      <!-- three donut charts side by side: calories, macros split, micros split — each with an "ideal" mini ring inset -->
       <div class="row g-4 mb-4">
 
         <div class="col-md-4">
           <div class="p-3 text-center h-100 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-            <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Calories</h6>
-            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+            <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Calories</h2>
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;"
+                 role="img" :aria-label="`Calories: ${nutrient('calories')?.totalAmount ?? 0} kcal consumed out of ${scaledRefs.calories.label} reference`">
               <circle cx="80" cy="80" r="62" fill="none" stroke="#f3f4f6" stroke-width="18"/>
               <circle cx="80" cy="80" r="62" fill="none" stroke="#2e7d32" stroke-width="18"
                       stroke-dasharray="389.6"
@@ -52,9 +56,9 @@
 
         <div class="col-md-4">
           <div class="p-3 text-center h-100 rounded" style="position:relative;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-            <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Macronutrients</h6>
+            <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Macronutrients</h2>
             <div style="position:absolute;top:12px;right:12px;text-align:center;">
-              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;" aria-hidden="true">
                 <circle cx="80" cy="80" r="62" fill="none" stroke="#f3f4f6" stroke-width="18"/>
                 <template v-for="seg in IDEAL_MACRO_SEGS" :key="seg.code">
                   <circle cx="80" cy="80" r="62" fill="none"
@@ -64,9 +68,10 @@
                           transform="rotate(-90 80 80)"/>
                 </template>
               </svg>
-              <span style="font-size:0.6rem;color:#6b7280;">Ideal</span>
+              <span style="font-size:0.75rem;color:#6b7280;" aria-hidden="true">Ideal</span>
             </div>
-            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;"
+                 role="img" aria-label="Macronutrient distribution chart — see legend below for values">
               <circle cx="80" cy="80" r="62" fill="none" stroke="#f3f4f6" stroke-width="18"/>
               <template v-for="seg in macroSegs" :key="seg.code">
                 <circle cx="80" cy="80" r="62" fill="none"
@@ -90,9 +95,9 @@
 
         <div class="col-md-4">
           <div class="p-3 text-center h-100 rounded" style="position:relative;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-            <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Micronutrients</h6>
+            <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Micronutrients</h2>
             <div style="position:absolute;top:12px;right:12px;text-align:center;">
-              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;">
+              <svg viewBox="0 0 160 160" width="60" height="60" style="display:block;" aria-hidden="true">
                 <circle cx="80" cy="80" r="62" fill="none" stroke="#f3f4f6" stroke-width="18"/>
                 <template v-for="seg in IDEAL_MICRO_SEGS" :key="seg.code">
                   <circle cx="80" cy="80" r="62" fill="none"
@@ -102,9 +107,10 @@
                           transform="rotate(-90 80 80)"/>
                 </template>
               </svg>
-              <span style="font-size:0.6rem;color:#6b7280;">Ideal</span>
+              <span style="font-size:0.75rem;color:#6b7280;" aria-hidden="true">Ideal</span>
             </div>
-            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;">
+            <svg viewBox="0 0 160 160" width="160" height="160" style="margin:0 auto;display:block;"
+                 role="img" aria-label="Micronutrient distribution chart — see legend below for values">
               <circle cx="80" cy="80" r="62" fill="none" stroke="#f3f4f6" stroke-width="18"/>
               <template v-for="seg in microSegs" :key="seg.code">
                 <circle cx="80" cy="80" r="62" fill="none"
@@ -128,9 +134,11 @@
 
       </div>
 
-      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Full Nutrient Breakdown</h6>
+      <!-- full breakdown table — each row has a hover tooltip with advice based on NHS reference intakes -->
+      <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Full Nutrient Breakdown</h2>
       <div class="table-responsive mb-4" style="overflow:visible;">
         <table class="table table-sm border" style="border-radius:12px;overflow:visible;">
+          <caption class="visually-hidden">Full nutrient breakdown for the selected period</caption>
           <thead style="background:#1b4d1b;color:#fff;">
             <tr>
               <th style="font-size:0.875rem;padding:0.75rem;">Nutrient</th>
@@ -148,11 +156,16 @@
               <td class="fw-semibold" style="font-size:0.875rem;color:#1b4d1b;padding:0.75rem;position:relative;overflow:visible;">
                 <div class="d-flex align-items-center gap-2">
                   <span>{{ row.name }}</span>
-                  <div class="nutrient-info-icon" 
+                  <div class="nutrient-info-icon"
                        :data-status="row.status"
+                       tabindex="0"
+                       role="button"
+                       :aria-label="`${row.name} details: ${row.amount} ${row.unit}, reference ${row.reference}`"
                        @mouseenter="showTooltip($event, row)"
-                       @mouseleave="hideTooltip">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                       @mouseleave="hideTooltip"
+                       @focus="showTooltip($event, row)"
+                       @blur="hideTooltip">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                       <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/>
                       <text x="8" y="11" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">i</text>
                     </svg>
@@ -172,7 +185,8 @@
         </table>
       </div>
 
-      <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Insights</h6>
+      <!-- auto-generated insights — only shows nutrients that are notably over or under target -->
+      <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Insights</h2>
       <div class="p-3 mb-4 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
         <div v-if="insights.length === 0" style="color:#6b7280;font-size:0.875rem;">
           Your intake looks balanced for this period. Keep it up!
@@ -183,7 +197,7 @@
                :style="`background:${ins.bg};`">
             <div>
               <div class="fw-semibold" :style="`color:${ins.color};font-size:0.875rem;`">{{ ins.title }}</div>
-              <div style="font-size:0.875rem;color:#6b7280;">{{ ins.message }}</div>
+              <div style="font-size:0.875rem;color:#4b5563;">{{ ins.message }}</div>
             </div>
             <span class="ms-auto badge rounded-pill align-self-center"
                   :style="`background:${ins.color};font-size:0.7rem;padding:0.25rem 0.625rem;`">
@@ -193,38 +207,39 @@
         </div>
       </div>
 
-      <h6 class="fw-bold mb-3" style="color:#5a9e56;">7-Day Calorie Trend</h6>
+      <!-- 7-day bar chart — green portion is within goal, amber is over; goal line shown as a horizontal backdrop bar -->
+      <h2 class="fw-bold mb-3" style="color:#2e7d32;font-size:0.875rem;">7-Day Calorie Trend</h2>
       <div class="card border p-3 mb-4">
         <div class="d-flex align-items-end gap-2 justify-content-center px-2"
              style="height:140px;position:relative;">
           <div v-for="bar in weekBars" :key="bar.day"
                class="d-flex flex-column align-items-center gap-1" style="flex:1;max-width:72px;">
-            <small :style="`font-size:0.65rem;font-weight:600;color:${bar.over ? '#b8860b' : '#5a9e56'};`">
+            <small :style="`font-size:0.65rem;font-weight:600;color:${bar.over ? '#7a5800' : '#2e7d32'};`">
               {{ bar.val }}
             </small>
             <div style="width:100%;flex:1;display:flex;align-items:flex-end;position:relative;">
               <div style="position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;overflow:hidden;"
-                   :style="`height:${bar.goalHeight}px;background:#f5d87a;`">
+                   :style="`height:${bar.goalHeight}px;background:#a07800;`">
               </div>
               <div v-if="bar.height > 0"
                    style="position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;overflow:hidden;"
                    :style="`height:${bar.height}px;`">
-                <div :style="`height:${bar.withinHeight}px;background:#5a9e56;`"></div>
-                <div v-if="bar.excessHeight > 0" :style="`height:${bar.excessHeight}px;background:#b8860b;`"></div>
+                <div :style="`height:${bar.withinHeight}px;background:#2e7d32;`"></div>
+                <div v-if="bar.excessHeight > 0" :style="`height:${bar.excessHeight}px;background:#7a5800;`"></div>
               </div>
             </div>
-            <small style="font-size:0.65rem;color:#888;">{{ bar.day }}</small>
+            <small style="font-size:0.65rem;color:#6b7280;">{{ bar.day }}</small>
           </div>
         </div>
         <div class="d-flex gap-3 mt-2">
-          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f5d87a;"></span> Goal ({{ scaledRefs.calories.ref }} kcal)
+          <span style="font-size:0.7rem;color:#6b7280;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#a07800;"></span> Goal ({{ scaledRefs.calories.ref }} kcal)
           </span>
-          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#5a9e56;"></span> Within goal
+          <span style="font-size:0.7rem;color:#6b7280;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2e7d32;"></span> Within goal
           </span>
-          <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:4px;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#b8860b;"></span> Over goal
+          <span style="font-size:0.7rem;color:#6b7280;display:flex;align-items:center;gap:4px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#7a5800;"></span> Over goal
           </span>
         </div>
         <small class="text-muted mt-1 d-block" style="font-size:0.7rem;">* Today's count is still in progress</small>
@@ -235,8 +250,9 @@
   </div>
 
   <Teleport to="body">
-    <div v-if="activeTooltip" 
-         class="nutrient-tooltip" 
+    <div v-if="activeTooltip"
+         class="nutrient-tooltip"
+         role="tooltip"
          :data-status="activeTooltip.status"
          :style="{
            left: tooltipPosition.x + 'px',
@@ -282,9 +298,13 @@
   color: #6b7280;
 }
 
-.nutrient-info-icon:hover {
+.nutrient-info-icon:hover,
+.nutrient-info-icon:focus-visible {
   transform: scale(1.1);
   z-index: 1050;
+  outline: 3px solid #2e7d32;
+  outline-offset: 3px;
+  border-radius: 50%;
 }
 
 .nutrient-tooltip {
@@ -350,6 +370,7 @@ const PERIOD_OPTIONS = [
 
 const PERIOD_DAYS = { daily: 1, weekly: 7, monthly: 30 }
 
+// NHS daily reference intakes — used when the user hasn't set a matching goal
 const FALLBACK_REFS = {
   calories:      { ref: 2000, unit: 'kcal' },
   protein:       { ref: 50,   unit: 'g' },
@@ -423,6 +444,7 @@ function buildGoalRefs(goals) {
   return map
 }
 
+// multiplies daily references by the number of days in the selected period so weekly/monthly comparisons are accurate
 const scaledRefs = computed(() => {
   const days = PERIOD_DAYS[period.value] ?? 1
   const result = {}
@@ -486,6 +508,7 @@ async function load() {
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MAX_BAR_H = 100
 
+// splits each day's calories into within-goal (green) and over-goal (amber) segments for the stacked bar
 function buildWeekBars(trend) {
   const calorieGoal = goalRefs.value['calories']?.ref ?? FALLBACK_REFS.calories.ref
   if (!trend.length) {
@@ -537,6 +560,7 @@ const calorieOffset = computed(() => {
   return SVG_CIRC * (1 - pct)
 })
 
+// converts nutrient amounts into SVG stroke-dasharray segments for the donut charts
 function buildSegments(codes) {
   const amounts = codes.map(code => nutrient(code)?.totalAmount ?? 0)
   const total = amounts.reduce((s, v) => s + v, 0) || 1
@@ -598,7 +622,7 @@ const breakdown = computed(() => {
     const rawPct = ref ? (n.totalAmount / ref.ref) * 100 : null
     const isMaxNutrient = overWatchSet.has(n.code)
     const isMinNutrient = underWatchSet.has(n.code)
-    let color = '#aaa'
+    let color = '#6b7280'
     let status = 'neutral'
     let insight = 'No reference data available for this nutrient.'
     
@@ -697,7 +721,7 @@ const insights = computed(() => {
         title: `High ${cap(n.name)}`,
         message: `Your ${n.name} intake is ${Math.round(pct - 100)}% over the recommended limit of ${ref.label}.`,
         pctLabel: `${Math.round(pct)}%`,
-        color: '#d94f4f',
+        color: '#991b1b',
         bg: '#fdf2f2',
         priority: 1,
       })
@@ -707,7 +731,7 @@ const insights = computed(() => {
         title: `${cap(n.name)} slightly over`,
         message: `Your ${n.name} intake is ${Math.round(pct - 100)}% above the recommended limit of ${ref.label}.`,
         pctLabel: `${Math.round(pct)}%`,
-        color: '#e8a820',
+        color: '#7a5800',
         bg: '#fffbf0',
         priority: 2,
       })
@@ -725,7 +749,7 @@ const insights = computed(() => {
         title: `Low ${cap(n.name)}`,
         message: `Your ${n.name} intake is only ${Math.round(pct)}% of the recommended ${ref.label}. Consider eating more ${n.name}-rich foods.`,
         pctLabel: `${Math.round(pct)}%`,
-        color: '#d94f4f',
+        color: '#991b1b',
         bg: '#fdf2f2',
         priority: 1,
       })
@@ -735,7 +759,7 @@ const insights = computed(() => {
         title: `${cap(n.name)} below target`,
         message: `Your ${n.name} intake is at ${Math.round(pct)}% of the recommended ${ref.label}.`,
         pctLabel: `${Math.round(pct)}%`,
-        color: '#e8a820',
+        color: '#7a5800',
         bg: '#fffbf0',
         priority: 2,
       })
@@ -745,7 +769,7 @@ const insights = computed(() => {
         title: `Good ${cap(n.name)} intake`,
         message: `Your ${n.name} intake is on track at ${Math.round(pct)}% of the recommended ${ref.label}.`,
         pctLabel: `${Math.round(pct)}%`,
-        color: '#5a9e56',
+        color: '#276228',
         bg: '#f0f8f0',
         priority: 3,
       })

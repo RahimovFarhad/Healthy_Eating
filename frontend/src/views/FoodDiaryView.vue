@@ -4,22 +4,30 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Food Diary</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Food Diary</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">{{ formattedDate }} - Log everything you eat and drink today</p>
       </div>
 
       <div class="d-flex align-items-center gap-2">
         <button class="btn" @click="handlePrevDay"
-                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;">‹</button>
+                aria-label="Previous day"
+                style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;">
+          <span aria-hidden="true">‹</span>
+        </button>
         <span class="rounded px-4 py-2" style="background:#fff;border:1.25px solid #1b4d1b;font-size:0.875rem;font-weight:500;color:#1b4d1b;">{{ formattedDate }}</span>
+        <span aria-live="polite" aria-atomic="true" class="visually-hidden">{{ dateAnnouncement }}</span>
         <button class="btn" @click="handleNextDay" :disabled="isToday"
-                :style="isToday ? 'background:#e5e7eb;color:#9ca3af;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;'">›</button>
+                :aria-label="isToday ? 'Next day (today is the most recent)' : 'Next day'"
+                :style="isToday ? 'background:#e5e7eb;color:#6b7280;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;cursor:not-allowed;' : 'background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;'">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
 
-    <div v-if="diaryLoading" class="text-center py-5" style="color:#9ca3af;">Loading diary…</div>
-    <div v-if="diaryError" class="alert alert-danger" style="border-radius:8px;">{{ diaryError }}</div>
+    <div v-if="diaryLoading" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;">Loading diary…</div>
+    <div v-if="diaryError" role="alert" class="alert alert-danger" style="border-radius:8px;">{{ diaryError }}</div>
 
+    <!-- running totals strip at the top — gives a quick calorie and macro summary for the whole day -->
     <div class="p-4 rounded mb-5" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1.25px solid #1b4d1b;border-radius:12px;">
       <div class="d-flex flex-wrap gap-4 align-items-center">
         <div>
@@ -46,6 +54,7 @@
       </div>
     </div>
 
+    <!-- meal plan import banner — only appears if the user has a plan entry for today's date -->
     <div v-if="planDayForDate" class="mb-4">
       <div class="d-flex justify-content-between align-items-center p-3 rounded"
            style="background:#e8f5e9;border:1.25px solid #a7d7a7;border-radius:12px;">
@@ -65,11 +74,12 @@
       <div v-if="applyMealPlanError" class="mt-2 px-1" style="color:#d94f4f;font-size:0.875rem;">{{ applyMealPlanError }}</div>
     </div>
 
+    <!-- main meal sections (breakfast / lunch / dinner) — each can expand to add more food -->
     <div v-for="meal in mainMeals" :key="meal.id" class="mb-5">
 
       <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3"
            style="background:#f9fafb;border:0.75px solid #1b4d1b;">
-        <span style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;">{{ meal.label.toUpperCase() }}</span>
+        <h2 style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;margin:0;">{{ meal.label.toUpperCase() }}</h2>
         <span style="color:#6b7280;font-size:0.875rem;font-weight:500;">Total: {{ meal.entries.reduce((s, e) => s + (e.kcal || 0), 0) }} kcal</span>
       </div>
 
@@ -90,12 +100,13 @@
             <span style="font-size:0.8125rem;color:#6b7280;">Sugar: {{ entry.sugar }}g</span>
             <span style="font-size:0.8125rem;color:#6b7280;">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold" style="color:#2e7d32;font-size:0.9375rem;">{{ entry.kcal }} kcal</span>
-            <button class="btn btn-sm fw-semibold" title="Edit entry"
+            <button class="btn btn-sm fw-semibold"
+                    :aria-label="`Edit ${entry.name}`"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                     @click="startEditItem(entry)">Edit</button>
             <button class="btn btn-sm fw-semibold"
                     style="background:#fecaca;border:none;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
-                    title="Remove entry"
+                    :aria-label="`Remove ${entry.name} from diary`"
                     :disabled="removingItemId === entry.itemId"
                     @click="handleRemoveItem(entry.itemId)">
               {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
@@ -110,19 +121,19 @@
               <div style="color:#6b7280;font-size:0.8125rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Quantity (servings)</label>
-              <input type="number" min="0.1" step="0.1" class="form-control" v-model.number="editQty"
+              <label for="edit-qty-main" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Quantity (servings)</label>
+              <input id="edit-qty-main" type="number" min="0.1" step="0.1" class="form-control" v-model.number="editQty"
                      style="border:1px solid #d4e7d4;border-radius:8px;padding:0.5rem 0.75rem;font-size:0.875rem;">
             </div>
           </div>
-          <div v-if="editError" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ editError }}</div>
+          <div v-if="editError" role="alert" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ editError }}</div>
           <div class="d-flex gap-2">
             <button class="btn fw-semibold" :disabled="editSaving" @click="saveEditItem(entry.itemId)"
                     style="background:#1b4d1b;color:#ffffff;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">
               {{ editSaving ? 'Saving…' : 'Save' }}
             </button>
             <button class="btn fw-semibold" @click="editingItem = null"
-                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">Cancel</button>
+                    style="background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.875rem;">Cancel</button>
           </div>
         </div>
 
@@ -131,57 +142,69 @@
       <div v-if="meal.entries.length === 0"
            class="rounded p-4 text-center my-2"
            style="background:#f9fafb;border:2px dashed #e5e7eb;">
-        <p class="mb-0" style="color:#9ca3af;font-size:0.875rem;">Nothing logged yet for {{ meal.label.toLowerCase() }} - use the panel below to add</p>
+        <p class="mb-0" style="color:#6b7280;font-size:0.875rem;">Nothing logged yet for {{ meal.label.toLowerCase() }} - use the panel below to add</p>
       </div>
 
       <div class="mt-3">
         <button class="btn fw-semibold"
+                :aria-expanded="openPanel === meal.id"
+                :aria-controls="`panel-${meal.id}`"
                 style="background:#f3f4f6;color:#1b4d1b;border:0.75px solid #1b4d1b;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;"
                 @click="openPanel === meal.id ? openPanel = null : (openPanel = meal.id, activeTab[meal.id] === 'recipes' && loadDiaryRecipes())">
           {{ openPanel === meal.id ? 'Close' : 'Add to ' + meal.label }}
         </button>
       </div>
 
-      <div v-if="openPanel === meal.id" class="p-4 rounded mt-3"
+      <div v-if="openPanel === meal.id" :id="`panel-${meal.id}`" class="p-4 rounded mt-3"
            style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
 
-        <div class="d-flex gap-2 mb-4">
+        <div role="tablist" :aria-label="`Add food to ${meal.label}`"
+             class="d-flex gap-2 mb-4"
+             @keydown="handleDiaryTabKeydown($event, meal.id)">
           <button v-for="tab in addTabs" :key="tab.id"
+                  role="tab"
+                  :id="`tab-${tab.id}-${meal.id}`"
+                  :aria-controls="`panel-${tab.id}-${meal.id}`"
+                  :aria-selected="activeTab[meal.id] === tab.id ? 'true' : 'false'"
+                  :tabindex="activeTab[meal.id] === tab.id ? 0 : -1"
                   class="btn"
-                  :style="activeTab[meal.id] === tab.id ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+                  :style="activeTab[meal.id] === tab.id ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
                   @click="activeTab[meal.id] = tab.id; if (tab.id === 'recipes') loadDiaryRecipes()">
             {{ tab.label }}
           </button>
         </div>
 
-        <div v-if="activeTab[meal.id] === 'custom'">
+        <div v-if="activeTab[meal.id] === 'custom'"
+             role="tabpanel"
+             :id="`panel-custom-${meal.id}`"
+             :aria-labelledby="`tab-custom-${meal.id}`">
           <div class="row g-3 mb-3">
             <div class="col-md-4">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Food Name</label>
-              <input type="text" class="form-control" placeholder="e.g. Porridge"
+              <label :for="`custom-name-${meal.id}`" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Food Name</label>
+              <input :id="`custom-name-${meal.id}`" type="text" class="form-control" placeholder="e.g. Porridge"
                      v-model="customForm[meal.id].name"
                      style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Calories (kcal)</label>
-              <input type="number" class="form-control" v-model.number="customForm[meal.id].kcal"
+              <label :for="`custom-kcal-${meal.id}`" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Calories (kcal)</label>
+              <input :id="`custom-kcal-${meal.id}`" type="number" class="form-control" v-model.number="customForm[meal.id].kcal"
                      style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
             </div>
             <div class="col-md-2">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Serving Size</label>
-              <input type="text" class="form-control" placeholder="e.g. 100g"
+              <label :for="`custom-serving-${meal.id}`" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">Serving Size</label>
+              <input :id="`custom-serving-${meal.id}`" type="text" class="form-control" placeholder="e.g. 100g"
                      v-model="customForm[meal.id].serving"
                      style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
             </div>
           </div>
           <div class="row g-3 mb-3">
             <div class="col" v-for="field in customNutrientFields" :key="field.key">
-              <label class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">{{ field.label }}</label>
-              <input type="number" class="form-control" v-model.number="customForm[meal.id][field.key]"
+              <label :for="`custom-${field.key}-${meal.id}`" class="form-label" style="color:#1b4d1b;font-weight:500;font-size:0.875rem;">{{ field.label }}</label>
+              <input :id="`custom-${field.key}-${meal.id}`" type="number" class="form-control" v-model.number="customForm[meal.id][field.key]"
                      style="border:1px solid #d4e7d4;border-radius:8px;padding:0.625rem 1rem;font-size:0.875rem;">
             </div>
           </div>
-          <div v-if="customError[meal.id]" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ customError[meal.id] }}</div>
+          <div v-if="customError[meal.id]" role="alert" class="alert alert-danger mb-2" style="border-radius:8px;font-size:0.875rem;">{{ customError[meal.id] }}</div>
           <div class="d-flex gap-2">
             <button class="btn fw-semibold" :disabled="customSaving[meal.id]" @click="handleAddCustom(meal.id)"
                     style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.875rem;">
@@ -190,9 +213,13 @@
           </div>
         </div>
 
-        <div v-if="activeTab[meal.id] === 'saved'">
+        <div v-if="activeTab[meal.id] === 'saved'"
+             role="tabpanel"
+             :id="`panel-saved-${meal.id}`"
+             :aria-labelledby="`tab-saved-${meal.id}`">
           <div class="d-flex gap-2 mb-3">
-            <input type="text" class="form-control"
+            <label :for="`food-search-${meal.id}`" class="visually-hidden">Search food database</label>
+            <input :id="`food-search-${meal.id}`" type="text" class="form-control"
                    placeholder="Search food database…"
                    v-model="mealSearchQuery[meal.id]"
                    @keyup.enter="searchMealFood(meal.id)"
@@ -204,8 +231,9 @@
               {{ mealSearchLoading[meal.id] ? '…' : 'Search' }}
             </button>
           </div>
-          <div v-if="mealSearchError[meal.id]" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ mealSearchError[meal.id] }}</div>
+          <div v-if="mealSearchError[meal.id]" role="alert" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ mealSearchError[meal.id] }}</div>
           <div v-if="(mealSearchResults[meal.id] ?? []).length > 0"
+               role="region" aria-label="Food search results"
                class="rounded p-3 mb-2" style="background:#fff;border:1px solid #e5e7eb;max-height:400px;overflow-y:auto;">
             <div v-for="food in mealSearchResults[meal.id]" :key="food.food_id"
                  class="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
@@ -225,11 +253,15 @@
           </div>
         </div>
 
-        <div v-if="activeTab[meal.id] === 'recipes'">
-          <input type="text" class="form-control form-control-sm mb-2"
+        <div v-if="activeTab[meal.id] === 'recipes'"
+             role="tabpanel"
+             :id="`panel-recipes-${meal.id}`"
+             :aria-labelledby="`tab-recipes-${meal.id}`">
+          <label :for="`recipe-search-${meal.id}`" class="visually-hidden">Search recipes</label>
+          <input :id="`recipe-search-${meal.id}`" type="text" class="form-control form-control-sm mb-2"
                  placeholder="Search recipes..."
                  v-model="recipeSearch">
-          <div class="row g-2" style="max-height:340px;overflow-y:auto;">
+          <div class="row g-2" role="region" aria-label="Recipe search results" style="max-height:340px;overflow-y:auto;">
             <div class="col-md-4" v-for="r in filteredRecipes" :key="r.id">
               <div class="card h-100">
                 <img :src="r.image" :alt="r.title"
@@ -237,7 +269,7 @@
                 <div class="p-2">
                   <div class="small fw-bold">{{ r.title }}</div>
                   <div style="font-size:0.72rem;color:#666;">{{ r.kcal }} kcal · P:{{ r.protein }}g · C:{{ r.carbs }}g · F:{{ r.fat }}g</div>
-                  <div style="font-size:0.72rem;color:#888;">{{ r.time }}</div>
+                  <div style="font-size:0.72rem;color:#6b7280;">{{ r.time }}</div>
                   <button class="btn btn-sm fw-semibold w-100 mt-1"
                           style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.72rem;"
                           :disabled="recipeAdding[r.id + meal.id]"
@@ -253,10 +285,11 @@
       </div>
     </div>
 
+    <!-- snacks and drinks — handled separately since they don't map to a fixed meal slot -->
     <div class="mb-4">
       <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3"
            style="background:#f9fafb;border:0.75px solid #1b4d1b;">
-        <span style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;">SNACKS &amp; DRINKS</span>
+        <h2 style="color:#1b4d1b;font-weight:600;font-size:0.9375rem;letter-spacing:0.05em;margin:0;">SNACKS &amp; DRINKS</h2>
         <span style="color:#6b7280;font-size:0.875rem;font-weight:500;">Total: {{ snackMeal?.entries.reduce((s, e) => s + (e.kcal || 0), 0) ?? 0 }} kcal</span>
       </div>
 
@@ -274,12 +307,13 @@
             <span class="small text-muted">Sugar: {{ entry.sugar }}g</span>
             <span class="small text-muted">Salt: {{ entry.salt }}g</span>
             <span class="fw-bold text-success small">{{ entry.kcal }} kcal</span>
-            <button class="btn btn-sm fw-semibold" title="Edit entry"
+            <button class="btn btn-sm fw-semibold"
+                    :aria-label="`Edit ${entry.name}`"
                     @click="startEditItem(entry)"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.75rem;">Edit</button>
             <button class="btn btn-sm py-0 px-1"
                     style="background:#fde8e8;border:1px solid #d99;color:#c44;"
-                    title="Remove entry"
+                    :aria-label="`Remove ${entry.name} from diary`"
                     :disabled="removingItemId === entry.itemId"
                     @click="handleRemoveItem(entry.itemId)">
               {{ removingItemId === entry.itemId ? '…' : 'Remove' }}
@@ -293,18 +327,18 @@
               <div class="text-muted" style="font-size:0.75rem;">{{ entry.detail }}</div>
             </div>
             <div class="col-md-2">
-              <label class="form-label form-label-sm">Quantity (servings)</label>
-              <input type="number" min="0.1" step="0.1" class="form-control form-control-sm" v-model.number="editQty">
+              <label for="snack-edit-qty" class="form-label form-label-sm">Quantity (servings)</label>
+              <input id="snack-edit-qty" type="number" min="0.1" step="0.1" class="form-control form-control-sm" v-model.number="editQty">
             </div>
           </div>
-          <div v-if="editError" class="text-danger small mb-1">{{ editError }}</div>
+          <div v-if="editError" role="alert" class="text-danger small mb-1">{{ editError }}</div>
           <div class="d-flex gap-2">
             <button class="btn btn-sm fw-semibold" :disabled="editSaving" @click="saveEditItem(entry.itemId)"
                     style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
               {{ editSaving ? 'Saving…' : 'Save' }}
             </button>
             <button class="btn btn-sm" @click="editingItem = null"
-                    style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
+                    style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
           </div>
         </div>
       </div>
@@ -317,17 +351,20 @@
 
       <div class="mt-2">
         <button class="btn fw-semibold"
+                :aria-expanded="showSnackPanel"
+                aria-controls="snack-panel"
                 @click="showSnackPanel = !showSnackPanel"
                 style="background:#f3f4f6;color:#1b4d1b;border:0.75px solid #1b4d1b;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;">
           {{ showSnackPanel ? 'Close' : 'Add Snack / Drink' }}
         </button>
       </div>
 
-      <div v-if="showSnackPanel" class="p-4 rounded mt-3"
+      <div v-if="showSnackPanel" id="snack-panel" class="p-4 rounded mt-3"
            style="background:#fffaf5;border:1.25px solid #1b4d1b;border-radius:12px;">
 
         <div class="d-flex gap-2 mb-3">
-          <input type="text" class="form-control"
+          <label for="snack-search" class="visually-hidden">Search food or drink</label>
+          <input id="snack-search" type="text" class="form-control"
                  placeholder="Search food or drink (e.g. banana, orange juice)..."
                  v-model="snackQuery"
                  @keyup.enter="searchSnacks"
@@ -338,9 +375,11 @@
           </button>
         </div>
 
-        <div v-if="snackError" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ snackError }}</div>
+        <div v-if="snackError" role="alert" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ snackError }}</div>
 
-        <div v-if="snackResults.length > 0" class="rounded p-3 mb-2" style="background:#fff;border:1px solid #e5e7eb;max-height:400px;overflow-y:auto;">
+        <div v-if="snackResults.length > 0"
+             role="region" aria-label="Snack food search results"
+             class="rounded p-3 mb-2" style="background:#fff;border:1px solid #e5e7eb;max-height:400px;overflow-y:auto;">
           <div v-for="food in snackResults" :key="food.food_id"
                class="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
                style="background:#f9fafb;border:1px solid #e5e7eb;">
@@ -365,8 +404,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from '../composables/useToast.js'
 import {
   meals, recipes, headerTotals,
   diaryLoading, diaryError,
@@ -380,6 +420,7 @@ import { apiFetch } from '../auth.js'
 
 const route = useRoute()
 const router = useRouter()
+const { addToast } = useToast()
 
 const formattedDate = computed(() =>
   viewDate.value.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
@@ -397,6 +438,7 @@ const mainMeals = computed(() => meals.value.filter(m => m.id !== 'snack'))
 
 const calorieBudget = ref(2000)
 
+// pull the calorie goal so we can show "remaining" at the top — falls back to 2000 if none set
 async function loadCalorieGoal() {
   try {
     const res = await apiFetch('/api/goals')
@@ -414,6 +456,7 @@ async function loadCalorieGoal() {
 
 const caloriesRemaining = computed(() => calorieBudget.value - headerTotals.value.kcal)
 
+// scans all active plans to find one that has entries for the currently viewed date
 const planDayForDate = computed(() => {
   const y = viewDate.value.getFullYear()
   const m = String(viewDate.value.getMonth() + 1).padStart(2, '0')
@@ -478,14 +521,45 @@ watch(viewDate, () => {
   router.replace({ query: { date: dateStr } })
 })
 
-function handlePrevDay() { prevDay() }
-function handleNextDay() { nextDay() }
+const dateAnnouncement = ref('')
+
+function handlePrevDay() {
+  prevDay()
+  dateAnnouncement.value = `Navigated to ${formattedDate.value}`
+}
+
+function handleNextDay() {
+  if (!isToday.value) {
+    nextDay()
+    dateAnnouncement.value = `Navigated to ${formattedDate.value}`
+  }
+}
 
 const addTabs = [
   { id: 'custom',  label: 'Custom Entry' },
   { id: 'saved',   label: 'Food Search' },
   { id: 'recipes', label: 'From Recipes' },
 ]
+
+function handleDiaryTabKeydown(event, mealId) {
+  const tabIds = addTabs.map(t => t.id)
+  const currentIndex = tabIds.indexOf(activeTab.value[mealId])
+  let newIndex = currentIndex
+  if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    newIndex = (currentIndex + 1) % tabIds.length
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    newIndex = (currentIndex - 1 + tabIds.length) % tabIds.length
+  } else {
+    return
+  }
+  activeTab.value[mealId] = tabIds[newIndex]
+  if (tabIds[newIndex] === 'recipes') loadDiaryRecipes()
+  nextTick(() => {
+    document.getElementById(`tab-${tabIds[newIndex]}-${mealId}`)?.focus()
+  })
+}
 
 const openPanel = ref(null)
 
@@ -508,9 +582,10 @@ async function handleAddRecipe(recipe, mealId) {
   recipeAdding.value[key] = true
   try {
     await addRecipeToDiary(recipe, mealId)
+    addToast(`${recipe.title} added to diary`)
     openPanel.value = null
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   } finally {
     recipeAdding.value[key] = false
   }
@@ -547,6 +622,7 @@ async function handleAddCustom(mealId) {
   customSaving.value[mealId] = true
   try {
     await addCustomItem({ mealType: mealId, ...form })
+    addToast(`${form.name} added to diary`)
     customForm.value[mealId] = blankCustomForm()
     openPanel.value = null
   } catch (e) {
@@ -562,6 +638,7 @@ const mealSearchError = ref({})
 const mealSearchResults = ref({})
 const mealAddingFoodId = ref({})
 
+// FatSecret returns either a single object or an array depending on result count — normalize it
 async function searchMealFood(mealId) {
   const q = mealSearchQuery.value[mealId]?.trim()
   if (!q) return
@@ -593,6 +670,7 @@ async function handleAddMealFood(mealId, food_id) {
   mealAddingFoodId.value[mealId] = food_id
   try {
     await addFatSecretItem({ mealType: mealId, food_id })
+    addToast('Food added to diary')
     mealSearchResults.value[mealId] = []
     mealSearchQuery.value[mealId] = ''
     openPanel.value = null
@@ -641,6 +719,7 @@ async function handleAddSnack(food_id) {
   snackAddingFoodId.value = food_id
   try {
     await addFatSecretItem({ mealType: 'snack', food_id })
+    addToast('Snack added to diary')
     snackResults.value = []
     snackQuery.value = ''
     showSnackPanel.value = false
@@ -686,8 +765,9 @@ async function handleRemoveItem(itemId) {
   removingItemId.value = itemId
   try {
     await removeItem(itemId)
+    addToast('Item removed from diary')
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   } finally {
     removingItemId.value = null
   }

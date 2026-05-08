@@ -4,21 +4,22 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Messages</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Messages</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">
           {{ isProfessional ? 'Message your clients' : 'Communicate with your nutrition professional' }}
         </p>
       </div>
     </div>
 
+    <!-- professional view: client list on the left, chat + shared recipes on the right -->
     <template v-if="isProfessional">
-      <div v-if="loadingClients" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading clients…</div>
-      <div v-else-if="clientsError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ clientsError }}</div>
+      <div v-if="loadingClients" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading clients…</div>
+      <div v-else-if="clientsError" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ clientsError }}</div>
       <div v-else-if="clients.length === 0"
            class="text-center py-5 rounded"
            style="background:#f9fafb;border:2px dashed #e5e7eb;">
         <p class="mb-1" style="color:#6b7280;font-size:0.9375rem;">No active clients yet.</p>
-        <small style="color:#9ca3af;">Clients will appear here once they accept your invitation.</small>
+        <small style="color:#6b7280;">Clients will appear here once they accept your invitation.</small>
       </div>
       <div v-else class="row g-3 flex-grow-1" style="min-height:0;">
 
@@ -38,7 +39,7 @@
               </div>
               <div class="text-start overflow-hidden">
                 <div class="fw-bold small text-truncate">{{ client.subscriber.fullName }}</div>
-                <div style="font-size:0.75rem;" :style="selectedClient?.id === client.id ? 'color:#e5e7eb;' : 'color:#6b7280;'">ID {{ client.subscriberId }}</div>
+                <div style="font-size:0.75rem;" :style="selectedClient?.id === client.id ? 'color:#fff;' : 'color:#4b5563;'">ID {{ client.subscriberId }}</div>
               </div>
             </button>
           </div>
@@ -62,6 +63,7 @@
                     class="d-flex align-items-center gap-2 mb-2 pb-2"
                     style="border-bottom:1px solid #f3f4f6;">
                   <img v-if="s.recipe?.image" :src="s.recipe.image"
+                       alt=""
                        style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
                   <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-semibold text-truncate" style="color:#1b4d1b;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
@@ -87,36 +89,44 @@
             <div class="d-flex justify-content-between align-items-center p-3" style="background:#fff;border-bottom:1px solid #f3f4f6;">
               <span class="fw-semibold" style="font-size:0.875rem;color:#1b4d1b;">Conversation with {{ selectedClient.subscriber.fullName }}</span>
               <button @click="selectedClient = null"
-                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;cursor:pointer;">✕ Close</button>
+                      :aria-label="`Close conversation with ${selectedClient.subscriber.fullName}`"
+                      style="background:#f3f4f6;color:#4b5563;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;cursor:pointer;">
+                <span aria-hidden="true">✕</span> Close
+              </button>
             </div>
 
             <div class="overflow-auto flex-grow-1 p-3" ref="proChatBody">
-              <div v-if="proChat.loading" class="text-center py-4" style="color:#6b7280;font-size:0.875rem;">Loading messages…</div>
-              <div v-else-if="proChat.error" class="alert alert-danger" style="font-size:0.875rem;border-radius:8px;">{{ proChat.error }}</div>
+              <div v-if="proChat.loading" role="status" aria-live="polite" class="text-center py-4" style="color:#6b7280;font-size:0.875rem;">Loading messages…</div>
+              <div v-else-if="proChat.error" role="alert" class="alert alert-danger" style="font-size:0.875rem;border-radius:8px;">{{ proChat.error }}</div>
               <div v-else-if="proChat.messages.length === 0" class="text-center py-4" style="color:#6b7280;">
                 <small>No messages yet. Start the conversation below.</small>
               </div>
-              <template v-else>
-                <div v-for="msg in proChat.messages" :key="msg.id" class="mb-2">
-                  <div v-if="msg.sentBy === 'professional'" class="ms-auto" style="max-width:80%;background:#f3f4f6;border-radius:12px;padding:0.75rem;border:1px solid #e5e7eb;">
-                    <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
-                    <div class="mt-1" style="font-size:0.7rem;color:#6b7280;">{{ formatDateTime(msg.createdAt) }}</div>
-                  </div>
-                  <div v-else style="max-width:80%;background:#e8f5e9;border-radius:12px;padding:0.75rem;border:1px solid #c8e6c9;">
-                    <div class="fw-semibold mb-1" style="color:#2e7d32;font-size:0.875rem;">
-                      {{ selectedClient.subscriber.fullName }}
+              <ul v-else class="list-unstyled mb-0" aria-label="Conversation messages">
+                <li v-for="msg in proChat.messages" :key="msg.id" class="mb-2">
+                  <article>
+                    <div v-if="msg.sentBy === 'professional'" class="ms-auto" style="max-width:80%;background:#f3f4f6;border-radius:12px;padding:0.75rem;border:1px solid #e5e7eb;">
+                      <span class="visually-hidden">You: </span>
+                      <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
+                      <time :datetime="msg.createdAt" class="mt-1 d-block" style="font-size:0.7rem;color:#4b5563;">{{ formatDateTime(msg.createdAt) }}</time>
                     </div>
-                    <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
-                    <div class="mt-1" style="font-size:0.7rem;color:#6b7280;">{{ formatDateTime(msg.createdAt) }}</div>
-                  </div>
-                </div>
-              </template>
+                    <div v-else style="max-width:80%;background:#e8f5e9;border-radius:12px;padding:0.75rem;border:1px solid #c8e6c9;">
+                      <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;" aria-hidden="true">
+                        {{ selectedClient.subscriber.fullName }}
+                      </div>
+                      <span class="visually-hidden">{{ selectedClient.subscriber.fullName }}: </span>
+                      <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
+                      <time :datetime="msg.createdAt" class="mt-1 d-block" style="font-size:0.7rem;color:#4b5563;">{{ formatDateTime(msg.createdAt) }}</time>
+                    </div>
+                  </article>
+                </li>
+              </ul>
             </div>
 
             <div class="p-3" style="background:#f9fafb;border-top:1px solid #f3f4f6;">
-              <div v-if="proChat.sendError" class="alert alert-danger py-2 mb-2" style="font-size:0.875rem;border-radius:8px;">{{ proChat.sendError }}</div>
+              <div v-if="proChat.sendError" role="alert" class="alert alert-danger py-2 mb-2" style="font-size:0.875rem;border-radius:8px;">{{ proChat.sendError }}</div>
               <div class="d-flex gap-2">
-                <input type="text"
+                <label for="pro-message-input" class="visually-hidden">Type a message to {{ selectedClient?.subscriber?.fullName }}</label>
+                <input id="pro-message-input" type="text"
                        class="form-control"
                        placeholder="Type a message…"
                        v-model="proChat.draft"
@@ -136,50 +146,68 @@
 
       </div>
 
+      <!-- recipe share modal in a Teleport so it sits above the chat layout -->
       <Teleport to="body">
         <div v-if="shareModal.open"
              style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1080;display:flex;align-items:center;justify-content:center;"
-             @click.self="closeShareModal">
-          <div class="bg-white rounded shadow p-4"
+             @click.self="closeShareModal"
+             @keydown="shareModalKeydown">
+          <div ref="shareModalRef"
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="share-modal-title"
+               class="bg-white rounded shadow p-4"
                style="width:520px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;">
-            <h5 class="fw-bold mb-2" style="color:#5a9e56;">Share a Recipe</h5>
+            <h2 id="share-modal-title" class="fw-bold mb-2" style="color:#5a9e56;font-size:1.1rem;">Share a Recipe</h2>
             <p class="text-muted small mb-3">
               Send {{ selectedClient?.subscriber?.fullName }} a recipe from the library.
             </p>
 
-            <input type="text" class="form-control form-control-sm mb-2"
+            <label for="share-search" class="visually-hidden">Search recipes by title</label>
+            <input id="share-search" type="text" class="form-control form-control-sm mb-2"
                    placeholder="Search recipes by title…"
                    v-model="shareModal.query">
 
-            <div class="overflow-auto border rounded" style="flex:1;min-height:120px;">
-              <div v-if="shareModal.loading" class="text-muted small text-center py-3">Loading…</div>
-              <div v-else-if="shareModal.error" class="alert alert-danger small m-2 mb-0">{{ shareModal.error }}</div>
-              <div v-else-if="filteredShareCandidates.length === 0"
-                   class="text-muted small text-center py-3">No recipes match.</div>
-              <ul v-else class="list-unstyled small mb-0">
-                <li v-for="r in filteredShareCandidates" :key="r.recipeId"
-                    class="d-flex align-items-center gap-2 p-2 border-bottom"
-                    :style="shareModal.selectedId === r.recipeId ? 'background:#e8f4e6;' : 'cursor:pointer;'"
-                    @click="shareModal.selectedId = r.recipeId">
-                  <img v-if="r.image" :src="r.image"
-                       style="width:42px;height:42px;object-fit:cover;border-radius:4px;flex-shrink:0;" />
-                  <div class="flex-grow-1 overflow-hidden">
-                    <div class="fw-semibold text-truncate">{{ r.title }}</div>
-                    <div class="text-muted" style="font-size:0.7rem;">{{ r.kcal ?? '?' }} kcal</div>
-                  </div>
-                  <input type="radio" :checked="shareModal.selectedId === r.recipeId" readonly>
-                </li>
-              </ul>
-            </div>
+            <fieldset style="border:none;padding:0;flex:1;min-height:0;display:flex;flex-direction:column;">
+              <legend class="visually-hidden">Select a recipe to share with {{ selectedClient?.subscriber?.fullName }}</legend>
+              <div class="overflow-auto border rounded" style="flex:1;min-height:120px;">
+                <div v-if="shareModal.loading" role="status" aria-live="polite" class="text-muted small text-center py-3">Loading…</div>
+                <div v-else-if="shareModal.error" role="alert" class="alert alert-danger small m-2 mb-0">{{ shareModal.error }}</div>
+                <div v-else-if="filteredShareCandidates.length === 0"
+                     class="text-muted small text-center py-3">No recipes match.</div>
+                <ul v-else class="list-unstyled small mb-0">
+                  <li v-for="r in filteredShareCandidates" :key="r.recipeId">
+                    <label :for="`share-recipe-${r.recipeId}`"
+                           class="d-flex align-items-center gap-2 p-2 border-bottom w-100"
+                           style="cursor:pointer;margin:0;"
+                           :style="shareModal.selectedId === r.recipeId ? 'background:#e8f4e6;' : ''">
+                      <input type="radio"
+                             :id="`share-recipe-${r.recipeId}`"
+                             name="share-recipe"
+                             :value="r.recipeId"
+                             v-model="shareModal.selectedId"
+                             class="visually-hidden" />
+                      <img v-if="r.image" :src="r.image" alt=""
+                           style="width:42px;height:42px;object-fit:cover;border-radius:4px;flex-shrink:0;" />
+                      <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-semibold text-truncate">{{ r.title }}</div>
+                        <div class="text-muted" style="font-size:0.7rem;">{{ r.kcal ?? '?' }} kcal</div>
+                      </div>
+                      <span v-if="shareModal.selectedId === r.recipeId" class="visually-hidden">Selected</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </fieldset>
 
-            <div v-if="shareModal.sendError" class="alert alert-danger py-1 small mt-2 mb-0">
+            <div v-if="shareModal.sendError" role="alert" class="alert alert-danger py-1 small mt-2 mb-0">
               {{ shareModal.sendError }}
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3">
               <button class="btn btn-sm" @click="closeShareModal"
                       :disabled="shareModal.sending"
-                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
+                      style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
               <button class="btn btn-sm fw-semibold" @click="confirmShare"
                       :disabled="shareModal.sending || !shareModal.selectedId"
                       style="background:#2e7d32;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">
@@ -191,13 +219,15 @@
       </Teleport>
     </template>
 
+    <!-- subscriber view: pending invitations at top, then assigned professional's card + chat -->
     <template v-else>
-      <div v-if="loadingPro" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading...</div>
-      <div v-else-if="proError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ proError }}</div>
+      <div v-if="loadingPro" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;font-size:0.875rem;">Loading...</div>
+      <div v-else-if="proError" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ proError }}</div>
 
       <template v-else>
+        <div v-if="inviteActionError" role="alert" class="alert alert-danger mb-3" style="border-radius:8px;font-size:0.875rem;">{{ inviteActionError }}</div>
         <div v-if="invitations.length > 0" class="mb-4">
-          <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Pending Invitations</h6>
+          <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Pending Invitations</h2>
           <div v-for="inv in invitations" :key="inv.id"
                class="p-3 mb-3 d-flex flex-row align-items-center justify-content-between gap-3 rounded"
                style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
@@ -222,7 +252,7 @@
                 {{ inv._busy && inv._action === 'accept' ? '…' : 'Accept' }}
               </button>
               <button class="btn btn-sm"
-                      style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
+                      style="background:#fde8e8;border:1px solid #d99;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
                       :disabled="inv._busy"
                       @click="respondInvite(inv, 'reject')">
                 {{ inv._busy && inv._action === 'reject' ? '…' : 'Decline' }}
@@ -235,7 +265,7 @@
              class="text-center py-5 rounded"
              style="background:#f9fafb;border:2px dashed #e5e7eb;">
           <p class="mb-1" style="color:#6b7280;font-size:0.9375rem;">No professional assigned yet.</p>
-          <small style="color:#9ca3af;">A nutritionist will appear here once they invite you and you accept.</small>
+          <small style="color:#6b7280;">A nutritionist will appear here once they invite you and you accept.</small>
         </div>
 
         <div v-if="professional" class="row g-3 flex-grow-1" style="min-height:0;">
@@ -252,7 +282,7 @@
                 </div>
               </div>
               <button class="btn btn-sm w-100"
-                      style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.5rem;border-radius:8px;font-size:0.875rem;"
+                      style="background:#fde8e8;border:1px solid #d99;color:#991b1b;padding:0.5rem;border-radius:8px;font-size:0.875rem;"
                       @click="openRemoveModal">
                 Remove Professional
               </button>
@@ -271,6 +301,7 @@
                       class="d-flex align-items-center gap-2 mb-2 pb-2"
                       style="border-bottom:1px solid #f3f4f6;">
                     <img v-if="s.recipe?.image" :src="s.recipe.image"
+                         alt=""
                          style="width:42px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
                     <div class="flex-grow-1 overflow-hidden">
                       <div class="fw-semibold text-truncate" style="color:#1b4d1b;">{{ s.recipe?.title ?? `Recipe #${s.recipeId}` }}</div>
@@ -294,32 +325,37 @@
               </div>
 
               <div class="overflow-auto flex-grow-1 p-3" ref="chatBody">
-                <div v-if="loadingMessages" class="text-center py-4" style="color:#6b7280;font-size:0.875rem;">Loading messages...</div>
-                <div v-else-if="messagesError" class="alert alert-danger" style="font-size:0.875rem;border-radius:8px;">{{ messagesError }}</div>
+                <div v-if="loadingMessages" role="status" aria-live="polite" class="text-center py-4" style="color:#6b7280;font-size:0.875rem;">Loading messages...</div>
+                <div v-else-if="messagesError" role="alert" class="alert alert-danger" style="font-size:0.875rem;border-radius:8px;">{{ messagesError }}</div>
                 <div v-else-if="messages.length === 0" class="text-center py-4" style="color:#6b7280;">
                   <small>No messages yet. Start the conversation below.</small>
                 </div>
-                <template v-else>
-                  <div v-for="msg in messages" :key="msg.id" class="mb-2">
-                    <div v-if="msg.sentBy === 'professional'" style="max-width:80%;background:#e8f5e9;border-radius:12px;padding:0.75rem;border:1px solid #c8e6c9;">
-                      <div class="fw-semibold mb-1" style="color:#2e7d32;font-size:0.875rem;">
-                        {{ professional.professional.fullName }}
+                <ul v-else class="list-unstyled mb-0" aria-label="Conversation messages">
+                  <li v-for="msg in messages" :key="msg.id" class="mb-2">
+                    <article>
+                      <div v-if="msg.sentBy === 'professional'" style="max-width:80%;background:#e8f5e9;border-radius:12px;padding:0.75rem;border:1px solid #c8e6c9;">
+                        <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;" aria-hidden="true">
+                          {{ professional.professional.fullName }}
+                        </div>
+                        <span class="visually-hidden">{{ professional.professional.fullName }}: </span>
+                        <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
+                        <time :datetime="msg.createdAt" class="mt-1 d-block" style="font-size:0.7rem;color:#4b5563;">{{ formatDateTime(msg.createdAt) }}</time>
                       </div>
-                      <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
-                      <div class="mt-1" style="font-size:0.7rem;color:#6b7280;">{{ formatDateTime(msg.createdAt) }}</div>
-                    </div>
-                    <div v-else class="ms-auto" style="max-width:80%;background:#f3f4f6;border-radius:12px;padding:0.75rem;border:1px solid #e5e7eb;">
-                      <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
-                      <div class="mt-1" style="font-size:0.7rem;color:#6b7280;">{{ formatDateTime(msg.createdAt) }}</div>
-                    </div>
-                  </div>
-                </template>
+                      <div v-else class="ms-auto" style="max-width:80%;background:#f3f4f6;border-radius:12px;padding:0.75rem;border:1px solid #e5e7eb;">
+                        <span class="visually-hidden">You: </span>
+                        <div style="font-size:0.875rem;color:#1b4d1b;">{{ msg.message }}</div>
+                        <time :datetime="msg.createdAt" class="mt-1 d-block" style="font-size:0.7rem;color:#4b5563;">{{ formatDateTime(msg.createdAt) }}</time>
+                      </div>
+                    </article>
+                  </li>
+                </ul>
               </div>
 
               <div class="p-3" style="background:#f9fafb;border-top:1px solid #f3f4f6;">
-                <div v-if="sendError" class="alert alert-danger py-2 mb-2" style="font-size:0.875rem;border-radius:8px;">{{ sendError }}</div>
+                <div v-if="sendError" role="alert" class="alert alert-danger py-2 mb-2" style="font-size:0.875rem;border-radius:8px;">{{ sendError }}</div>
                 <div class="d-flex gap-2">
-                  <input type="text"
+                  <label for="client-message-input" class="visually-hidden">Type a message to {{ professional?.professional?.fullName }}</label>
+                  <input id="client-message-input" type="text"
                          class="form-control"
                          placeholder="Type a message..."
                          v-model="newMessage"
@@ -342,13 +378,19 @@
       <Teleport to="body">
         <div v-if="removeModal.open"
              style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1080;display:flex;align-items:center;justify-content:center;"
-             @click.self="closeRemoveModal">
-          <div class="bg-white rounded shadow p-4" style="width:480px;max-width:92vw;border-radius:12px;">
+             @click.self="closeRemoveModal"
+             @keydown="removeModalKeydown">
+          <div ref="removeModalRef"
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="remove-modal-title"
+               aria-describedby="remove-modal-desc"
+               class="bg-white rounded shadow p-4" style="width:480px;max-width:92vw;border-radius:12px;">
             <div class="d-flex align-items-center gap-2 mb-3">
-              <div style="width:36px;height:36px;border-radius:50%;background:#fde8e8;color:#c44;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;">!</div>
-              <h5 class="fw-bold mb-0" style="color:#c44;">Remove Professional?</h5>
+              <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;background:#fde8e8;color:#991b1b;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;">!</div>
+              <h2 id="remove-modal-title" class="fw-bold mb-0" style="color:#991b1b;font-size:1.1rem;">Remove Professional?</h2>
             </div>
-            <p class="mb-2" style="color:#6b7280;font-size:0.875rem;">
+            <p id="remove-modal-desc" class="mb-2" style="color:#6b7280;font-size:0.875rem;">
               You're about to remove <strong>{{ professional?.professional?.fullName }}</strong> as your assigned nutritionist.
             </p>
             <div class="alert py-2 mb-3" style="background:#fffbf0;border:1px solid #e8a820;color:#7a5800;border-radius:8px;font-size:0.875rem;">
@@ -361,20 +403,21 @@
               </ul>
             </div>
             <div class="mb-3">
-              <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">
+              <label for="remove-confirm-input" class="form-label" style="font-size:0.8125rem;color:#6b7280;">
                 Type <code style="background:#f3f4f6;padding:0.125rem 0.375rem;border-radius:4px;">{{ removeConfirmPhrase }}</code> to confirm:
               </label>
-              <input type="text" class="form-control"
+              <input id="remove-confirm-input" type="text" class="form-control"
                      v-model="removeModal.confirmText"
                      :disabled="removeModal.removing"
                      placeholder="Type to confirm"
+                     autocomplete="off"
                      style="border-radius:8px;">
             </div>
-            <div v-if="removeModal.error" class="alert alert-danger py-2 mb-2" style="border-radius:8px;font-size:0.875rem;">{{ removeModal.error }}</div>
+            <div v-if="removeModal.error" role="alert" class="alert alert-danger py-2 mb-2" style="border-radius:8px;font-size:0.875rem;">{{ removeModal.error }}</div>
             <div class="d-flex justify-content-end gap-2">
               <button class="btn btn-sm" @click="closeRemoveModal"
                       :disabled="removeModal.removing"
-                      style="background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;">Cancel</button>
+                      style="background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;">Cancel</button>
               <button class="btn btn-sm"
                       style="background:#c44;border:1px solid #a33;color:#fff;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;"
                       :disabled="removeModal.removing || removeModal.confirmText !== removeConfirmPhrase"
@@ -393,6 +436,7 @@
 <script setup>
 import { ref, reactive, computed, nextTick, onMounted, watch } from 'vue'
 import { apiFetch, currentUser } from '../auth.js'
+import { useFocusTrap } from '../composables/useFocusTrap.js'
 
 const isProfessional = computed(() => currentUser.value.role === 'professional')
 
@@ -459,6 +503,7 @@ async function selectClient(client) {
   await Promise.all([loadProMessages(), loadProShared()])
 }
 
+// messages come back oldest-first from the API, reverse so newest is at the bottom of the chat
 async function loadProMessages() {
   proChat.loading = true
   proChat.error = ''
@@ -520,6 +565,7 @@ async function loadProShared() {
   }
 }
 
+// lazy-loads the recipe list only once — reuses the cached candidates on subsequent opens
 async function openShareModal() {
   shareModal.open = true
   shareModal.query = ''
@@ -578,6 +624,7 @@ async function scrollProToBottom() {
 
 const professional = ref(null)
 const invitations = ref([])
+const inviteActionError = ref('')
 const loadingPro = ref(true)
 const proError = ref('')
 
@@ -601,6 +648,21 @@ const removeModal = reactive({
   removing: false,
   error: '',
 })
+const removeModalRef = ref(null)
+const isRemoveModalOpen = computed(() => removeModal.open)
+const { handleKeydown: removeModalKeydown } = useFocusTrap(
+  isRemoveModalOpen,
+  removeModalRef,
+  () => closeRemoveModal(),
+)
+
+const shareModalRef = ref(null)
+const isShareModalOpen = computed(() => shareModal.open)
+const { handleKeydown: shareModalKeydown } = useFocusTrap(
+  isShareModalOpen,
+  shareModalRef,
+  () => closeShareModal(),
+)
 
 const removeConfirmPhrase = 'REMOVE'
 
@@ -631,6 +693,7 @@ async function loadProfessional() {
 }
 
 async function respondInvite(inv, action) {
+  inviteActionError.value = ''
   inv._busy = true
   inv._action = action
   try {
@@ -640,12 +703,12 @@ async function respondInvite(inv, action) {
     )
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      alert(data.error || `Failed to ${action} invitation`)
+      inviteActionError.value = data.error || `Failed to ${action} invitation`
       return
     }
     await loadProfessional()
   } catch {
-    alert('Network error')
+    inviteActionError.value = 'Network error'
   } finally {
     inv._busy = false
     inv._action = ''

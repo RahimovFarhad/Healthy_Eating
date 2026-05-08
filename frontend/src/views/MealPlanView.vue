@@ -4,28 +4,31 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Meal Plans</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Meal Plans</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Plan your meals in advance using your saved recipes</p>
       </div>
       <button class="btn fw-semibold"
               style="background:#1b4d1b;color:#fff;border:none;padding:0.625rem 1.25rem;border-radius:8px;font-size:0.875rem;"
+              :aria-expanded="showNewPlanForm ? 'true' : 'false'"
+              aria-controls="new-plan-form"
               @click="showNewPlanForm = !showNewPlanForm">
         {{ showNewPlanForm ? 'Cancel' : '+ New Plan' }}
       </button>
     </div>
 
-    <div v-if="showNewPlanForm" class="p-4 rounded mb-4"
+    <div v-if="showNewPlanForm" id="new-plan-form" class="p-4 rounded mb-4"
          style="background:#fff;border:1.25px solid #1b4d1b;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-      <h6 class="fw-semibold mb-3" style="color:#1b4d1b;font-size:0.9375rem;">Create New Plan</h6>
+      <h2 class="fw-semibold mb-2" style="color:#1b4d1b;font-size:0.9375rem;">Create New Plan</h2>
+      <p style="font-size:0.8rem;color:#6b7280;margin-bottom:0.75rem;">Fields marked <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden">with an asterisk</span> are required.</p>
       <div class="row g-3">
         <div class="col-sm-5">
-          <label class="form-label" style="color:#374151;font-size:0.875rem;font-weight:500;">Start Date</label>
-          <input type="date" class="form-control" style="border-radius:8px;font-size:0.875rem;"
+          <label for="new-plan-start" class="form-label" style="color:#374151;font-size:0.875rem;font-weight:500;">Start Date <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+          <input id="new-plan-start" type="date" class="form-control" style="border-radius:8px;font-size:0.875rem;"
                  v-model="newPlan.startDate" :min="todayIso()" />
         </div>
         <div class="col-sm-5">
-          <label class="form-label" style="color:#374151;font-size:0.875rem;font-weight:500;">End Date</label>
-          <input type="date" class="form-control" style="border-radius:8px;font-size:0.875rem;"
+          <label for="new-plan-end" class="form-label" style="color:#374151;font-size:0.875rem;font-weight:500;">End Date <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+          <input id="new-plan-end" type="date" class="form-control" style="border-radius:8px;font-size:0.875rem;"
                  v-model="newPlan.endDate" :min="newPlan.startDate || todayIso()" />
         </div>
         <div class="col-sm-2 d-flex align-items-end">
@@ -40,8 +43,8 @@
       <div v-if="newPlan.error" class="mt-2" style="color:#d94f4f;font-size:0.875rem;">{{ newPlan.error }}</div>
     </div>
 
-    <div v-if="plansLoading" class="text-center py-5" style="color:#9ca3af;">Loading plans…</div>
-    <div v-if="plansError" class="alert alert-danger" style="border-radius:8px;">{{ plansError }}</div>
+    <div v-if="plansLoading" role="status" aria-live="polite" class="text-center py-5" style="color:#6b7280;">Loading plans…</div>
+    <div v-if="plansError" role="alert" class="alert alert-danger" style="border-radius:8px;">{{ plansError }}</div>
 
     <div v-if="!plansLoading && !plansError && plans.length === 0"
          class="text-center py-5 rounded"
@@ -51,14 +54,19 @@
       <div style="color:#6b7280;font-size:0.875rem;">Create a plan to start scheduling your meals by recipe.</div>
     </div>
 
+    <!-- list of plans as accordion cards — clicking the header loads and expands that plan's detail -->
     <div v-for="plan in plans" :key="plan.planId" class="mb-4">
 
       <div class="d-flex justify-content-between align-items-center p-3 rounded"
            :style="activePlanId === plan.planId
-             ? 'background:#1b4d1b;border-radius:12px 12px 0 0;cursor:pointer;'
-             : 'background:#f9fafb;border:0.75px solid #1b4d1b;border-radius:12px;cursor:pointer;'"
-           @click="togglePlan(plan.planId)">
-        <div class="d-flex align-items-center gap-3">
+             ? 'background:#1b4d1b;border-radius:12px 12px 0 0;'
+             : 'background:#f9fafb;border:0.75px solid #1b4d1b;border-radius:12px;'">
+        <button type="button"
+                class="d-flex align-items-center gap-3 flex-grow-1 text-start"
+                :aria-expanded="activePlanId === plan.planId ? 'true' : 'false'"
+                :aria-controls="`plan-detail-${plan.planId}`"
+                @click="togglePlan(plan.planId)"
+                style="background:transparent;border:none;padding:0;cursor:pointer;">
           <span class="fw-semibold"
                 :style="activePlanId === plan.planId ? 'color:#fff;font-size:0.9375rem;' : 'color:#1b4d1b;font-size:0.9375rem;'">
             {{ formatPlanLabel(plan) }}
@@ -69,41 +77,58 @@
                   : 'background:#e8f5e9;color:#2e7d32;font-size:0.75rem;'">
             {{ plan.planItems?.length ?? 0 }} items
           </span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm fw-semibold"
-                  style="background:#fde8e8;border:1px solid #f9a8a8;color:#c44;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;"
-                  @click.stop="handleDeletePlan(plan.planId)">
-            Delete
-          </button>
-          <span :style="activePlanId === plan.planId ? 'color:#fff;font-weight:600;' : 'color:#1b4d1b;font-weight:600;'">
+          <span aria-hidden="true" :style="activePlanId === plan.planId ? 'color:#fff;font-weight:600;' : 'color:#1b4d1b;font-weight:600;'">
             {{ activePlanId === plan.planId ? '▲' : '▼' }}
           </span>
+        </button>
+        <div class="d-flex align-items-center gap-2">
+          <template v-if="confirmDeletePlanId === plan.planId">
+            <button class="btn btn-sm fw-semibold"
+                    style="background:#991b1b;color:#fff;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;"
+                    @click="handleDeletePlan(plan.planId)">
+              Confirm Delete
+            </button>
+            <button class="btn btn-sm"
+                    style="background:#f3f4f6;color:#4b5563;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;"
+                    @click="confirmDeletePlanId = null">
+              Cancel
+            </button>
+          </template>
+          <button v-else class="btn btn-sm fw-semibold"
+                  :aria-label="`Delete plan ${formatPlanLabel(plan)}`"
+                  style="background:#fde8e8;border:1px solid #f9a8a8;color:#991b1b;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;"
+                  @click="handleDeletePlan(plan.planId)">
+            Delete
+          </button>
         </div>
       </div>
 
       <div v-if="activePlanId === plan.planId"
+           :id="`plan-detail-${plan.planId}`"
            class="p-4 rounded"
            style="background:#fff;border:1.25px solid #1b4d1b;border-top:none;border-radius:0 0 12px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
 
-        <div v-if="activePlanLoading" style="color:#9ca3af;font-size:0.875rem;text-align:center;padding:2rem 0;">Loading…</div>
+        <div v-if="activePlanLoading" style="color:#6b7280;font-size:0.875rem;text-align:center;padding:2rem 0;">Loading…</div>
         <div v-else-if="activePlanError" class="alert alert-danger" style="border-radius:8px;font-size:0.875rem;">{{ activePlanError }}</div>
 
         <div v-else-if="activePlan">
 
+          <!-- week pagination — plans can span multiple weeks so we page through 7 days at a time -->
           <div class="d-flex justify-content-between align-items-center mb-4">
             <button class="btn"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;"
                     :disabled="!canGoPrev"
-                    @click="prevWeek">‹</button>
+                    aria-label="Previous week"
+                    @click="prevWeek"><span aria-hidden="true">‹</span></button>
             <div class="text-center">
               <div class="fw-semibold" style="color:#1b4d1b;font-size:0.9375rem;">{{ weekRangeLabel }}</div>
-              <div style="color:#9ca3af;font-size:0.75rem;">Week {{ currentWeekIndex + 1 }} of {{ totalWeeks }}</div>
+              <div style="color:#6b7280;font-size:0.75rem;">Week {{ currentWeekIndex + 1 }} of {{ totalWeeks }}</div>
             </div>
             <button class="btn"
                     style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.5rem 0.75rem;border-radius:8px;font-size:1rem;font-weight:600;"
                     :disabled="!canGoNext"
-                    @click="nextWeek">›</button>
+                    aria-label="Next week"
+                    @click="nextWeek"><span aria-hidden="true">›</span></button>
           </div>
 
           <div v-for="day in currentWeekDays" :key="day.date" class="mb-4">
@@ -128,6 +153,7 @@
                   </span>
                   <button class="btn btn-sm"
                           style="background:#e8f5e9;color:#2e7d32;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.8125rem;font-weight:500;"
+                          :aria-label="`Add recipe to ${mt.label} on ${formatDayHeader(day.date)}`"
                           @click="openAddItem(activePlan.planId, day.date, mt.id)">
                     + Add
                   </button>
@@ -140,18 +166,20 @@
                     <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">
                       {{ item.recipe?.title ?? `Recipe #${item.recipeId}` }}
                     </span>
-                    <span v-if="item.servings" style="color:#9ca3af;font-size:0.8125rem;margin-left:0.5rem;">
+                    <span v-if="item.servings" style="color:#6b7280;font-size:0.8125rem;margin-left:0.5rem;">
                       × {{ item.servings }} srv
                     </span>
                   </div>
                   <button class="btn btn-sm"
-                          style="background:none;border:none;color:#9ca3af;font-size:1rem;padding:0 0.25rem;line-height:1;"
+                          style="background:none;border:none;color:#6b7280;font-size:1rem;padding:0 0.25rem;line-height:1;"
                           :disabled="removingItemId === item.planItemId"
+                          :aria-label="`Remove ${item.recipe?.title ?? 'recipe'} from plan`"
                           @click="handleRemoveItem(activePlan.planId, item.planItemId)">
-                    ×
+                    <span aria-hidden="true">×</span>
                   </button>
                 </div>
 
+                <!-- inline recipe picker — only one open at a time, matched by planId + date + mealType -->
                 <div v-if="addItem.show && addItem.planId === activePlan.planId && addItem.date === day.date && addItem.mealType === mt.id"
                      class="mt-2 p-3 rounded"
                      style="background:#fff;border:1.25px solid #1b4d1b;border-radius:8px;">
@@ -162,9 +190,9 @@
                            v-model="addItem.query"
                            @input="filterRecipes" />
                   </div>
-                  <div v-if="recipesLoading" style="color:#9ca3af;font-size:0.8125rem;">Loading recipes…</div>
+                  <div v-if="recipesLoading" style="color:#6b7280;font-size:0.8125rem;">Loading recipes…</div>
                   <div v-else-if="filteredRecipes.length === 0 && addItem.query"
-                       style="color:#9ca3af;font-size:0.8125rem;">No recipes found.</div>
+                       style="color:#6b7280;font-size:0.8125rem;">No recipes found.</div>
                   <div v-else class="mb-2" style="max-height:160px;overflow-y:auto;">
                     <div v-for="r in filteredRecipes" :key="r.recipeId"
                          class="py-1 px-2 rounded"
@@ -181,7 +209,7 @@
                            min="1" style="border-radius:6px;font-size:0.875rem;max-width:160px;"
                            v-model.number="addItem.servings" />
                     <button class="btn btn-sm fw-semibold"
-                            style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
+                            style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
                             @click="closeAddItem">Cancel</button>
                     <button class="btn btn-sm fw-semibold"
                             style="background:#1b4d1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.8125rem;"
@@ -208,6 +236,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from '../composables/useToast.js'
 import {
   plans, plansLoading, plansError, activePlan, activePlanLoading, activePlanError,
   recipes, recipesLoading,
@@ -224,10 +253,12 @@ const MEAL_TYPES = [
 ]
 
 const router = useRouter()
+const { addToast } = useToast()
 
 const showNewPlanForm = ref(false)
 const activePlanId = ref(null)
 const removingItemId = ref(null)
+const confirmDeletePlanId = ref(null)
 const weekOffset = ref(0)
 const applyingDate = ref(null)
 
@@ -239,7 +270,7 @@ const addItem = reactive({
   saving: false, error: '',
 })
 
-// All days in the active plan
+// all days spread across the plan — groupItemsByDay normalises the flat planItems array into day buckets
 const allDays = computed(() => activePlan.value ? groupItemsByDay(activePlan.value) : [])
 
 const totalWeeks = computed(() => Math.ceil(allDays.value.length / 7) || 1)
@@ -311,6 +342,7 @@ async function handleCreatePlan() {
     weekOffset.value = 0
     await loadPlan(plan.planId)
     await loadRecipes()
+    addToast('Meal plan created')
   } catch (e) {
     newPlan.error = e.message
   } finally {
@@ -319,12 +351,17 @@ async function handleCreatePlan() {
 }
 
 async function handleDeletePlan(planId) {
-  if (!confirm('Delete this meal plan? This cannot be undone.')) return
+  if (confirmDeletePlanId.value !== planId) {
+    confirmDeletePlanId.value = planId
+    return
+  }
+  confirmDeletePlanId.value = null
   try {
     await deletePlan(planId)
     if (activePlanId.value === planId) activePlanId.value = null
+    addToast('Meal plan deleted')
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   }
 }
 
@@ -365,6 +402,7 @@ async function handleAddItem() {
       recipeId: addItem.recipeId,
       servings: addItem.servings || null,
     })
+    addToast('Item added to plan')
     closeAddItem()
   } catch (e) {
     addItem.error = e.message
@@ -377,6 +415,7 @@ function dayHasItems(day) {
   return day.breakfast.length + day.lunch.length + day.dinner.length + day.snack.length > 0
 }
 
+// logs the whole day's plan items to the diary and then navigates there so the user sees them immediately
 async function handleLogToDay(day) {
   applyingDate.value = day.date
   try {
@@ -384,7 +423,7 @@ async function handleLogToDay(day) {
     viewDate.value = new Date(day.date + 'T12:00:00')
     router.push('/diary')
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   } finally {
     applyingDate.value = null
   }
@@ -394,10 +433,20 @@ async function handleRemoveItem(planId, planItemId) {
   removingItemId.value = planItemId
   try {
     await removePlanItem(planId, planItemId)
+    addToast('Item removed from plan')
   } catch (e) {
-    alert(e.message)
+    addToast(e.message, { type: 'error' })
   } finally {
     removingItemId.value = null
   }
 }
 </script>
+
+<style scoped>
+/* Plan accordion headers are divs — match the card's border-radius for the focus ring */
+[role="button"]:focus-visible {
+  outline: 3px solid var(--gf-green);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+</style>
