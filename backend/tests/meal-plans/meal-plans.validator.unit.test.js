@@ -7,7 +7,7 @@ import {
   validateListMealPlansInput,
   validateGetMealPlanByIdInput,
   validatePlanItem,
-} from "../../src/modules/meal-plans/meal-plans.validator.js";
+} from "../../src/modules/mealPlans/mealPlans.validator.js";
 
 describe("Meal Plans Validator", () => {
   describe("getMealErrorStatusCode", () => {

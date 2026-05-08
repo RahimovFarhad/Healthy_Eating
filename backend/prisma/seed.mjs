@@ -2,6 +2,10 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
+import fs from "fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
@@ -13,7 +17,7 @@ const nutrients = [
   { code: "fat", name: "Fat", unit: "g", type: "macro" },
   { code: "fibre", name: "Fibre", unit: "g", type: "macro" },
   { code: "sugar", name: "Sugar", unit: "g", type: "macro" },
-  { code: "sodium", name: "Sodium", unit: "mg", type: "micro" }
+  { code: "salt", name: "Salt", unit: "g", type: "micro" }
 ];
 
 // ──────────────────────────────────────────────
@@ -43,7 +47,7 @@ const guidelines = [
   // fat: no DRV set for under-5s
   ["fibre",         "child_1_3", 15,    null],
   ["sugar",         "child_1_3", null,  14],
-  ["sodium",        "child_1_3", null,  800],
+  ["salt",          "child_1_3", null,  2],
 
   // ── child_4_6 (ages 4–6) ──
   ["calories",      "child_4_6", null,  1430],
@@ -52,7 +56,7 @@ const guidelines = [
   ["fat",           "child_4_6", null,  56],
   ["fibre",         "child_4_6", 17.5,  null],
   ["sugar",         "child_4_6", null,  19],
-  ["sodium",        "child_4_6", null,  1200],
+  ["salt",          "child_4_6", null,  3],
 
   // ── child_7_10 (ages 7–10) ──
   ["calories",      "child_7_10", null, 1760],
@@ -61,7 +65,7 @@ const guidelines = [
   ["fat",           "child_7_10", null, 69],
   ["fibre",         "child_7_10", 20,   null],
   ["sugar",         "child_7_10", null, 24],
-  ["sodium",        "child_7_10", null, 2000],
+  ["salt",          "child_7_10", null, 5],
 
   // ── teen (ages 11–18) ──
   ["calories",      "teen", null,  2250],
@@ -70,16 +74,16 @@ const guidelines = [
   ["fat",           "teen", null,  88],
   ["fibre",         "teen", 27.5,  null],
   ["sugar",         "teen", null,  30],
-  ["sodium",        "teen", null,  2400],
+  ["salt",          "teen", null,  6],
 
   // ── adult (ages 19–64) ──
-  ["calories",      "adult", null,  2250],
-  ["protein",       "adult", 50.3,  null],
-  ["carbohydrates", "adult", 300,   null],
-  ["fat",           "adult", null,  88],
+  ["calories",      "adult", null,  2000],
+  ["protein",       "adult", 50,    null],
+  ["carbohydrates", "adult", 260,   null],
+  ["fat",           "adult", null,  70],
   ["fibre",         "adult", 30,    null],
   ["sugar",         "adult", null,  30],
-  ["sodium",        "adult", null,  2400],
+  ["salt",          "adult", null,  6],
 
   // ── older_adult (ages 65–74) ──
   ["calories",      "older_adult", null,  2127],
@@ -88,8 +92,91 @@ const guidelines = [
   ["fat",           "older_adult", null,  83],
   ["fibre",         "older_adult", 30,    null],
   ["sugar",         "older_adult", null,  29],
-  ["sodium",        "older_adult", null,  2400],
+  ["salt",          "older_adult", null,  6],
 ];
+
+async function readJSON(fileName) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const recipesPath = path.join(__dirname, fileName);
+
+  const data = await fs.promises.readFile(recipesPath, 'utf-8');
+  return JSON.parse(data);
+}
+
+async function upsertRecipeAsSystemFood({ recipe, nutrientMap }) {
+  const externalId = `recipe:${recipe.recipeId}`;
+  
+  // I will use upsert instead of create to avoid issues when seed is run multiple times
+  // PS externalId logic is first added for foods fetched from external APIs, so it may introduce some bugs (highly unlikely, but this comment is here for future reference)
+  const foodItem = await prisma.foodItem.upsert({
+    where: {
+      source_externalId: {
+        source: "system",
+        externalId
+      }
+    },
+    update: {
+      name: recipe.title
+    },
+    create: {
+      name: recipe.title,
+      source: "system",
+      externalId
+    }
+  });
+
+  let portion = await prisma.foodPortion.findFirst({
+    where: {
+      foodItemId: foodItem.foodItemId,
+      description: "1 serving"
+    }
+  });
+
+  if (!portion) {
+    portion = await prisma.foodPortion.create({
+      data: {
+        foodItemId: foodItem.foodItemId,
+        description: "1 serving",
+        weightG: null
+      }
+    });
+  }
+
+  const nutrientValues = [
+    { code: "calories", amount: recipe.kcal ?? 0 },
+    { code: "protein", amount: recipe.protein ?? 0 },
+    { code: "carbohydrates", amount: recipe.carbs ?? 0 },
+    { code: "fat", amount: recipe.fat ?? 0 },
+    { code: "sugar", amount: recipe.sugars ?? 0 },
+    { code: "salt", amount: recipe.salt ?? 0 }
+  ];
+
+  for (const n of nutrientValues) {
+    const nutrientId = nutrientMap[n.code];
+    if (!nutrientId) continue;
+
+    await prisma.foodPortionNutrient.upsert({
+      where: {
+        portionId_nutrientId: {
+          portionId: portion.portionId,
+          nutrientId
+        }
+      },
+      update: {
+        amount: n.amount
+      },
+      create: {
+        portionId: portion.portionId,
+        nutrientId,
+        amount: n.amount
+      }
+    });
+  }
+
+  return { foodItemId: foodItem.foodItemId, portionId: portion.portionId };
+}
+
 
 async function main() {
   for (const nutrient of nutrients) {
@@ -150,6 +237,67 @@ async function main() {
   }
 
   console.log(`Seeded ${guidelineCount} guidelines across 6 demographics`);
+
+  const recipes = await readJSON("./recipes.json");
+
+  // clears existing recipe data before reseeding to avoid duplicates
+  await prisma.recipeIngredient.deleteMany({});
+  await prisma.recipe.deleteMany({});
+  console.log("Cleared existing recipes");
+
+  for (const r of recipes) {
+    const recipe = await prisma.recipe.create({
+      data: {
+        title:        r.title,
+        category:     r.category ?? null,
+        cuisine:      r.cuisine ?? null,
+        servings:     r.servings ?? null,
+        cookTime:     r.time ?? null,
+        image:        r.image ?? null,
+        instructions: r.steps.join('\n\n'),
+        kcal:         r.kcal,
+        protein:      r.protein,
+        carbs:        r.carbs,
+        sugars:       r.sugars,
+        fat:          r.fat,
+        saturatedFat: r.saturatedFat,
+        salt:         r.salt,
+        fibre:        r.fibre ?? null,
+      }
+    });
+
+    for (let i = 0; i < r.ingredients.length; i++) {
+      const name = r.ingredientNames[i] ?? r.ingredients[i]
+
+      const ingredient = await prisma.ingredient.upsert({ // I do upsert to prevent potential issues if same ingredients are reused
+        where:  { name },
+        update: {},
+        create: { name }
+      })
+
+      await prisma.recipeIngredient.upsert({
+        where: {
+          recipeId_ingredientId: {
+            recipeId:     recipe.recipeId,
+            ingredientId: ingredient.ingredientId,
+          }
+        },
+        update: { quantity: r.ingredients[i] },
+        create: {
+          recipeId:     recipe.recipeId,
+          ingredientId: ingredient.ingredientId,
+          quantity:     r.ingredients[i]
+        }
+      })
+    }
+
+    await upsertRecipeAsSystemFood({ recipe, nutrientMap }); // I do this so that recipes can be logged as foods for easy of use
+
+  }
+
+  console.log(`Seeded ${recipes.length} recipes`)
+
+
 
 }
 

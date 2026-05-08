@@ -1,5 +1,5 @@
 import { jest, expect } from "@jest/globals";
-import { MealPlanError } from "../../src/modules/meal-plans/meal-plans.validator.js";
+import { MealPlanError } from "../../src/modules/mealPlans/mealPlans.validator.js";
 
 const createMealPlanService = jest.fn();
 const listMealPlansService = jest.fn();
@@ -8,7 +8,7 @@ const addPlanItemService = jest.fn();
 const deleteMealPlanService = jest.fn();
 const removePlanItemService = jest.fn();
 
-jest.unstable_mockModule("../../src/modules/meal-plans/meal-plans.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/mealPlans/mealPlans.service.js", () => ({
   createMealPlanService,
   listMealPlansService,
   getMealPlanByIdService,
@@ -24,7 +24,7 @@ const {
   addPlanItem,
   deleteMealPlan,
   removePlanItem,
-} = await import("../../src/modules/meal-plans/meal-plans.controller.js");
+} = await import("../../src/modules/mealPlans/mealPlans.controller.js");
 
 function mockResponse() {
   const res = {};
