@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: client/client.repository.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: client/client.repository.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Client repository module
+ * Handles database operations for client-professional relationships
+ * @module client/repository
+ */
+
+import { prisma } from "../../db/prisma.js";
+
+/**
+ * Finds a professional-client relationship link in the database
+ * @param {Object} params - The search parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Object|null>} The professional-client link or null if not found
+ */
+async function findProfessionalClientLink({ professionalId, clientId }) {
+    return prisma.professionalClient.findUnique({
+        where: {
+            professionalId_subscriberId: {
+                professionalId,
+                subscriberId: clientId,
+            },
+        },
+    });
+}
+
+/**
+ * Accepts a professional invitation by updating the status to active
+ * @param {Object} params - The update parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Object>} The updated professional-client link
+ */
+async function acceptProfessionalInvitation({ professionalId, clientId }) {
+    return prisma.professionalClient.update({
+        where: {
+            professionalId_subscriberId: {
+                professionalId,
+                subscriberId: clientId,
+            },
+        },
+        data: {
+            status: "active",
+        },
+    });
+}
+
+/**
+ * Rejects a professional invitation by updating the status to disabled
+ * @param {Object} params - The update parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Object>} The updated professional-client link
+ */
+async function rejectProfessionalInvitation({ professionalId, clientId }) {
+    return prisma.professionalClient.update({
+        where: {
+            professionalId_subscriberId: {
+                professionalId,
+                subscriberId: clientId,
+            },
+        },
+        data: {
+            status: "disabled",
+        },
+    });
+}
+
+/**
+ * Lists all professionals associated with a client, filtered by status
+ * @param {Object} params - The query parameters
+ * @param {number} params.clientId - The client's user ID
+ * @param {string} params.status - The relationship status (invited, active, or disabled)
+ * @returns {Promise&lt;Array>} Array of professional-client relationships with professional details
+ */
+async function listClientProfessionals({ clientId, status }) {
+    return prisma.professionalClient.findMany({
+        where: {
+            subscriberId: clientId,
+            status: status,
+        },
+        orderBy: [{ assignedAt: "desc" }, { id: "desc" }],
+        select: {
+            id: true,
+            professionalId: true,
+            status: true,
+            assignedAt: true,
+            professional: {
+                select: {
+                    userId: true,
+                    fullName: true,
+                    email: true,
+                    role: true,
+                },
+            },
+        },
+    });
+}
+
+/**
+ * Disables a professional-client relationship by setting status to disabled
+ * @param {Object} params - The update parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Object>} The updated professional-client link
+ */
+async function disableProfessionalClientLink({ professionalId, clientId }) {
+    return prisma.professionalClient.update({
+        where: {
+            professionalId_subscriberId: {
+                professionalId,
+                subscriberId: clientId,
+            },
+        },
+        data: {
+            status: "disabled",
+        },
+    });
+}
+
+/**
+ * Inserts a new message from client to professional
+ * @param {Object} params - The message parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @param {string} params.message - The message content
+ * @returns {Promise&lt;Object>} The created message object
+ */
+async function insertMessage({ professionalId, clientId, message }) {
+    return prisma.message.create({
+        data: {
+            professionalId,
+            subscriberId: clientId,
+            message,
+            sentBy: "subscriber",
+        },
+    });
+}
+
+/**
+ * Lists all messages between a professional and client
+ * @param {Object} params - The query parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Array>} Array of messages ordered by creation date (newest first)
+ */
+async function listMessages({ professionalId, clientId }) {
+    return prisma.message.findMany({
+        where: {
+            professionalId,
+            subscriberId: clientId,
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    });
+}
+
+/**
+ * Lists all recipes shared by a professional with a client
+ * @param {Object} params - The query parameters
+ * @param {number} params.professionalId - The professional's user ID
+ * @param {number} params.clientId - The client's user ID
+ * @returns {Promise&lt;Array>} Array of shared recipes with recipe details
+ */
+async function listSharedRecipes({ professionalId, clientId }) {
+    return prisma.recipeShare.findMany({
+        where: {
+            professionalId,
+            subscriberId: clientId,
+        },
+        orderBy: [{ sharedAt: "desc" }, { id: "desc" }],
+        select: {
+            id: true,
+            professionalId: true,
+            subscriberId: true,
+            recipeId: true,
+            sharedAt: true,
+            recipe: {
+                select: {
+                    recipeId: true,
+                    title: true,
+                    image: true,
+                },
+            },
+        },
+    });
+}
+
+export {
+    findProfessionalClientLink,
+    acceptProfessionalInvitation,
+    rejectProfessionalInvitation,
+    listClientProfessionals,
+    disableProfessionalClientLink,
+    insertMessage,
+    listMessages,
+    listSharedRecipes
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-auth_controller.html">auth/controller</a></li><li><a href="module-auth_routes.html">auth/routes</a></li><li><a href="module-auth_service.html">auth/service</a></li><li><a href="module-client_controller.html">client/controller</a></li><li><a href="module-client_repository.html">client/repository</a></li><li><a href="module-client_routes.html">client/routes</a></li><li><a href="module-client_service.html">client/service</a></li></ul><h3>Classes</h3><ul><li><a href="module-auth_service.AuthError.html">AuthError</a></li><li><a href="module-auth_service.UserNotFoundError.html">UserNotFoundError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri May 08 2026 03:54:23 GMT+0100 (British Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
