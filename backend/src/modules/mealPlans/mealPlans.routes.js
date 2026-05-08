@@ -6,12 +6,12 @@
 
 import { Router } from "express";
 import {
-  createMealPlan,
-  listMealPlans,
-  getMealPlanById,
-  addPlanItem,
-  deleteMealPlan,
-  removePlanItem,
+    createMealPlan,
+    listMealPlans,
+    getMealPlanById,
+    addPlanItem,
+    deleteMealPlan,
+    removePlanItem,
 } from "./mealPlans.controller.js";
 
 const mealPlansRouter = Router();

@@ -39,7 +39,7 @@ async function createEntry(req, res, next) {
         }
 
         return next(error);
-        
+
     }
 
 }

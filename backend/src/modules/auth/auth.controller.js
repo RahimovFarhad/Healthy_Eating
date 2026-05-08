@@ -26,7 +26,7 @@ async function login(req, res) {
 
         const token = await authenticateUser(email, password);
 
-        const refreshToken = await generateRefreshToken(email); 
+        const refreshToken = await generateRefreshToken(email);
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -152,9 +152,9 @@ async function refreshToken(req, res) {
         if (!refreshToken) {
             return res.status(401).json({ message: "Refresh token is required" });
         }
-    
+
         const { token, email } = await refreshAccessToken(refreshToken);
-        
+
         // Rotate refresh token - delete old one and create new one
         await revokeRefreshToken(refreshToken);
         const newRefreshToken = await generateRefreshToken(email);
@@ -186,11 +186,11 @@ async function refreshToken(req, res) {
  */
 async function logoutController(req, res) {
     const refreshToken = req.cookies?.refreshToken;
-    
+
     if (refreshToken) {
         await revokeRefreshToken(refreshToken);
     }
-    
+
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

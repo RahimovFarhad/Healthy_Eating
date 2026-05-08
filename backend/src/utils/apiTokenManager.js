@@ -25,7 +25,7 @@ let refreshPromise = null;
  */
 async function getToken() {
     if (!cachedToken || Date.now() > tokenExpiry) {
-        if (!refreshPromise) { // when 2 requests will arrive at the same time, only 1 of them will try to refresh the token  
+        if (!refreshPromise) { // when 2 requests will arrive at the same time, only 1 of them will try to refresh the token
             refreshPromise = refreshToken().finally(() => {
                 refreshPromise = null;
             });
@@ -78,5 +78,5 @@ async function refreshToken() {
         }
     }
 }
-            
+
 export { getToken };

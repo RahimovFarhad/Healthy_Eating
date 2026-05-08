@@ -14,7 +14,7 @@ function getClientErrorStatus(message) {
         return 404; // not found
     }
     if (message.toLowerCase().includes("already active") || message.toLowerCase().includes("already disabled")) {
-        return 409; // conflict 
+        return 409; // conflict
     }
     return 400; // bad request - for otherwise and general error cases
 }

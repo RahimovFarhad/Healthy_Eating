@@ -7,13 +7,13 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import {
-  listRecipes,
-  getRecipeById,
-  submitRecipeReview,
-  toggleRecipeFavorite,
-  toggleRecipeUsage,
-  getFavoriteRecipes,
-  getUsedRecipes
+    listRecipes,
+    getRecipeById,
+    submitRecipeReview,
+    toggleRecipeFavorite,
+    toggleRecipeUsage,
+    getFavoriteRecipes,
+    getUsedRecipes
 } from "./recipes.controller.js";
 
 const recipesRouter = Router();
@@ -26,6 +26,5 @@ recipesRouter.get("/:id", requireAuth, getRecipeById);
 recipesRouter.post("/:id/reviews", requireAuth, submitRecipeReview);
 recipesRouter.post("/:id/favorite", requireAuth, toggleRecipeFavorite);
 recipesRouter.post("/:id/usage", requireAuth, toggleRecipeUsage);
-
 
 export default recipesRouter;

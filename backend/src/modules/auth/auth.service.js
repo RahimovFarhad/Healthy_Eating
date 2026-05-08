@@ -244,7 +244,7 @@ async function verifyRegistrationCode(email, code) {
     });
 
     if (existingUser) {
-        if (existingUser.email === pendingRegistration.email) { 
+        if (existingUser.email === pendingRegistration.email) {
             throw new AuthError("Email already in use");
         }
         if (existingUser.fullName?.toLowerCase() === pendingRegistration.fullName?.toLowerCase()) {
@@ -337,7 +337,7 @@ async function generateRefreshToken(email) {
     }
 
     const jti = randomUUID();
-    const payload = { 
+    const payload = {
         userId: user.userId,
         tokenType: "refresh",
         jti

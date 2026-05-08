@@ -14,7 +14,7 @@ function getProfessionalErrorStatus(message) {
         return 404; // not found
     }
     if (message.toLowerCase().includes("already assigned")) {
-        return 409; // conflict 
+        return 409; // conflict
     }
     return 400; // bad request - for otherwise and general cases
 }

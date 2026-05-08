@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "../../db/prisma.js";
- 
+
 /**
  * Inserts a new diary entry into the database
  * @param {Object} params - The diary entry parameters
@@ -44,16 +44,16 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
             },
         },
         select: {
-                items: {
-                    select: {
-                        quantity: true,
-                        portion: {
-                            select: {
-                                portionNutrients: {
-                                    select: {
-                                        nutrient: true,
-                                        amount: true,
-                                    },
+            items: {
+                select: {
+                    quantity: true,
+                    portion: {
+                        select: {
+                            portionNutrients: {
+                                select: {
+                                    nutrient: true,
+                                    amount: true,
+                                },
                             },
                         },
                     },
@@ -64,8 +64,8 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
 
     // example json: { items: [ { portion: { portionNutrients: [ { nutrient: { name: "Protein" }, amount: 10 } ] }, quantity: 1.5 } ] }
 
-    return foods; 
-    
+    return foods;
+
 }
 
 /**
@@ -79,9 +79,9 @@ async function fetchSummaryData({ subscriberId, fromDate, toDate }) {
  * @returns {Promise<Array>} Array of diary entries with items and nutrition details
  */
 async function listDiaryEntries({ subscriberId, start, end, mealType, notes }) {
-    // add more filters 
+    // add more filters
     const entries = await prisma.diaryEntry.findMany({
-        where: { 
+        where: {
             subscriberId,
             mealType: mealType ? { equals: mealType } : undefined,
             notes: notes ? { equals: notes } : undefined,
@@ -90,9 +90,9 @@ async function listDiaryEntries({ subscriberId, start, end, mealType, notes }) {
                 ...(end && {lte: new Date(end)})
             } : undefined,
 
-        },  
+        },
         // attributes shown to client when requested
-        select: { 
+        select: {
             diaryEntryId: true,
             consumedAt: true,
             mealType: true,
@@ -189,7 +189,6 @@ async function findDiaryEntryById({ diaryEntryId, subscriberId }) {
                     },
                 },
             },
-            diaryEntryId: true,
         }
     });
 
@@ -209,11 +208,11 @@ async function checkDiaryEntryOwnership({ userId, diaryEntryId }) {
             diaryEntryId: diaryEntryId,
             subscriberId: userId
         },
-        select: { 
+        select: {
             diaryEntryId: true
         }
     });
-    
+
     if (entry == null) {
         return false;
     }
@@ -236,7 +235,7 @@ async function checkDiaryEntryItemOwnership({ userId, diaryEntryItemId }) {
                 subscriberId: userId
             }
         },
-        select: { 
+        select: {
             id: true
         }
     });
@@ -327,7 +326,7 @@ async function updateDiaryEntryItem({ diaryEntryItemId, portionId, quantity }) {
         });
 
         return entry;
-    } catch(error) {
+    } catch (error) {
         if (error.code === "P2025") {
             return null;
         }
@@ -356,7 +355,7 @@ async function deleteDiaryEntry({ diaryEntryId }) {
         ]);
 
         return deletedEntry;
-    } catch(error) {
+    } catch (error) {
         if (error.code === "P2025") {
             return null;
         }
@@ -401,7 +400,6 @@ async function getDaysLogged({ subscriberId }) {
         FROM diary_entry
         WHERE subscriber_id = ${subscriberId}
         `;
-
 
     return days_logged;
 }
