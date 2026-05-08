@@ -1,3 +1,9 @@
+/**
+ * Authentication routes module
+ * Defines Express routes for authentication endpoints
+ * @module auth/routes
+ */
+
 import { Router } from "express";
 import { login, register, verifyRegistration, resendVerificationCode, refreshToken, logoutController } from "./auth.controller.js";
 

@@ -1,3 +1,9 @@
+/**
+ * Diary service module
+ * Handles business logic for food diary, nutrition tracking, and dashboard data
+ * @module diary/service
+ */
+
 import { fetchSummaryData, insertDiaryEntry, listDiaryEntries as listDiaryEntriesRepository, findDiaryEntryById, createDiaryEntryItem as createDiaryEntryItemRepository, checkDiaryEntryOwnership, checkDiaryEntryItemOwnership, updateDiaryEntryItem as updateDiaryEntryItemRepository, deleteDiaryEntry, deleteDiaryEntryItem, getDaysLogged, insertFoodItem, insertFoodPortion, fetchWeeklyCalorieTrend, checkExistingFoodItemByExternalId, findRecipePortionForDiary } from "./diary.repository.js";
 import { evaluateGoalsForToday } from "../goals/goals.service.js";
 import { validateCreateDiaryEntryInput, validateSummaryInput, validateListDisplay, validateNewEntryDetails, validateUpdatedEntryItem, validateDeletedDiaryEntry, validateEntryDetails, validateDeletedDiaryEntryItem, DiaryEntryError, validateUserIdForDashboard, validateCreateFoodItemInput, validateCreateFoodPortionInput, validateCreateRecipeAsDiaryEntryItemInput } from "./diary.validator.js";
@@ -6,6 +12,17 @@ import { searchFoodById, parseFoodResponse } from "../../utils/searchFood.js";
 import { fetchGoals } from "../goals/goals.repository.js";
 import { listRecipes } from "../recipes/recipes.repository.js";
 
+/**
+ * Creates a new diary entry with optional food items
+ * @param {Object} params - The diary entry parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Date|string} params.consumedAt - When the meal was consumed
+ * @param {string} params.mealType - Type of meal (breakfast, lunch, dinner, snack)
+ * @param {string} [params.notes] - Optional notes about the meal
+ * @param {Array<Object>} [params.items] - Array of food items to add to the entry
+ * @returns {Promise<Object>} The created diary entry with items
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, items }) {
     const data = validateCreateDiaryEntryInput({
         subscriberId,
@@ -33,6 +50,12 @@ async function createDiaryEntry({ subscriberId, consumedAt, mealType, notes, ite
     return result;
 }
 
+/**
+ * Converts various value types to a number
+ * Helper function for numeric conversions
+ * @param {*} value - Value to convert
+ * @returns {number} The numeric value
+ */
 function toNumber(value) {
     if (typeof value === "number") {
         return value;
@@ -49,8 +72,14 @@ function toNumber(value) {
     return Number(value ?? 0);
 }
 
-// Returns a rolling date range for the given period ending on endDate.
-// weekly = last 7 days, monthly = last 30 days.
+/**
+ * Calculates the date range for a given period ending on endDate
+ * Returns rolling date ranges: daily (single day), weekly (Monday-Sunday), monthly (last 30 days)
+ * @param {string} period - The period type (daily, weekly, monthly)
+ * @param {Date|string} endDate - The end date of the period
+ * @returns {Object} Object with fromDate and toDate
+ * @throws {Error} If period is unsupported
+ */
 function getSummaryRange(period, endDate) {
     const toDate = new Date(endDate);
     toDate.setUTCHours(23, 59, 59, 999); // normalize to end of the day in UTC
@@ -82,6 +111,16 @@ function getSummaryRange(period, endDate) {
     return { fromDate, toDate };
 }
 
+/**
+ * Gets aggregated nutrition summary for a user over a specified period
+ * Calculates total nutrient amounts from all consumed foods
+ * @param {Object} params - The summary parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {string} params.period - The period type (daily, weekly, monthly)
+ * @param {Date|string} params.endDate - The end date of the period
+ * @returns {Promise<Object>} Object with period, date range, and aggregated nutrients
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function getNutritionSummary({ subscriberId, period, endDate }) {
     const validated = validateSummaryInput({ subscriberId, period, endDate });
     const { fromDate, toDate } = getSummaryRange(validated.period, validated.endDate);
@@ -124,6 +163,13 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
     };
 }
 
+/**
+ * Converts a date value to ISO date string (YYYY-MM-DD format)
+ * Helper function for date formatting
+ * @param {Date|string} val - The date value to convert
+ * @returns {string} ISO date string
+ * @throws {Error} If value is not a valid date
+ */
 const toDateStr = (val) => {
     if (val instanceof Date) {
         return formatISO(val, { representation: "date" });
@@ -132,6 +178,14 @@ const toDateStr = (val) => {
     throw new Error(`Invalid date value: ${val}`);
 }
 
+/**
+ * Gets weekly calorie trend data for a user
+ * Returns calories consumed for each day of the week
+ * @param {Object} params - The query parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Date|string} params.endDate - The end date of the week
+ * @returns {Promise<Array>} Array of 7 objects with date and calories for each day
+ */
 async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
     const { fromDate, toDate } = getSummaryRange("weekly", endDate);
     const rows = await fetchWeeklyCalorieTrend({ subscriberId, fromDate, toDate });
@@ -146,13 +200,31 @@ async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
 
 }
 
-// only subscriberId is required, other filters are optional
+/**
+ * Lists diary entries with optional filters
+ * @param {Object} params - The query parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {string} [params.start] - Start date filter (ISO string)
+ * @param {string} [params.end] - End date filter (ISO string)
+ * @param {string} [params.mealType] - Meal type filter
+ * @param {string} [params.notes] - Notes filter
+ * @returns {Promise<Array>} Array of diary entries
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) { 
     const entries = validateListDisplay({ subscriberId, start, end, mealType, notes });
 
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
 }
 
+/**
+ * Gets a specific diary entry by ID with ownership verification
+ * @param {Object} params - The query parameters
+ * @param {number} params.diaryEntryId - The diary entry ID
+ * @param {number} params.subscriberId - The user's ID
+ * @returns {Promise<Object>} The diary entry with items
+ * @throws {DiaryEntryError} If unauthorized or validation fails
+ */
 async function getDiaryEntryById({ diaryEntryId, subscriberId }) {
     const entries = validateEntryDetails({ diaryEntryId, subscriberId }); // validation on data
 
@@ -165,6 +237,19 @@ async function getDiaryEntryById({ diaryEntryId, subscriberId }) {
     return findDiaryEntryById(entries); // call function from diary.repository.js file
 }
 
+/**
+ * Creates a new diary entry item (food portion consumed in a meal)
+ * Handles custom foods and FatSecret API foods
+ * @param {Object} params - The item parameters
+ * @param {number} params.userId - The user's ID
+ * @param {number} params.diaryEntryId - The diary entry ID
+ * @param {number} params.quantity - Quantity consumed
+ * @param {number} [params.portionId] - The food portion ID (optional if customFood or fatSecret provided)
+ * @param {Object} [params.customFood] - Custom food data (optional)
+ * @param {Object} [params.fatSecret] - FatSecret API food data (optional)
+ * @returns {Promise<Object>} The created diary entry item
+ * @throws {DiaryEntryError} If unauthorized, validation fails, or missing required data
+ */
 async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId, customFood, fatSecret }) {
     let resolvedPortionId = portionId;
     const validatedEntries = validateNewEntryDetails({ userId, diaryEntryId, quantity, portionId: resolvedPortionId, isCustomOrFatSecret: !!customFood || !!fatSecret }); // validation on data
@@ -187,6 +272,16 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
     return entryCheck;
 }
 
+/**
+ * Creates a custom food item and returns its portion ID
+ * Handles both user-created custom foods and FatSecret API foods
+ * @param {Object} params - The food parameters
+ * @param {number} params.userId - The user's ID
+ * @param {Object} [params.customFood] - Custom food data with name, brand, and portions
+ * @param {Object} [params.fatSecret] - FatSecret API food data with externalId
+ * @returns {Promise<number>} The created portion ID
+ * @throws {DiaryEntryError} If FatSecret food portion not found
+ */
 async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }) {
     var parsed = null;
     
@@ -230,6 +325,18 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
     return foodPortion.portionId;
 }
 
+/**
+ * Creates a new food item in the database
+ * Checks for existing food by external ID to avoid duplicates
+ * @param {Object} params - The food item parameters
+ * @param {string} params.name - Food item name
+ * @param {string} [params.brand] - Brand name
+ * @param {string} params.source - Source of the food (user, fatsecret, system)
+ * @param {string} [params.externalId] - External ID from source API
+ * @param {number} [params.createdByUserId] - User who created this custom food
+ * @returns {Promise<Object>} The created or existing food item
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function createFoodItem({ name, brand, source, externalId, createdByUserId }) {
     const data = validateCreateFoodItemInput({ name, brand, source, externalId, createdByUserId });
 
@@ -243,14 +350,28 @@ async function createFoodItem({ name, brand, source, externalId, createdByUserId
     return insertFoodItem(data);
 }
 
+/**
+ * Creates a new food portion with nutrient information
+ * @param {Object} params - The portion parameters
+ * @param {number} params.foodItemId - The food item ID
+ * @param {string} params.description - Portion description (e.g., "1 cup", "100g")
+ * @param {number} [params.weightG] - Weight in grams
+ * @param {Array<Object>} params.nutrients - Array of nutrient objects with nutrientId and amount
+ * @returns {Promise<Object>} The created food portion
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function createFoodPortion({ foodItemId, description, weightG, nutrients }) {
     const data = validateCreateFoodPortionInput({ foodItemId, description, weightG, nutrients });
 
     return insertFoodPortion(data);
 }
 
-// this function will compute todays nutrition summary and forwards it to goal evaluation.
-// this will call after any diary edit so goal check-ins are always up to date.
+/**
+ * Triggers goal evaluation after diary changes
+ * Computes today's nutrition summary and forwards it to goal evaluation
+ * @param {number} subscriberId - The user's ID
+ * @returns {Promise<void>}
+ */
 async function triggerGoalEvaluation(subscriberId) {
     const today = new Date();
     today.setUTCHours(23, 59, 59, 999);
@@ -258,6 +379,16 @@ async function triggerGoalEvaluation(subscriberId) {
     await evaluateGoalsForToday({ subscriberId, nutritionSummary: summary.nutrients });
 }
 
+/**
+ * Updates an existing diary entry item with ownership verification
+ * @param {Object} params - The update parameters
+ * @param {number} params.diaryEntryItemId - The diary entry item ID
+ * @param {number} params.userId - The user's ID
+ * @param {number} [params.portionId] - New portion ID
+ * @param {number} [params.quantity] - New quantity
+ * @returns {Promise<Object>} The updated diary entry item
+ * @throws {DiaryEntryError} If unauthorized, not found, or validation fails
+ */
 async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quantity }) {
     const validatedEntries = validateUpdatedEntryItem({ diaryEntryItemId, userId, portionId, quantity });  // validation check
 
@@ -277,6 +408,14 @@ async function updateDiaryEntryItem({ diaryEntryItemId, userId, portionId, quant
     return entryCheck;
 }
 
+/**
+ * Deletes a diary entry and all its items with ownership verification
+ * @param {Object} params - The delete parameters
+ * @param {number} params.userId - The user's ID
+ * @param {number} params.diaryEntryId - The diary entry ID to delete
+ * @returns {Promise<Object>} The deleted diary entry
+ * @throws {DiaryEntryError} If unauthorized, not found, or validation fails
+ */
 async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
     const validatedEntries = validateDeletedDiaryEntry({ userId, diaryEntryId }); // validation check
 
@@ -296,6 +435,14 @@ async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
     return entryCheck;
 }
 
+/**
+ * Deletes a diary entry item with ownership verification
+ * @param {Object} params - The delete parameters
+ * @param {number} params.userId - The user's ID
+ * @param {number} params.diaryEntryItemId - The diary entry item ID to delete
+ * @returns {Promise<Object>} The deleted diary entry item
+ * @throws {DiaryEntryError} If unauthorized, not found, or validation fails
+ */
 async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
     const validatedEntries = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
     
@@ -315,6 +462,15 @@ async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
     return entryCheck;
 }
 
+/**
+ * Gets comprehensive dashboard data for a subscriber
+ * Aggregates quick stats, food diary preview, calorie trends, nutrition preview, and recommended recipes
+ * @param {Object} params - The query parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {string} [params.date] - Optional date for dashboard (defaults to server time)
+ * @returns {Promise<Object>} Dashboard data with quickStats, foodDiaryPreview, weeklyCaloryTrend, nutritionPreview, and recommendedRecipes
+ * @throws {DiaryEntryError} If validation fails
+ */
 async function getDashboardDataForSubscriber({ subscriberId, date }) {
     // Needs to implement:
     // 1. Fetch today's meals 
@@ -362,6 +518,16 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
 
 }
 
+/**
+ * Creates a diary entry item from a recipe
+ * @param {Object} params - The service parameters
+ * @param {number} params.userId - The user's ID
+ * @param {number} params.diaryEntryId - The diary entry ID
+ * @param {number} params.recipeId - The recipe ID
+ * @param {number} params.servings - Number of servings consumed
+ * @returns {Promise<Object>} The created diary entry item
+ * @throws {DiaryEntryError} If recipe portion not found or validation fails
+ */
 async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recipeId, servings }) {
     const entryCheck = validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings }); 
 
@@ -374,6 +540,14 @@ async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recip
     return createDiaryEntryItem({ userId: entryCheck.userId, diaryEntryId: entryCheck.diaryEntryId, portionId, quantity: entryCheck.servings, customFood: null, fatSecret: null });
 }
 
+/**
+ * Gets recommended recipes based on user's remaining nutritional goals
+ * Scores recipes based on how well they fit the user's remaining daily nutrient needs
+ * @param {Object} params - The query parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {string} params.date - The date to calculate recommendations for
+ * @returns {Promise<Array>} Array of up to 20 recommended recipes sorted by score
+ */
 async function getRecommendedRecipes({ subscriberId, date }) {
   const goals = await fetchGoals({ subscriberId, effective: true });
   const summary = await getNutritionSummary({ subscriberId, period: 'daily', endDate: date });

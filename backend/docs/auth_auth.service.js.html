@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: auth/auth.service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: auth/auth.service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Authentication service module
  * Handles user authentication, registration, and token management
  * @module auth/service
@@ -55,7 +83,7 @@ export class UserNotFoundError extends AuthError {
  * Authenticates a user with email and password, and returns a JWT access token
  * @param {string} email - The user's email address
  * @param {string} password - The user's password
- * @returns {Promise<string>} JWT access token valid for 1 hour
+ * @returns {Promise&lt;string>} JWT access token valid for 1 hour
  * @throws {UserNotFoundError} If no user exists with the provided email
  * @throws {AuthError} If the password is invalid
  */
@@ -92,7 +120,7 @@ async function authenticateUser(email, password) {
  * @param {string} email - The user's email address
  * @param {string} username - The user's desired username
  * @param {string} password - The user's password (must be 8-30 chars with uppercase, lowercase, number, and special char)
- * @returns {Promise<{email: string}>} Object containing the normalized email
+ * @returns {Promise&lt;{email: string}>} Object containing the normalized email
  * @throws {AuthError} If email format is invalid, password doesn't meet requirements, or email/username already exists
  */
 async function registerUser(email, username, password) {
@@ -103,12 +131,12 @@ async function registerUser(email, username, password) {
     // this is a basic email format check: must contain @ with characters on both sides and end with .com
     console.log("Registering user with email:", normalizedEmail);
     const atIndex = normalizedEmail?.indexOf("@") ?? -1;
-    if (atIndex <= 0 || atIndex >= normalizedEmail.length - 1) {
+    if (atIndex &lt;= 0 || atIndex >= normalizedEmail.length - 1) {
         throw new AuthError("Please enter a valid email address");
     }
 
     // this enforces the password length bounds
-    if (!password || password.length < 8) {
+    if (!password || password.length &lt; 8) {
         throw new AuthError("Password must be at least 8 characters");
     }
     if (password.length > 30) {
@@ -119,7 +147,7 @@ async function registerUser(email, username, password) {
     const uppercaseRegex = /[A-Z]/;
     const lowercaseRegex = /[a-z]/;
     const numberRegex = /[0-9]/;
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    const specialCharRegex = /[!@#$%^&amp;*(),.?":{}|&lt;>]/;
 
     if (!uppercaseRegex.test(password)) {
         throw new AuthError("Password must contain at least one uppercase letter");
@@ -194,7 +222,7 @@ async function registerUser(email, username, password) {
  * Creates the user account and sets up default goals upon successful verification
  * @param {string} email - The user's email address
  * @param {string} code - The 6-digit verification code
- * @returns {Promise<Object>} The newly created user object
+ * @returns {Promise&lt;Object>} The newly created user object
  * @throws {AuthError} If code is invalid, expired, too many attempts, or email/username already taken
  */
 async function verifyRegistrationCode(email, code) {
@@ -212,7 +240,7 @@ async function verifyRegistrationCode(email, code) {
         throw new AuthError("No pending registration found for this email");
     }
 
-    if (pendingRegistration.codeExpiresAt < new Date()) {
+    if (pendingRegistration.codeExpiresAt &lt; new Date()) {
         throw new AuthError("Invalid or expired verification code");
     }
 
@@ -278,7 +306,7 @@ async function verifyRegistrationCode(email, code) {
  * Resends a verification code to a pending registration email
  * Generates a new 6-digit code and enforces a 10-second cooldown between requests
  * @param {string} email - The user's email address
- * @returns {Promise<{email: string}>} Object containing the normalized email
+ * @returns {Promise&lt;{email: string}>} Object containing the normalized email
  * @throws {AuthError} If no pending registration exists or cooldown period hasn't elapsed
  */
 async function resendRegistrationCode(email) {
@@ -295,7 +323,7 @@ async function resendRegistrationCode(email) {
     const now = new Date();
     const cooldownMs = 10 * 1000;
     const msSinceLastSent = now.getTime() - pendingRegistration.lastSentAt.getTime();
-    if (msSinceLastSent < cooldownMs) {
+    if (msSinceLastSent &lt; cooldownMs) {
         throw new AuthError("Please wait before requesting a new code");
     }
 
@@ -322,7 +350,7 @@ async function resendRegistrationCode(email) {
 /**
  * Generates a refresh token for a user and stores it in the database
  * @param {string} email - The user's email address
- * @returns {Promise<string>} JWT refresh token valid for 7 days
+ * @returns {Promise&lt;string>} JWT refresh token valid for 7 days
  * @throws {UserNotFoundError} If no user exists with the provided email
  */
 async function generateRefreshToken(email) {
@@ -361,7 +389,7 @@ async function generateRefreshToken(email) {
 /**
  * Generates a new access token from a valid refresh token
  * @param {string} refreshToken - The JWT refresh token
- * @returns {Promise<{token: string, email: string}>} Object containing new access token and user email
+ * @returns {Promise&lt;{token: string, email: string}>} Object containing new access token and user email
  * @throws {AuthError} If refresh token is invalid, expired, or not found in database
  */
 async function refreshAccessToken(refreshToken) {
@@ -381,7 +409,7 @@ async function refreshAccessToken(refreshToken) {
             throw new AuthError("Invalid refresh token");
         }
 
-        if (storedToken.expiresAt < new Date()) {
+        if (storedToken.expiresAt &lt; new Date()) {
             await prisma.refreshToken.delete({ where: { jti: decoded.jti } });
             throw new AuthError("Invalid refresh token");
         }
@@ -408,7 +436,7 @@ async function refreshAccessToken(refreshToken) {
  * Revokes a refresh token by removing it from the database
  * In failure, does not throw an error
  * @param {string} refreshToken - The JWT refresh token to revoke
- * @returns {Promise<void>}
+ * @returns {Promise&lt;void>}
  */
 async function revokeRefreshToken(refreshToken) {
     try {
@@ -427,3 +455,26 @@ async function revokeRefreshToken(refreshToken) {
 }
 
 export { authenticateUser, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken, revokeRefreshToken };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-auth_controller.html">auth/controller</a></li><li><a href="module-auth_routes.html">auth/routes</a></li><li><a href="module-auth_service.html">auth/service</a></li><li><a href="module-client_controller.html">client/controller</a></li><li><a href="module-client_repository.html">client/repository</a></li><li><a href="module-client_routes.html">client/routes</a></li><li><a href="module-client_service.html">client/service</a></li></ul><h3>Classes</h3><ul><li><a href="module-auth_service.AuthError.html">AuthError</a></li><li><a href="module-auth_service.UserNotFoundError.html">UserNotFoundError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri May 08 2026 03:54:23 GMT+0100 (British Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
