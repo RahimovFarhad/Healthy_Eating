@@ -70,7 +70,8 @@ const {
     createUserGoal,
     createGoalForSubscriber,
     ensureDefaultGoalsForUser,
-    toggleGoalDoneForToday
+    toggleGoalDoneForToday,
+    evaluateGoalsForToday,
 } = await import("../../src/modules/goals/goals.service.js");
 
 describe("Goals service", () => {
@@ -639,6 +640,43 @@ describe("Goals service", () => {
                 subscriberId: TEST_USERID,
                 goalId: TEST_GOALID
             })).rejects.toThrow("Goal is archived");
+        });
+    });
+    describe("evaluateGoalsForToday (unit)", () => {
+        test("upserts check-ins using min/max goal rules", async () => {
+            mockFetchGoals.mockResolvedValue([
+                { goalId: 1, nutrientId: 101, targetMin: 30, targetMax: null }, // met
+                { goalId: 2, nutrientId: 102, targetMin: null, targetMax: 10 }, // not met
+                { goalId: 3, nutrientId: 103, targetMin: 5, targetMax: 15 }, // met
+            ]);
+
+            await evaluateGoalsForToday({
+                subscriberId: TEST_USERID,
+                nutritionSummary: [
+                    { nutrientId: 101, totalAmount: 35 },
+                    { nutrientId: 102, totalAmount: 12 },
+                    { nutrientId: 103, totalAmount: 10 },
+                ],
+            });
+
+            expect(mockFetchGoals).toHaveBeenCalledWith({ subscriberId: TEST_USERID, effective: true });
+            expect(mockUpsertGoalCheckIn).toHaveBeenCalledTimes(3);
+            expect(mockUpsertGoalCheckIn).toHaveBeenNthCalledWith(1, expect.objectContaining({ goalId: 1, isDone: true }));
+            expect(mockUpsertGoalCheckIn).toHaveBeenNthCalledWith(2, expect.objectContaining({ goalId: 2, isDone: false }));
+            expect(mockUpsertGoalCheckIn).toHaveBeenNthCalledWith(3, expect.objectContaining({ goalId: 3, isDone: true }));
+        });
+
+        test("ignores goals without nutrientId", async () => {
+            mockFetchGoals.mockResolvedValue([
+                { goalId: 10, nutrientId: null, targetMin: null, targetMax: null },
+            ]);
+
+            await evaluateGoalsForToday({
+                subscriberId: TEST_USERID,
+                nutritionSummary: [{ nutrientId: 1, totalAmount: 100 }],
+            });
+
+            expect(mockUpsertGoalCheckIn).not.toHaveBeenCalled();
         });
     });
 });
