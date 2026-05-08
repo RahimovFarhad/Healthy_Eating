@@ -4,8 +4,8 @@
  * @module meal-plans/service
  */
 
-import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem, validateRemovePlanItemInput } from "./meal-plans.validator.js";
-import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem, removePlanItem } from "./meal-plans.repository.js";
+import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem, validateRemovePlanItemInput } from "./mealPlans.validator.js";
+import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem, removePlanItem } from "./mealPlans.repository.js";
 
 async function createMealPlanService({ subscriberId, startDate, endDate, planType, items }) {
   const data = validateCreateMealPlanInput({ subscriberId, startDate, endDate, planType, items });

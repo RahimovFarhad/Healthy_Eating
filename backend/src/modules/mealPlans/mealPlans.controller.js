@@ -4,8 +4,8 @@
  * @module meal-plans/controller
  */
 
-import { createMealPlanService, listMealPlansService, getMealPlanByIdService, addPlanItemService, deleteMealPlanService, removePlanItemService } from "./meal-plans.service.js";
-import { MealPlanError, getMealErrorStatusCode } from "./meal-plans.validator.js";
+import { createMealPlanService, listMealPlansService, getMealPlanByIdService, addPlanItemService, deleteMealPlanService, removePlanItemService } from "./mealPlans.service.js";
+import { MealPlanError, getMealErrorStatusCode } from "./mealPlans.validator.js";
 
 async function createMealPlan(req, res, next) {
   try {

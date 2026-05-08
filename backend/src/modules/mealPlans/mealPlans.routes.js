@@ -12,7 +12,7 @@ import {
   addPlanItem,
   deleteMealPlan,
   removePlanItem,
-} from "./meal-plans.controller.js";
+} from "./mealPlans.controller.js";
 
 const mealPlansRouter = Router();
 
