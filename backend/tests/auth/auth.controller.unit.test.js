@@ -26,17 +26,22 @@ const mockAuthenticateUser = jest.fn();
 const mockGenerateRefreshToken = jest.fn();
 const mockRegisterUser = jest.fn();
 const mockRefreshToken = jest.fn();
+const mockVerifyRegistrationCode = jest.fn();
+const mockResendRegistrationCode = jest.fn();
 
-jest.unstable_mockModule("../src/modules/auth/auth.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/auth/auth.service.js", () => ({
   authenticateUser: mockAuthenticateUser,
   generateRefreshToken: mockGenerateRefreshToken,
   AuthError: mockAuthError,
   UserNotFoundError: mockUserNotFoundError,
   registerUser: mockRegisterUser,
+  verifyRegistrationCode: mockVerifyRegistrationCode,
+  resendRegistrationCode: mockResendRegistrationCode,
   refreshAccessToken: mockRefreshToken,
+  revokeRefreshToken: jest.fn(),
 }));
 
-const { login, register, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
+const { login, register, verifyRegistration, resendVerificationCode, refreshToken } = await import("../../src/modules/auth/auth.controller.js");
 
 function createRes() {
   const res = {};
@@ -199,7 +204,7 @@ describe("Authentication Controller", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: "Email, username, and password are required" });
     });
-    test("Returns userId on success", async () => {
+    test("Returns verification message on success", async () => {
       const req = {
         body: {
           email: TEST_USER.email,
@@ -209,15 +214,14 @@ describe("Authentication Controller", () => {
       };
       const res = createRes();
 
-      mockRegisterUser.mockResolvedValue({ userId: 123 });
+      mockRegisterUser.mockResolvedValue({ email: TEST_USER.email });
       
       await register(req, res);
       
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: "User registered successfully",
-        userId: 123
-      }));
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Verification code sent. Complete verification to finish registration."
+      });
     });
 
     test("Resturns error code 409 when email already in use", async () => {
@@ -318,16 +322,29 @@ describe("Authentication Controller", () => {
         message: "Invalid refresh token",
       });
     });
-    test("Returns access token on success", async() => {
+    test("Returns access token and rotates refresh cookie on success", async() => {
       const req = {
         cookies: {
           refreshToken: "mock.refresh.token"
         }
       };
       const res = createRes();
-      mockRefreshToken.mockResolvedValue("new.mock.jwt.token");
+      const refreshedAccessToken = {
+        token: "new.mock.jwt.token",
+        email: TEST_USER.email
+      };
+      mockRefreshToken.mockResolvedValue(refreshedAccessToken);
+      mockGenerateRefreshToken.mockResolvedValue("rotated.refresh.token");
 
       await refreshToken(req, res);
+
+      expect(mockRefreshToken).toHaveBeenCalledWith("mock.refresh.token");
+      expect(mockGenerateRefreshToken).toHaveBeenCalledWith(TEST_USER.email);
+      expect(res.cookie).toHaveBeenCalledWith(
+        "refreshToken",
+        "rotated.refresh.token",
+        expect.any(Object)
+      );
       
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         message: "Token refreshed successfully",
@@ -335,6 +352,66 @@ describe("Authentication Controller", () => {
       }));
     });
     
+  });
+
+  describe("Verify Registration", () => {
+    test("Returns error code 400 when email is missing", async () => {
+      const req = { body: { code: "123456" } };
+      const res = createRes();
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email and code are required" });
+    });
+
+    test("Returns status 201 and userId on success", async () => {
+      const req = { body: { email: TEST_USER.email, code: "123456" } };
+      const res = createRes();
+      mockVerifyRegistrationCode.mockResolvedValue({ userId: 321 });
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "User registered successfully",
+        userId: 321,
+      });
+    });
+
+    test("Returns error code 409 when email already in use", async () => {
+      const req = { body: { email: TEST_USER.email, code: "123456" } };
+      const res = createRes();
+      mockVerifyRegistrationCode.mockRejectedValue(new mockAuthError("Email already in use"));
+
+      await verifyRegistration(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email already in use" });
+    });
+  });
+
+  describe("Resend Verification Code", () => {
+    test("Returns error code 400 when email is missing", async () => {
+      const req = { body: {} };
+      const res = createRes();
+
+      await resendVerificationCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email is required" });
+    });
+
+    test("Returns success when resend is accepted", async () => {
+      const req = { body: { email: TEST_USER.email } };
+      const res = createRes();
+      mockResendRegistrationCode.mockResolvedValue({ email: TEST_USER.email });
+
+      await resendVerificationCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ message: "Verification code resent successfully." });
+    });
   });
 
 });

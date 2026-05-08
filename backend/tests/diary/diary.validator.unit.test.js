@@ -830,13 +830,29 @@ describe("Diary Validator", () => {
 
   describe("validateUserIdForDashboard", () => {
     // "happy" path test
-    test("returns normalised subscriberId for valid input", () => {
+    test("returns normalised subscriberId for valid input (no date)", () => {
       const input = {
         subscriberId: 1,
       };
 
       const expected = {
         subscriberId: 1,
+        date: null
+      };
+
+      const result = validateUserIdForDashboard(input);
+
+      expect(result).toEqual(expected);
+    });
+    test("returns normalised subscriberId for valid input (with date)", () => {
+      const input = {
+        subscriberId: 1,
+        date: "2026-05-05"
+      };
+
+      const expected = {
+        subscriberId: 1,
+        date: new Date("2026-05-05")
       };
 
       const result = validateUserIdForDashboard(input);
