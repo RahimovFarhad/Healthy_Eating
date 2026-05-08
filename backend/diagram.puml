@@ -1,0 +1,431 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "auth" {
+class AuthController <<controller>> {
+  +login()
+  +register()
+  +verifyRegistration()
+  +resendVerificationCode()
+  +refreshToken()
+  +logoutController()
+}
+class AuthService <<service>> {
+  +authenticateUser()
+  +registerUser()
+  +verifyRegistrationCode()
+  +resendRegistrationCode()
+  +generateRefreshToken()
+  +refreshAccessToken()
+  +revokeRefreshToken()
+  +normalizeEmail()
+  +normalizeUsername()
+}
+class AuthRoutes <<routes>> {
+  +POST /login -> login()
+  +POST /register -> register()
+  +POST /register/verify -> verifyRegistration()
+  +POST /register/resend -> resendVerificationCode()
+  +GET /refresh -> refreshToken()
+  +POST /logout -> logoutController()
+}
+}
+
+package "diary" {
+class DiaryController <<controller>> {
+  +createEntry()
+  +getSummary()
+  +listDiaryEntries()
+  +getDiaryEntryById()
+  +createDiaryEntryItem()
+  +updateDiaryEntryItem()
+  +deleteEntry()
+  +deleteEntryItem()
+  +getDashboard()
+  +createEntryWithRecipe()
+  +createRecipeAsDiaryEntryItem()
+}
+class DiaryService <<service>> {
+  +createDiaryEntry()
+  +getNutritionSummary()
+  +getWeeklyCaloryTrend()
+  +listDiaryEntries()
+  +getDiaryEntryById()
+  +createDiaryEntryItem()
+  +createCustomFoodAndGetPortionId()
+  +createFoodItem()
+  +createFoodPortion()
+  +triggerGoalEvaluation()
+  +updateDiaryEntryItem()
+  +deleteExistingDiaryEntry()
+  +deleteExistingDiaryEntryItem()
+  +getDashboardDataForSubscriber()
+  +createRecipeAsDiaryEntryItemService()
+  +getRecommendedRecipes()
+  +toNumber()
+  +getSummaryRange()
+}
+class DiaryRepository <<repository>> {
+  +insertDiaryEntry()
+  +fetchSummaryData()
+  +listDiaryEntries()
+  +findDiaryEntryById()
+  +checkDiaryEntryOwnership()
+  +checkDiaryEntryItemOwnership()
+  +createDiaryEntryItem()
+  +updateDiaryEntryItem()
+  +deleteDiaryEntry()
+  +deleteDiaryEntryItem()
+  +getDaysLogged()
+  +insertFoodItem()
+  +insertFoodPortion()
+  +fetchWeeklyCalorieTrend()
+  +checkExistingFoodItemByExternalId()
+  +findRecipePortionForDiary()
+}
+class DiaryValidator <<validator>> {
+  +getDiaryErrorStatus()
+  +normalizePositiveInteger()
+  +normalizePositiveNumber()
+  +validateCreateDiaryEntryInput()
+  +validateSummaryInput()
+  +validateListDisplay()
+  +validateEntryDetails()
+  +validateNewEntryDetails()
+  +validateUpdatedEntryItem()
+  +validateDeletedDiaryEntry()
+  +validateDeletedDiaryEntryItem()
+  +validateCreateFoodItemInput()
+  +validateCreateFoodPortionInput()
+  +validateUserIdForDashboard()
+  +validateCreateRecipeAsDiaryEntryItemInput()
+}
+class DiaryRoutes <<routes>> {
+  +POST /entries -> createEntry()
+  +GET /summary -> getSummary()
+  +GET /entries -> listDiaryEntries()
+  +GET /entries/:id -> getDiaryEntryById()
+  +DELETE /entries/:id -> deleteEntry()
+  +POST /entries/:id/items -> createDiaryEntryItem()
+  +PATCH /entry-items/:itemId -> updateDiaryEntryItem()
+  +DELETE /entry-items/:itemId -> deleteEntryItem()
+  +GET /dashboard -> getDashboard()
+  +POST /entries/recipe/:recipeId -> createEntryWithRecipe()
+  +POST /entries/:id/recipe/:recipeId -> createRecipeAsDiaryEntryItem()
+}
+}
+
+package "goals" {
+class GoalsController <<controller>> {
+  +getGoals()
+  +updateGoal()
+  +deleteGoal()
+  +createGoal()
+  +listNutrients()
+  +toggleGoalDone()
+  +getGoalErrorStatus()
+}
+class GoalsService <<service>> {
+  +getGoalsService()
+  +updateUserGoal()
+  +archiveUserGoal()
+  +createUserGoal()
+  +createGoalForSubscriber()
+  +ensureDefaultGoalsForUser()
+  +toggleGoalDoneForToday()
+  +listNutrientsService()
+  +evaluateGoalsForToday()
+  +toDateOnly()
+}
+class GoalsRepository <<repository>> {
+  +fetchGoals()
+  +findNutrientById()
+  +findNutrientByCode()
+  +listNutrients()
+  +findGoalByIdForSubscriber()
+  +archiveGoal()
+  +updateGoal()
+  +insertGoal()
+  +archiveGoalsForNutrient()
+  +findGuidelinesByDemographic()
+  +createManyGoals()
+  +findGoalCheckInByDate()
+  +createGoalCheckIn()
+  +updateGoalCheckIn()
+  +upsertGoalCheckIn()
+  +toDateOnly()
+}
+class GoalsValidator <<validator>> {
+  +getGoalErrorStatus()
+  +normalizePositiveInteger()
+  +normalizeNonNegativeNumber()
+  +normalizeDateOnly()
+  +normalizeSubscriberId()
+  +normalizeGoalId()
+  +normalizeBooleanQuery()
+  +normalizeGoalIncludeQuery()
+  +validateUpdateGoalInput()
+  +validateCreateGoalInput()
+}
+class GoalsRoutes <<routes>> {
+  +GET /nutrients -> listNutrients()
+  +GET / -> getGoals()
+  +PATCH / -> updateGoal()
+  +POST / -> createGoal()
+  +DELETE /:goalId -> deleteGoal()
+  +PATCH /:goalId/toggle-done -> toggleGoalDone()
+}
+}
+
+package "meal-plans" {
+class MealPlansController <<controller>> {
+  +createMealPlan()
+  +listMealPlans()
+  +getMealPlanById()
+  +addPlanItem()
+  +deleteMealPlan()
+  +removePlanItem()
+}
+class MealPlansService <<service>> {
+  +createMealPlanService()
+  +listMealPlansService()
+  +getMealPlanByIdService()
+  +addPlanItemService()
+  +deleteMealPlanService()
+  +removePlanItemService()
+}
+class MealPlansRepository <<repository>> {
+  +createMealPlan()
+  +listMealPlans()
+  +getMealPlanById()
+  +deleteMealPlan()
+  +addPlanItem()
+  +removePlanItem()
+}
+class MealPlansValidator <<validator>> {
+  +getMealErrorStatusCode()
+  +validateCreateMealPlanInput()
+  +validateListMealPlansInput()
+  +validateGetMealPlanByIdInput()
+  +normalizePositiveInteger()
+  +validateDate()
+  +validatePlanItem()
+  +validateRemovePlanItemInput()
+}
+class MealPlansRoutes <<routes>> {
+  +POST / -> createMealPlan()
+  +GET / -> listMealPlans()
+  +GET /:planId -> getMealPlanById()
+  +DELETE /:planId -> deleteMealPlan()
+  +POST /:planId/addItem -> addPlanItem()
+  +DELETE /:planId/items/:itemId -> removePlanItem()
+}
+}
+
+package "professional" {
+class ProfessionalController <<controller>> {
+  +setAsProfessional()
+  +inviteClient()
+  +listClients()
+  +removeClient()
+  +getClientSummary()
+  +getClientDashboard()
+  +sendMessage()
+  +listMessages()
+  +setGoal()
+  +listGoals()
+  +listInvitations()
+  +shareRecipe()
+  +listSharedRecipes()
+}
+class ProfessionalService <<service>> {
+  +setUserAsProfessional()
+  +inviteClientToProfessional()
+  +getProfessionalClients()
+  +removeProfessionalClient()
+  +ensureProfessionalClientRelation()
+  +getClientSummaryForProfessional()
+  +getClientDashboardForProfessional()
+  +sendMessageToClient()
+  +getMessagesWithClient()
+  +setGoalForClient()
+  +getClientGoalsForProfessional()
+  +shareRecipeWithClient()
+  +getSharedRecipes()
+}
+class ProfessionalRepository <<repository>> {
+  +updateRoleToProfessional()
+  +findProfessionalClientLink()
+  +createProfessionalClientLink()
+  +listProfessionalClients()
+  +deleteProfessionalClientLink()
+  +insertMessage()
+  +listMessages()
+  +createSharedRecipe()
+  +listSharedRecipes()
+}
+class ProfessionalValidator <<validator>> {
+  +getProfessionalErrorStatus()
+  +normalizePositiveInteger()
+  +validateProfessionalId()
+  +validateClientId()
+  +validateInviteClientInput()
+  +validateRelationshipInput()
+  +validateListClientsInput()
+  +validateSummaryInput()
+  +validateMessageInput()
+  +validateSetGoalInput()
+  +validateRecipeId()
+}
+class ProfessionalRoutes <<routes>> {
+  +PATCH /setAsProfessional -> setAsProfessional()
+  +POST /client-invitations -> inviteClient()
+  +GET /client-invitations -> listInvitations()
+  +GET /clients -> listClients()
+  +DELETE /clients/:clientId -> removeClient()
+  +GET /clients/:clientId/summary -> getClientSummary()
+  +GET /clients/:clientId/dashboard -> getClientDashboard()
+  +POST /clients/:clientId/messages -> sendMessage()
+  +GET /clients/:clientId/messages -> listMessages()
+  +POST /clients/:clientId/shared-recipes -> shareRecipe()
+  +GET /clients/:clientId/shared-recipes -> listSharedRecipes()
+  +POST /clients/:clientId/goals -> setGoal()
+  +GET /clients/:clientId/goals -> listGoals()
+}
+}
+
+package "client" {
+class ClientController <<controller>> {
+  +acceptInvitation()
+  +rejectInvitation()
+  +listProfessionals()
+  +removeProfessional()
+  +sendMessage()
+  +listMessages()
+  +listInvitations()
+  +listSharedRecipes()
+}
+class ClientService <<service>> {
+  +acceptInvitationService()
+  +rejectInvitationService()
+  +listProfessionalsService()
+  +removeProfessionalService()
+  +sendMessageToProfessional()
+  +listMessagesService()
+  +ensureProfessionalClientRelation()
+  +listSharedRecipesService()
+}
+class ClientRepository <<repository>> {
+  +findProfessionalClientLink()
+  +acceptProfessionalInvitation()
+  +rejectProfessionalInvitation()
+  +listClientProfessionals()
+  +disableProfessionalClientLink()
+  +insertMessage()
+  +listMessages()
+  +listSharedRecipes()
+}
+class ClientValidator <<validator>> {
+  +getClientErrorStatus()
+  +normalizePositiveInteger()
+  +validateClientId()
+  +validateProfessionalId()
+  +validateClientProfessionalInput()
+  +validateMessageInput()
+}
+class ClientRoutes <<routes>> {
+  +POST /client-invitations/:professionalId/accept -> acceptInvitation()
+  +POST /client-invitations/:professionalId/reject -> rejectInvitation()
+  +GET /client-invitations -> listInvitations()
+  +GET /professionals -> listProfessionals()
+  +DELETE /professionals/:professionalId -> removeProfessional()
+  +GET /professionals/:professionalId/shared-recipes -> listSharedRecipes()
+  +POST /professionals/:professionalId/messages -> sendMessage()
+  +GET /professionals/:professionalId/messages -> listMessages()
+}
+}
+
+package "recipes" {
+class RecipesController <<controller>> {
+  +listRecipes()
+  +getRecipeById()
+  +submitRecipeReview()
+  +toggleRecipeFavorite()
+  +toggleRecipeUsage()
+  +getFavoriteRecipes()
+  +getUsedRecipes()
+}
+class RecipesService <<service>> {
+  +listRecipesService()
+  +getRecipeByIdService()
+  +submitRecipeReviewService()
+  +toggleRecipeFavoriteService()
+  +toggleRecipeUsageService()
+  +getFavoriteRecipesService()
+  +getUsedRecipesService()
+  +processReturnedRecipes()
+}
+class RecipesRepository <<repository>> {
+  +listRecipes()
+  +findRecipeById()
+  +createRecipeReview()
+  +toggleRecipeFavorite()
+  +favoriteExists()
+  +toggleRecipeUsage()
+  +usageExists()
+}
+class RecipesValidator <<validator>> {
+  +normalizePositiveInteger()
+  +validateListRecipesInput()
+  +validatePositiveInteger()
+  +validateReviewInput()
+}
+class RecipesRoutes <<routes>> {
+  +GET / -> listRecipes()
+  +GET /favorites -> getFavoriteRecipes()
+  +GET /used -> getUsedRecipes()
+  +GET /:id -> getRecipeById()
+  +POST /:id/reviews -> submitRecipeReview()
+  +POST /:id/favorite -> toggleRecipeFavorite()
+  +POST /:id/usage -> toggleRecipeUsage()
+}
+}
+
+AuthController --> AuthService
+AuthRoutes --> AuthController
+AuthService --> GoalsService
+ClientController --> ClientService
+ClientController --> ClientValidator
+ClientRoutes --> ClientController
+ClientService --> ClientRepository
+DiaryController --> DiaryService
+DiaryController --> DiaryValidator
+DiaryRoutes --> DiaryController
+DiaryService --> DiaryRepository
+DiaryService --> GoalsRepository
+DiaryService --> GoalsService
+DiaryService --> RecipesRepository
+GoalsController --> GoalsService
+GoalsController --> GoalsValidator
+GoalsRoutes --> GoalsController
+GoalsService --> GoalsRepository
+MealPlansController --> MealPlansService
+MealPlansController --> MealPlansValidator
+MealPlansRoutes --> MealPlansController
+MealPlansService --> MealPlansRepository
+ProfessionalController --> ProfessionalService
+ProfessionalController --> ProfessionalValidator
+ProfessionalRoutes --> ProfessionalController
+ProfessionalService --> DiaryService
+ProfessionalService --> GoalsService
+ProfessionalService --> ProfessionalRepository
+RecipesController --> RecipesService
+RecipesController --> RecipesValidator
+RecipesRoutes --> RecipesController
+RecipesService --> RecipesRepository
+
+class AuthError
+class UserNotFoundError
+UserNotFoundError --|> AuthError
+@enduml
