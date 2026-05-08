@@ -25,6 +25,7 @@ const {
   submitRecipeReview,
   toggleRecipeFavorite,
   getFavoriteRecipes,
+  getUsedRecipes,
 } = await import("../../src/modules/recipes/recipes.controller.js");
 
 function mockResponse() {
@@ -478,6 +479,26 @@ describe("Recipes Controller", () => {
       await getFavoriteRecipes(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("getUsedRecipes", () => {
+    test("returns 400 when service throws RecipeError", async () => {
+      getUsedRecipesService.mockRejectedValue(
+        new RecipeError("Value must be a positive integer")
+      );
+
+      const req = {};
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await getUsedRecipes(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Value must be a positive integer",
+      });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });

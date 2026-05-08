@@ -133,4 +133,20 @@ describe("searchFood redis/cache behavior", () => {
 
     expect(redisClient.connect).toHaveBeenCalledTimes(1);
   });
+
+  test("retries redis connect after an initial connection failure", async () => {
+    redisClient.get.mockResolvedValue(JSON.stringify({ foods: [] }));
+
+    const connectError = new Error("redis down");
+    redisClient.connect
+      .mockRejectedValueOnce(connectError)
+      .mockResolvedValueOnce(undefined);
+
+    const { searchFood } = await import("../../src/utils/searchFood.js");
+
+    await expect(searchFood("apple")).rejects.toThrow("redis down");
+    await expect(searchFood("apple")).resolves.toEqual({ foods: [] });
+
+    expect(redisClient.connect).toHaveBeenCalledTimes(2);
+  });
 });
