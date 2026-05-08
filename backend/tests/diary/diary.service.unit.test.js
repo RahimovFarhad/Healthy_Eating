@@ -39,8 +39,11 @@ const mockCheckExistingFoodItemByExternalId = jest.fn();
 const mockFindRecipePortionForDiary = jest.fn();
 const mockSearchFoodById = jest.fn();
 const mockParseFoodResponse = jest.fn();
+const mockEvaluateGoalsForToday = jest.fn();
+const mockFetchGoals = jest.fn();
+const mockListRecipesFromRepo = jest.fn();
 
-jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.validator.js", () => ({
   DiaryEntryError: DiaryEntryError,
   validateCreateDiaryEntryInput: mockValidateCreateDiaryEntryInput,
   validateSummaryInput: mockValidateSummaryInput,
@@ -56,7 +59,7 @@ jest.unstable_mockModule("../src/modules/diary/diary.validator.js", () => ({
   validateCreateRecipeAsDiaryEntryItemInput: mockValidateCreateRecipeAsDiaryEntryItemInput,
 }));
 
-jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
+jest.unstable_mockModule("../../src/modules/diary/diary.repository.js", () => ({
   fetchSummaryData: mockFetchSummaryData,
   insertDiaryEntry: mockInsertDiaryEntry,
   listDiaryEntries: mockListDiaryEntries,
@@ -75,9 +78,21 @@ jest.unstable_mockModule("../src/modules/diary/diary.repository.js", () => ({
   findRecipePortionForDiary: mockFindRecipePortionForDiary,
 }));
 
-jest.unstable_mockModule("../src/utils/searchFood.js", () => ({
+jest.unstable_mockModule("../../src/utils/searchFood.js", () => ({
   searchFoodById: mockSearchFoodById,
   parseFoodResponse: mockParseFoodResponse,
+}));
+
+jest.unstable_mockModule("../../src/modules/goals/goals.service.js", () => ({
+  evaluateGoalsForToday: mockEvaluateGoalsForToday,
+}));
+
+jest.unstable_mockModule("../../src/modules/goals/goals.repository.js", () => ({
+  fetchGoals: mockFetchGoals,
+}));
+
+jest.unstable_mockModule("../../src/modules/recipes/recipes.repository.js", () => ({
+  listRecipes: mockListRecipesFromRepo,
 }));
 
 const {
@@ -96,6 +111,8 @@ const {
 describe("Diary Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockValidateSummaryInput.mockImplementation((input) => input);
+    mockFetchSummaryData.mockResolvedValue([]);
   });
 
   describe("createDiaryEntry (unit)", () => {
@@ -181,7 +198,7 @@ describe("Diary Service", () => {
         portionId: 12,
         quantity: 2,
       }));
-      expect(mockFindDiaryEntryById).toHaveBeenCalledWith({ diaryEntryId: TEST_ENTRYID });
+      expect(mockFindDiaryEntryById).toHaveBeenCalledWith({ diaryEntryId: TEST_ENTRYID, subscriberId: TEST_USERID });
       expect(result).toEqual(fullEntry);
     });
     test("throws DiaryEntryError when subscriberId is missing or invalid", async () => {
@@ -1000,6 +1017,18 @@ describe("Diary Service", () => {
   });
 
   describe("getDashboardDataForSubscriber (unit)", () => {
+    const nutrient = (code, amount, nutrientId) => ({
+      items: [{
+        quantity: 1,
+        portion: {
+          portionNutrients: [{
+            amount,
+            nutrient: { nutrientId, code, name: code, unit: "g", type: "macro" },
+          }],
+        },
+      }],
+    });
+
     test("returns dashboard data when valid", async () => {
       const validatedInput = {
         subscriberId: TEST_USERID,
@@ -1082,6 +1111,57 @@ describe("Diary Service", () => {
       })).rejects.toEqual(expect.objectContaining({
         message: "Invalid date value: 12345",
       }));
+    });
+
+    test("scores recipes using protein, carbohydrates and fat together", async () => {
+      mockValidateUserIdForDashboard.mockReturnValue({ subscriberId: TEST_USERID });
+      mockValidateSummaryInput.mockImplementation((input) => input);
+      mockGetDaysLogged.mockResolvedValue(1);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([]);
+      mockListDiaryEntries.mockResolvedValue([]);
+      mockFetchSummaryData.mockResolvedValue([]);
+      mockFetchGoals.mockResolvedValue([
+        { nutrient: { code: "calories" }, targetMax: 2000, targetMin: null },
+        { nutrient: { code: "protein" }, targetMin: 30, targetMax: null },
+        { nutrient: { code: "carbohydrates" }, targetMin: 40, targetMax: null },
+        { nutrient: { code: "fat" }, targetMin: 20, targetMax: null },
+      ]);
+      mockListRecipesFromRepo
+        .mockResolvedValueOnce([]) 
+        .mockResolvedValueOnce([
+          { recipeId: 1, title: "High Protein Only", kcal: 450, protein: 30, carbs: 5, fat: 5, fibre: 0, sugars: 0, salt: 0, cuisine: "A", category: "A" },
+          { recipeId: 2, title: "Balanced Macros", kcal: 450, protein: 20, carbs: 30, fat: 15, fibre: 0, sugars: 0, salt: 0, cuisine: "B", category: "B" },
+        ]);
+
+      const result = await getDashboardDataForSubscriber({ subscriberId: TEST_USERID });
+      expect(result.recommendedRecipes[0].recipeId).toBe(2);
+    });
+
+    test("does not award protein score when no protein is needed", async () => {
+      mockValidateUserIdForDashboard.mockReturnValue({ subscriberId: TEST_USERID });
+      mockValidateSummaryInput.mockImplementation((input) => input);
+      mockGetDaysLogged.mockResolvedValue(1);
+      mockFetchWeeklyCalorieTrend.mockResolvedValue([]);
+      mockListDiaryEntries.mockResolvedValue([]);
+      mockFetchSummaryData.mockResolvedValue([
+        nutrient("protein", 50, 1), // already reached goal
+        nutrient("calories", 300, 2),
+      ]);
+      mockFetchGoals.mockResolvedValue([
+        { nutrient: { code: "calories" }, targetMax: 2000, targetMin: null },
+        { nutrient: { code: "protein" }, targetMin: 50, targetMax: null },
+      ]);
+      mockListRecipesFromRepo
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          { recipeId: 10, title: "Very High Protein", kcal: 400, protein: 60, carbs: 20, fat: 10, fibre: 0, sugars: 0, salt: 0, cuisine: "X", category: "X" },
+          { recipeId: 11, title: "Low Protein", kcal: 400, protein: 5, carbs: 20, fat: 10, fibre: 0, sugars: 0, salt: 0, cuisine: "Y", category: "Y" },
+        ]);
+
+      const result = await getDashboardDataForSubscriber({ subscriberId: TEST_USERID });
+      const highProtein = result.recommendedRecipes.find((r) => r.recipeId === 10);
+      const lowProtein = result.recommendedRecipes.find((r) => r.recipeId === 11);
+      expect(highProtein.score).toBe(lowProtein.score);
     });
   });
 });

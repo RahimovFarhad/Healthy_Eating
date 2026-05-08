@@ -19,7 +19,7 @@ const mockGetClientGoalsForProfessional = jest.fn();
 const mockGetSharedRecipes = jest.fn();
 const mockShareRecipeWithClient = jest.fn();
 
-jest.unstable_mockModule("../src/modules/professional/professional.service.js", () => ({
+jest.unstable_mockModule("../../src/modules/professional/professional.service.js", () => ({
   setUserAsProfessional: mockSetUserAsProfessional,
   inviteClientToProfessional: mockInviteClientToProfessional,
   getProfessionalClients: mockGetProfessionalClients,
@@ -111,7 +111,7 @@ describe("Professional Controller", () => {
       await inviteClient(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(mockInviteClientToProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID });
+      expect(mockInviteClientToProfessional).toHaveBeenCalledWith({ professionalId: TEST_PROFESSIONAL_ID, subscriberId: TEST_CLIENT_ID, email: null });
       expect(res.json).toHaveBeenCalledWith({ invitation: { invitationId: 123 } });
     });
     test("Returns error code 400 when ProfessionalError is thrown", async () => {

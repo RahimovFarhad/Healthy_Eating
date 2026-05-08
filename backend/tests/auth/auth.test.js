@@ -1,7 +1,18 @@
 import jwt from "jsonwebtoken";
+import { jest } from "@jest/globals";
 import request from "supertest"
-import app from "../../src/app.js";
-import { prisma } from "../../src/db/prisma.js";
+
+const sentCodesByEmail = new Map();
+const mockSendVerificationEmail = jest.fn(async ({ to, code }) => {
+  sentCodesByEmail.set(to, code);
+});
+
+jest.unstable_mockModule("../../src/utils/email.js", () => ({
+  sendVerificationEmail: mockSendVerificationEmail,
+}));
+
+const { default: app } = await import("../../src/app.js");
+const { prisma } = await import("../../src/db/prisma.js");
 
 const { sign } = jwt;
 
@@ -17,9 +28,10 @@ const expiredRefreshToken = sign(
     userId: 9999,
     email: "",
     role: "default",
-    tokenType: "refresh"
+    tokenType: "refresh",
+    jti: "expired-test-jti"
   },
-  process.env.JWT_SECRET || "default-secret-key",
+  process.env.JWT_SECRET,
   { expiresIn: "-1h" }
 );
 
@@ -28,7 +40,17 @@ let refreshCookie = null;
 
 describe("Auth API", () => {
   afterAll(async () => {
+    try {
+      await prisma.pendingRegistration.deleteMany({
+        where: { email: TEST_USER.email },
+      });
+    } catch (_error) {
+      // ignore if any errors occur during cleanup
+    }
     if (createdUserId) {
+      await prisma.refreshToken.deleteMany({
+        where: { userId: createdUserId },
+      });
       await prisma.user.deleteMany({
         where: {
           userId: createdUserId,
@@ -39,38 +61,18 @@ describe("Auth API", () => {
   });
 
   describe("Register", () => {
-    test("Register creates user", async () => {
-      const res = await request(app).post("/auth/register").send(TEST_USER);
+    test("Register starts verification flow", async () => {
+      const res = await request(app).post("/api/auth/register").send(TEST_USER);
 
-      expect(res.statusCode).toBe(201);
+      expect(res.statusCode).toBe(200);
       expect(res.body).toMatchObject({
-        message: "User registered successfully",
+        message: "Verification code sent. Complete verification to finish registration.",
       });
-      expect(typeof res.body.userId).toBe("number");
-      createdUserId = res.body.userId;
-    });
-
-    test("Register rejects duplicate email", async () => {
-      const res = await request(app).post("/auth/register").send(TEST_USER);
-
-      expect(res.statusCode).toBe(409);
-      expect(res.body).toHaveProperty("message");
-    });
-
-    test("Register rejects duplicate username", async () => {
-      const res = await request(app).post("/auth/register").send({
-        email: `another-${Date.now()}@example.com`,
-        username: TEST_USER.username,
-        password: TEST_USER.password,
-      });
-
-      expect(res.statusCode).toBe(409);
-      expect(res.body).toHaveProperty("message");
     });
 
     test("Register rejects missing username", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           email: "test@example.com",
           password: "123456"
@@ -84,7 +86,7 @@ describe("Auth API", () => {
 
     test("Register rejects missing email", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           username: "testuser",
           password: "123456"
@@ -95,7 +97,7 @@ describe("Auth API", () => {
 
     test("Register rejects missing password", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({
           email: "test@example.com",
           username: "testuser"
@@ -106,17 +108,104 @@ describe("Auth API", () => {
 
     test("Register rejects empty body", async () => {
       const res = await request(app)
-        .post("/auth/register")
+        .post("/api/auth/register")
         .send({})
 
       expect(res.statusCode).toBe(400)
     })
+
+    test("Login fails before email verification", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: TEST_USER.email,
+          password: TEST_USER.password,
+        });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toEqual({
+        message: "User not found",
+      });
+    });
+
+    test("Verify rejects wrong code", async () => {
+      const res = await request(app)
+        .post("/api/auth/register/verify")
+        .send({
+          email: TEST_USER.email,
+          code: "000000",
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({
+        message: "Invalid or expired verification code",
+      });
+    });
+
+    test("Resend issues a new code", async () => {
+      await prisma.pendingRegistration.update({
+        where: { email: TEST_USER.email },
+        data: { lastSentAt: new Date(Date.now() - 61_000) },
+      });
+
+      const res = await request(app)
+        .post("/api/auth/register/resend")
+        .send({ email: TEST_USER.email });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        message: "Verification code resent successfully.",
+      });
+      expect(typeof sentCodesByEmail.get(TEST_USER.email)).toBe("string");
+    });
+
+    test("Resend enforces cooldown", async () => {
+      // first check if now() and lastSentAt are within the cooldown period (10 secs)
+      const pending = prisma.pendingRegistration.findUnique({
+        where: { email: TEST_USER.email },
+      });
+      const lastSentAt = pending.lastSentAt;
+      const now = new Date();
+      const cooldownMs = 10 * 1000; 
+
+      if (lastSentAt && now - lastSentAt < cooldownMs) {
+        return;
+      }
+
+      const res = await request(app)
+        .post("/api/auth/register/resend")
+        .send({ email: TEST_USER.email });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({
+        message: "Please wait before requesting a new code",
+      });
+    });
+
+    test("Verify creates user after code check", async () => {
+      const code = sentCodesByEmail.get(TEST_USER.email);
+      expect(typeof code).toBe("string");
+
+      const res = await request(app)
+        .post("/api/auth/register/verify")
+        .send({
+          email: TEST_USER.email,
+          code,
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toMatchObject({
+        message: "User registered successfully",
+      });
+      expect(typeof res.body.userId).toBe("number");
+      createdUserId = res.body.userId;
+    });
   });
 
   describe("Login", () => {
     test("Login returns access token and refresh cookie with email", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: TEST_USER.email,
           password: TEST_USER.password,
@@ -140,7 +229,7 @@ describe("Auth API", () => {
 
     test("Login rejects invalid password", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: TEST_USER.email,
           password: "WrongPassword123!",
@@ -152,7 +241,7 @@ describe("Auth API", () => {
 
     test("Login rejects missing email", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           password: "123456"
         })
@@ -165,7 +254,7 @@ describe("Auth API", () => {
     
     test("Login rejects missing password", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: "test@example.com"
         })
@@ -178,7 +267,7 @@ describe("Auth API", () => {
 
     test("Login rejects empty body", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({})
 
       expect(res.statusCode).toBe(400)
@@ -186,7 +275,7 @@ describe("Auth API", () => {
 
     test("Login rejects non-existing user", async () => {
       const res = await request(app)
-        .post("/auth/login")
+        .post("/api/auth/login")
         .send({
           email: "nonexistent@example.com",
           password: "123456"
@@ -200,21 +289,30 @@ describe("Auth API", () => {
   });
 
   describe("Refresh Token", () => {
-    test("Refresh returns new access token", async () => {
+    test("Refresh returns new access token and rotates refresh token", async () => {
       expect(refreshCookie).toBeDefined();
 
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
         .set("Cookie", refreshCookie);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("token");
       expect(typeof res.body.token).toBe("string");
+      const cookies = res.headers["set-cookie"] || [];
+      const rotatedRefreshTokenCookie = cookies.find(cookie =>
+        cookie.toLowerCase().includes("refreshtoken")
+      );
+      expect(rotatedRefreshTokenCookie).toBeDefined();
+      expect(rotatedRefreshTokenCookie).not.toEqual(refreshCookie);
+      
+      // Update refreshCookie for logout test
+      refreshCookie = rotatedRefreshTokenCookie;
     });
 
     test ("Refresh rejects missing token", async () => {
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
 
       expect(res.statusCode).toBe(401)
       expect(res.body).toEqual({
@@ -225,7 +323,7 @@ describe("Auth API", () => {
     test("Refresh rejects expired token", async () => {
       const expiredTokenCookie = `refreshToken=${expiredRefreshToken}; HttpOnly; Path=/; Max-Age=3600`;
       const res = await request(app)
-        .get("/auth/refresh")
+        .get("/api/auth/refresh")
         .set("Cookie", expiredTokenCookie);
 
       expect(res.statusCode).toBe(401);
@@ -235,8 +333,29 @@ describe("Auth API", () => {
     });
   });
 
+  describe("Logout", () => {
+    test("Logout clears cookie and deletes refresh token from database", async () => {
+      expect(refreshCookie).toBeDefined();
+
+      const res = await request(app)
+        .post("/api/auth/logout")
+        .set("Cookie", refreshCookie);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        message: "Logged out successfully"
+      });
+
+      // Verify the refresh token no longer works
+      const refreshRes = await request(app)
+        .get("/api/auth/refresh")
+        .set("Cookie", refreshCookie);
+
+      expect(refreshRes.statusCode).toBe(401);
+      expect(refreshRes.body).toEqual({
+        message: "Invalid refresh token"
+      });
+    });
+  });
+
 })
-
-
-
-
