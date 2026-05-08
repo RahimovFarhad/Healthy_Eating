@@ -42,9 +42,6 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Reset database and run migrations
-        run: npx prisma migrate reset --force --skip-seed
-
       - name: Seed database
         run: npx prisma db seed
 
