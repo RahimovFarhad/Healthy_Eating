@@ -86,26 +86,26 @@ function getSummaryRange(period, endDate) {
     let fromDate;
 
     switch (period) {
-        case "daily":
-            fromDate = new Date(toDate);
-            fromDate.setUTCHours(0, 0, 0, 0);
-            break;
-        case "weekly":
-            fromDate = new Date(toDate);
-            fromDate.setUTCHours(0, 0, 0, 0);
-            const dayOfWeek = fromDate.getUTCDay();
-            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // calculate how many days to go back to get to Monday (treat Sunday as 6)
-            fromDate.setUTCDate(fromDate.getUTCDate() - daysToMonday);
-            toDate.setUTCDate(fromDate.getUTCDate() + 6); // extend to the end of Sunday
-            break;
-        case "monthly":
-            fromDate = new Date(toDate);
-            fromDate.setUTCHours(0, 0, 0, 0);
-            fromDate.setUTCDate(fromDate.getUTCDate() - 29);
-            toDate.setUTCDate(fromDate.getUTCDate() + 29); // extend to the end of the 30-day period
-            break;
-        default:
-            throw new Error(`Unsupported period: ${period}`);
+    case "daily":
+        fromDate = new Date(toDate);
+        fromDate.setUTCHours(0, 0, 0, 0);
+        break;
+    case "weekly":
+        fromDate = new Date(toDate);
+        fromDate.setUTCHours(0, 0, 0, 0);
+        const dayOfWeek = fromDate.getUTCDay();
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // calculate how many days to go back to get to Monday (treat Sunday as 6)
+        fromDate.setUTCDate(fromDate.getUTCDate() - daysToMonday);
+        toDate.setUTCDate(fromDate.getUTCDate() + 6); // extend to the end of Sunday
+        break;
+    case "monthly":
+        fromDate = new Date(toDate);
+        fromDate.setUTCHours(0, 0, 0, 0);
+        fromDate.setUTCDate(fromDate.getUTCDate() - 29);
+        toDate.setUTCDate(fromDate.getUTCDate() + 29); // extend to the end of the 30-day period
+        break;
+    default:
+        throw new Error(`Unsupported period: ${period}`);
     }
 
     return { fromDate, toDate };
@@ -144,7 +144,7 @@ async function getNutritionSummary({ subscriberId, period, endDate }) {
                 const key = n.nutrientId;
 
                 if (!nutrientMap.has(key)) {
-                nutrientMap.set(key, { ...n, totalAmount: 0 });
+                    nutrientMap.set(key, { ...n, totalAmount: 0 });
                 }
                 nutrientMap.get(key).totalAmount += amount;
             }
@@ -211,7 +211,7 @@ async function getWeeklyCaloryTrend({ subscriberId, endDate }) {
  * @returns {Promise<Array>} Array of diary entries
  * @throws {DiaryEntryError} If validation fails
  */
-async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) { 
+async function listDiaryEntries({ subscriberId, start, mealType, notes, end}) {
     const entries = validateListDisplay({ subscriberId, start, end, mealType, notes });
 
     return listDiaryEntriesRepository(entries); // call function from diary.repository.js file
@@ -284,12 +284,12 @@ async function createDiaryEntryItem({ userId, diaryEntryId, quantity, portionId,
  */
 async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }) {
     var parsed = null;
-    
+
     if (fatSecret != null) {
         const response = await searchFoodById(fatSecret.externalId);
         parsed = response?.portions ? response : parseFoodResponse(response);
     }
-    
+
     const foodItem = await createFoodItem({
         name: fatSecret == null ? customFood.name : parsed.name,
         brand: fatSecret == null ? customFood.brand : parsed.brand,
@@ -340,7 +340,7 @@ async function createCustomFoodAndGetPortionId({ userId, customFood, fatSecret }
 async function createFoodItem({ name, brand, source, externalId, createdByUserId }) {
     const data = validateCreateFoodItemInput({ name, brand, source, externalId, createdByUserId });
 
-    if (externalId){
+    if (externalId) {
         const existing = await checkExistingFoodItemByExternalId(externalId);
         if (existing) {
             return existing;
@@ -445,7 +445,7 @@ async function deleteExistingDiaryEntry({ userId, diaryEntryId }) {
  */
 async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
     const validatedEntries = validateDeletedDiaryEntryItem({ userId, diaryEntryItemId }); // validation check
-    
+
     const ownershipCheck = await checkDiaryEntryItemOwnership({ userId: validatedEntries.userId, diaryEntryItemId: validatedEntries.diaryEntryItemId });
 
     if (!ownershipCheck) {
@@ -473,7 +473,7 @@ async function deleteExistingDiaryEntryItem({ userId, diaryEntryItemId }) {
  */
 async function getDashboardDataForSubscriber({ subscriberId, date }) {
     // Needs to implement:
-    // 1. Fetch today's meals 
+    // 1. Fetch today's meals
     // 2. Fetch today's nutrient summary (can reuse getNutritionSummary with daily period and today's date)
     // 3. Fetch active goals (from goals module) and what percentage of each goal has been achieved based on today's summary and goal targets - this will be implemented only after goals module is ready, so can be left as a placeholder for now
     // 4. Fetch recent messages (from messaging module) - this will be implemented only after messaging module is ready, so can be left as a placeholder for now
@@ -492,7 +492,7 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
 
     const summary = await getNutritionSummary({ subscriberId: entry.subscriberId, period: "daily", endDate: today.toISOString() });
     const foodDiaryPreview = await listDiaryEntries({ subscriberId: entry.subscriberId, start: todayStart.toISOString(), end: todayEnd.toISOString() });
-        
+
     let recommendedRecipes = [];
     try {
         recommendedRecipes = await getRecommendedRecipes({ subscriberId: entry.subscriberId, date: today.toISOString() });
@@ -515,7 +515,6 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
         recommendedRecipes: recommendedRecipes // implement later
     };
 
-
 }
 
 /**
@@ -529,10 +528,10 @@ async function getDashboardDataForSubscriber({ subscriberId, date }) {
  * @throws {DiaryEntryError} If recipe portion not found or validation fails
  */
 async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recipeId, servings }) {
-    const entryCheck = validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings }); 
+    const entryCheck = validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings });
 
     const portion = await findRecipePortionForDiary({ recipeId: entryCheck.recipeId });
-    const portionId = portion?.portions?.[0]?.portionId; 
+    const portionId = portion?.portions?.[0]?.portionId;
     if (!portionId) {
         throw new DiaryEntryError("Recipe portion not found for diary entry item");
     }
@@ -549,68 +548,68 @@ async function createRecipeAsDiaryEntryItemService({ userId, diaryEntryId, recip
  * @returns {Promise<Array>} Array of up to 20 recommended recipes sorted by score
  */
 async function getRecommendedRecipes({ subscriberId, date }) {
-  const goals = await fetchGoals({ subscriberId, effective: true });
-  const summary = await getNutritionSummary({ subscriberId, period: 'daily', endDate: date });
-  const goalsByCode = new Map(goals.filter((g) => g?.nutrient?.code).map((g) => [g.nutrient.code, { min: Number(g.targetMin ?? 0), max: g.targetMax != null ? Number(g.targetMax) : null }]));
-  const currentByCode = new Map(summary.nutrients.map((n) => [n.code, Number(n.totalAmount) || 0]));
-  
-  const current = (code) => currentByCode.get(code) ?? 0;
-  const goal = (code) => goalsByCode.get(code);
-  const needed = (code) => Math.max((goal(code)?.min ?? 0) - current(code), 0);
-  const remainingMax = (code) => goal(code)?.max != null ? goal(code).max - current(code) : null;
+    const goals = await fetchGoals({ subscriberId, effective: true });
+    const summary = await getNutritionSummary({ subscriberId, period: "daily", endDate: date });
+    const goalsByCode = new Map(goals.filter((g) => g?.nutrient?.code).map((g) => [g.nutrient.code, { min: Number(g.targetMin ?? 0), max: g.targetMax != null ? Number(g.targetMax) : null }]));
+    const currentByCode = new Map(summary.nutrients.map((n) => [n.code, Number(n.totalAmount) || 0]));
 
-  const remainingCals = Math.max((goal("calories")?.max ?? 2000) - current("calories"), 0);
-  const proteinNeeded = needed("protein");
-  const carbsNeeded = needed("carbohydrates");
-  const fatNeeded = needed("fat");
-  const fibreNeeded = needed("fibre");
-  const sugarRemaining = remainingMax("sugar");
-  const saltRemaining = remainingMax("salt");
-  
-  const favorites = await listRecipes({ favoritedBySubscriberId: subscriberId });
-  const favoriteCuisines = [...new Set(favorites.map(f => f.cuisine))];
-  const favoriteCategories = [...new Set(favorites.map(f => f.category))];
-  
-  const allRecipes = await listRecipes({}); 
-  const filteredRecipes = allRecipes.filter(r => r.kcal <= remainingCals + 150);
-  
-  const calcExpectedPortion = (nutrientNeeded) => {
-    if (nutrientNeeded <= 0 || remainingCals <= 0) return 0;
-    const mealsLeft = Math.max(1, Math.ceil(remainingCals / 500));
-    return nutrientNeeded / mealsLeft;
-  };
+    const current = (code) => currentByCode.get(code) ?? 0;
+    const goal = (code) => goalsByCode.get(code);
+    const needed = (code) => Math.max((goal(code)?.min ?? 0) - current(code), 0);
+    const remainingMax = (code) => goal(code)?.max != null ? goal(code).max - current(code) : null;
 
-  const expectedProtein = calcExpectedPortion(proteinNeeded);
-  const expectedCarbs = calcExpectedPortion(carbsNeeded);
-  const expectedFat = calcExpectedPortion(fatNeeded);
-  const expectedFibre = calcExpectedPortion(fibreNeeded);
+    const remainingCals = Math.max((goal("calories")?.max ?? 2000) - current("calories"), 0);
+    const proteinNeeded = needed("protein");
+    const carbsNeeded = needed("carbohydrates");
+    const fatNeeded = needed("fat");
+    const fibreNeeded = needed("fibre");
+    const sugarRemaining = remainingMax("sugar");
+    const saltRemaining = remainingMax("salt");
 
-  const scoreNutrient = (recipeAmount, expected, weight) => {
-    if (expected <= 0) return 0;
-    const ratio = Math.min(recipeAmount / expected, 1.1);
-    return ratio * weight;
-  };
+    const favorites = await listRecipes({ favoritedBySubscriberId: subscriberId });
+    const favoriteCuisines = [...new Set(favorites.map(f => f.cuisine))];
+    const favoriteCategories = [...new Set(favorites.map(f => f.category))];
 
-  const scoredRecipes = filteredRecipes.map(r => {
-    let score = 0;
-    
-    score += scoreNutrient(r.protein || 0, expectedProtein, 4.0);
-    score += scoreNutrient(r.carbs || 0, expectedCarbs, 2.5);
-    score += scoreNutrient(r.fat || 0, expectedFat, 2.0);
-    score += scoreNutrient(r.fibre || 0, expectedFibre, 1.5);
-    
-    if (sugarRemaining != null && (r.sugars || 0) > sugarRemaining) score -= 3;
-    if (saltRemaining != null && (r.salt || 0) > saltRemaining) score -= 3;
-    
-    if (favoriteCuisines.includes(r.cuisine)) score += 1.5;
-    if (favoriteCategories.includes(r.category)) score += 1.5;
-    
-    return { ...r, score };
-  });
+    const allRecipes = await listRecipes({});
+    const filteredRecipes = allRecipes.filter(r => r.kcal <= remainingCals + 150);
 
-  scoredRecipes.sort((a, b) => b.score - a.score);
-  
-  return scoredRecipes.slice(0, 20);
+    const calcExpectedPortion = (nutrientNeeded) => {
+        if (nutrientNeeded <= 0 || remainingCals <= 0) return 0;
+        const mealsLeft = Math.max(1, Math.ceil(remainingCals / 500));
+        return nutrientNeeded / mealsLeft;
+    };
+
+    const expectedProtein = calcExpectedPortion(proteinNeeded);
+    const expectedCarbs = calcExpectedPortion(carbsNeeded);
+    const expectedFat = calcExpectedPortion(fatNeeded);
+    const expectedFibre = calcExpectedPortion(fibreNeeded);
+
+    const scoreNutrient = (recipeAmount, expected, weight) => {
+        if (expected <= 0) return 0;
+        const ratio = Math.min(recipeAmount / expected, 1.1);
+        return ratio * weight;
+    };
+
+    const scoredRecipes = filteredRecipes.map(r => {
+        let score = 0;
+
+        score += scoreNutrient(r.protein || 0, expectedProtein, 4.0);
+        score += scoreNutrient(r.carbs || 0, expectedCarbs, 2.5);
+        score += scoreNutrient(r.fat || 0, expectedFat, 2.0);
+        score += scoreNutrient(r.fibre || 0, expectedFibre, 1.5);
+
+        if (sugarRemaining != null && (r.sugars || 0) > sugarRemaining) score -= 3;
+        if (saltRemaining != null && (r.salt || 0) > saltRemaining) score -= 3;
+
+        if (favoriteCuisines.includes(r.cuisine)) score += 1.5;
+        if (favoriteCategories.includes(r.category)) score += 1.5;
+
+        return { ...r, score };
+    });
+
+    scoredRecipes.sort((a, b) => b.score - a.score);
+
+    return scoredRecipes.slice(0, 20);
 }
 
 export { createDiaryEntry, getNutritionSummary, listDiaryEntries, getDiaryEntryById, createDiaryEntryItem, updateDiaryEntryItem, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService };

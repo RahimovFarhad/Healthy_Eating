@@ -143,19 +143,19 @@ function sodiumMgToSaltG(sodiumMg) {
 function parseFoodResponse(xml) {
     try {
         const result = parser.parse(xml);
-        
+
         // Log the parsed result to debug
-        
+
         const food = result.food;
-        
+
         if (!food) {
-            throw new Error('Invalid food data: no food object found');
+            throw new Error("Invalid food data: no food object found");
         }
-        
+
         if (!food.servings || !food.servings.serving) {
-            throw new Error('Invalid food data: no servings found');
+            throw new Error("Invalid food data: no servings found");
         }
-        
+
         const rawServings = food.servings.serving;
         const servings = Array.isArray(rawServings) ? rawServings : [rawServings];
 

@@ -11,7 +11,7 @@ const professionalRouter = Router();
 
 professionalRouter.patch("/setAsProfessional", setAsProfessional);
 professionalRouter.post("/client-invitations", requireProfessional, inviteClient);
-professionalRouter.get("/client-invitations", requireProfessional, listInvitations);  // to be implemented 
+professionalRouter.get("/client-invitations", requireProfessional, listInvitations);  // to be implemented
 
 professionalRouter.get("/clients", requireProfessional, listClients); //list of clients for the currently authenticated professional; if include=details, sends with details (risk points + risky nutrients with their goals)
 professionalRouter.delete("/clients/:clientId", requireProfessional, removeClient); //professional removes client from their list
@@ -28,6 +28,5 @@ professionalRouter.get("/clients/:clientId/shared-recipes", requireProfessional,
 
 professionalRouter.post("/clients/:clientId/goals", requireProfessional, setGoal);
 professionalRouter.get("/clients/:clientId/goals", requireProfessional, listGoals);
-
 
 export default professionalRouter;

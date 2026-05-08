@@ -13,13 +13,13 @@ import { getGoalsService, updateUserGoal, archiveUserGoal, createUserGoal, toggl
  * @returns {number} HTTP status code
  */
 function getGoalErrorStatus(errorMessage) {
-  if (errorMessage === "Goal not found") return 404;
-  if (errorMessage === "Unauthorized to archive this goal") return 403;
-  if (errorMessage === "Goal is already archived") return 409;
-  if (errorMessage === "Goal is archived") return 409;
-  if (errorMessage === "Goal has not started yet") return 409;
-  if (errorMessage === "Goal end date has passed") return 409;
-  return 400;
+    if (errorMessage === "Goal not found") return 404;
+    if (errorMessage === "Unauthorized to archive this goal") return 403;
+    if (errorMessage === "Goal is already archived") return 409;
+    if (errorMessage === "Goal is archived") return 409;
+    if (errorMessage === "Goal has not started yet") return 409;
+    if (errorMessage === "Goal end date has passed") return 409;
+    return 400;
 }
 
 /**
@@ -35,19 +35,19 @@ function getGoalErrorStatus(errorMessage) {
  * @returns {Promise<Object>} JSON response with goals or error
  */
 async function getGoals(req, res, next) {
-  try {
-    const subscriberId = req.user?.userId ?? null;
-    const effective = normalizeBooleanQuery(req.query?.effective, true);
-    const include = normalizeGoalIncludeQuery(req.query?.include, "none");
-    const goals = await getGoalsService({ subscriberId, effective, include });
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const effective = normalizeBooleanQuery(req.query?.effective, true);
+        const include = normalizeGoalIncludeQuery(req.query?.include, "none");
+        const goals = await getGoalsService({ subscriberId, effective, include });
 
-    return res.status(200).json({ goals });
-  } catch (error) {
-    if (error instanceof GoalError) {
-      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        return res.status(200).json({ goals });
+    } catch (error) {
+        if (error instanceof GoalError) {
+            return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        }
+        return next(error);
     }
-    return next(error);
-  }
 }
 
 /**
@@ -62,24 +62,24 @@ async function getGoals(req, res, next) {
  * @returns {Promise<Object>} JSON response with updated goal or error
  */
 async function updateGoal(req, res, next) {
-  try {
-    const subscriberId = req.user?.userId ?? null;
-    const goal = req.body?.goal;
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const goal = req.body?.goal;
 
-    if(!goal) {
-      throw new GoalError("goal is required");
+        if (!goal) {
+            throw new GoalError("goal is required");
+        }
+
+        validateUpdateGoalInput(goal);
+        const updatedGoal = await updateUserGoal({ subscriberId, goal });
+
+        return res.status(200).json({ updatedGoal});
+    } catch (error) {
+        if (error instanceof GoalError) {
+            return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        }
+        return next(error);
     }
-
-    validateUpdateGoalInput(goal);
-    const updatedGoal = await updateUserGoal({ subscriberId, goal });
-
-    return res.status(200).json({ updatedGoal});
-  } catch (error) {
-    if (error instanceof GoalError) {
-      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
-    }
-    return next(error);
-  }
 }
 
 /**
@@ -94,18 +94,18 @@ async function updateGoal(req, res, next) {
  * @returns {Promise<Object>} JSON response with deleted goal or error
  */
 async function deleteGoal(req, res, next) {
-  try {
-    const subscriberId = req.user?.userId ?? null;
-    const goalId = normalizeGoalId(req.params?.goalId);
-    const deletedGoal = await archiveUserGoal({ subscriberId, goalId });
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const goalId = normalizeGoalId(req.params?.goalId);
+        const deletedGoal = await archiveUserGoal({ subscriberId, goalId });
 
-    return res.status(200).json({ deletedGoal });
-  } catch (error) {
-    if (error instanceof GoalError) {
-      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        return res.status(200).json({ deletedGoal });
+    } catch (error) {
+        if (error instanceof GoalError) {
+            return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        }
+        return next(error);
     }
-    return next(error);
-  }
 }
 
 /**
@@ -120,18 +120,18 @@ async function deleteGoal(req, res, next) {
  * @returns {Promise<Object>} JSON response with created goal or error
  */
 async function createGoal(req, res, next) {
-  try {
-    const subscriberId = req.user?.userId ?? null;
-    const { goal } = req.body;
-    const createdGoal = await createUserGoal({ subscriberId, goal });
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const { goal } = req.body;
+        const createdGoal = await createUserGoal({ subscriberId, goal });
 
-    return res.status(201).json({ createdGoal });
-  } catch (error) {
-    if (error instanceof GoalError) {
-      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        return res.status(201).json({ createdGoal });
+    } catch (error) {
+        if (error instanceof GoalError) {
+            return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        }
+        return next(error);
     }
-    return next(error);
-  }
 }
 
 /**
@@ -142,12 +142,12 @@ async function createGoal(req, res, next) {
  * @returns {Promise<Object>} JSON response with nutrients list or error
  */
 async function listNutrients(_req, res, next) {
-  try {
-    const nutrients = await listNutrientsService();
-    return res.status(200).json({ nutrients });
-  } catch (error) {
-    return next(error);
-  }
+    try {
+        const nutrients = await listNutrientsService();
+        return res.status(200).json({ nutrients });
+    } catch (error) {
+        return next(error);
+    }
 }
 
 /**
@@ -162,18 +162,18 @@ async function listNutrients(_req, res, next) {
  * @returns {Promise<Object>} JSON response with check-in data or error
  */
 async function toggleGoalDone(req, res, next) {
-  try {
-    const subscriberId = req.user?.userId ?? null;
-    const goalId = normalizeGoalId(req.params?.goalId);
-    const checkIn = await toggleGoalDoneForToday({ subscriberId, goalId });
+    try {
+        const subscriberId = req.user?.userId ?? null;
+        const goalId = normalizeGoalId(req.params?.goalId);
+        const checkIn = await toggleGoalDoneForToday({ subscriberId, goalId });
 
-    return res.status(200).json({ checkIn });
-  } catch (error) {
-    if (error instanceof GoalError) {
-      return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        return res.status(200).json({ checkIn });
+    } catch (error) {
+        if (error instanceof GoalError) {
+            return res.status(getGoalErrorStatus(error.message)).json({ error: error.message });
+        }
+        return next(error);
     }
-    return next(error);
-  }
 }
 
 export { getGoals, updateGoal, deleteGoal, createGoal, toggleGoalDone, listNutrients };

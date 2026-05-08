@@ -3,26 +3,26 @@ import app from "./app.js";
 import { prisma } from "./db/prisma.js";
 
 if (!process.env.JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET is not set. Refusing to start.");
-  process.exit(1);
+    console.error("FATAL: JWT_SECRET is not set. Refusing to start.");
+    process.exit(1);
 }
 
 const PORT = Number(process.env.PORT || 3000);
 
 const server = app.listen(PORT, () => {
-  // keep it simple; plug your logger later if you want
-  console.log(`Server listening on http://localhost:${PORT}`);
+    // keep it simple; plug your logger later if you want
+    console.log(`Server listening on http://localhost:${PORT}`);
 });
 
 async function shutdown(signal) {
-  console.log(`${signal} received, shutting down...`);
-  server.close(async () => {
-    try {
-      await prisma.$disconnect();
-    } finally {
-      process.exit(0);
-    }
-  });
+    console.log(`${signal} received, shutting down...`);
+    server.close(async () => {
+        try {
+            await prisma.$disconnect();
+        } finally {
+            process.exit(0);
+        }
+    });
 }
 
 process.on("SIGINT", () => void shutdown("SIGINT"));

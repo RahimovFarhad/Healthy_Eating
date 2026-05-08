@@ -10,7 +10,7 @@ class DiaryEntryError extends Error {
     }
 }
 
-// handle diary error status codes 
+// handle diary error status codes
 function getDiaryErrorStatus(message) {
     if (message.toLowerCase().includes("unauthorised")) {
         return 403; // forbidden access
@@ -59,7 +59,7 @@ function validateCreateDiaryEntryInput({ subscriberId, consumedAt, mealType, not
 
     // Now validating items
     const normalizedItems = (items ?? []).map((item, index) => {
-        const quantity = Number(item.quantity) || 1; // default to 1 if quantity is not provided 
+        const quantity = Number(item.quantity) || 1; // default to 1 if quantity is not provided
         if (quantity <= 0) {
             throw new DiaryEntryError(`Item at index ${index}: quantity must be a positive number`);
         }
@@ -126,7 +126,7 @@ function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
         if (Number.isNaN(parsedStart.getTime())) {
             throw new DiaryEntryError("Start date must be a valid date");
         }
-        // if (parsedStart > new Date()) { 
+        // if (parsedStart > new Date()) {
         //     throw new DiaryEntryError("Start date cannot be in the future");
         // }
     }
@@ -141,7 +141,6 @@ function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
         }
     }
 
-
     if (mealType && !MEAL_TYPES.has(mealType)) {
         throw new DiaryEntryError("Meal type must be one of: breakfast, lunch, dinner, snack");
     }
@@ -151,7 +150,7 @@ function validateListDisplay({ subscriberId, start, end, mealType, notes }) {
     }
 
     return {
-        subscriberId: normalizedSubscriberId, 
+        subscriberId: normalizedSubscriberId,
         start: start ? new Date(start) : undefined,
         end: end ? new Date(end) : undefined,
         mealType,
@@ -353,7 +352,7 @@ function validateUserIdForDashboard({ subscriberId, date }) {
     return {
         subscriberId: normalizedSubscriberId,
         date: normalizedDate
-     }; 
+    };
 }
 
 function validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recipeId, servings }) {
@@ -372,7 +371,7 @@ function validateCreateRecipeAsDiaryEntryItemInput({ userId, diaryEntryId, recip
         throw new DiaryEntryError("Recipe ID is required");
     }
 
-    const normalizedServings = normalizePositiveNumber(servings || 1); // default to 1 serving 
+    const normalizedServings = normalizePositiveNumber(servings || 1); // default to 1 serving
     if (!normalizedServings) {
         throw new DiaryEntryError("Servings must be a positive number");
     }

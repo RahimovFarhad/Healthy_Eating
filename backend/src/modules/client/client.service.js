@@ -40,7 +40,7 @@ async function acceptInvitationService({ professionalId, clientId }) {
 
     if (invitation.status === "active") {
         throw new ClientError("Invitation already active");
-    } 
+    }
 
     if (invitation.status === "disabled") {
         throw new ClientError("Invitation already disabled");
@@ -72,7 +72,7 @@ async function rejectInvitationService({ professionalId, clientId }) {
 
     if (invitation.status === "active") {
         throw new ClientError("Invitation already active");
-    } 
+    }
 
     if (invitation.status === "disabled") {
         throw new ClientError("Invitation already disabled");

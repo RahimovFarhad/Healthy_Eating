@@ -240,5 +240,4 @@ async function listSharedRecipes(req, res, next) {
     }
 }
 
-
 export { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations, listSharedRecipes };

@@ -92,7 +92,7 @@ async function listRecipes({ category, cuisine, ingredients, favoritedBySubscrib
     });
 }
 
-async function findRecipeById({ recipeId }){
+async function findRecipeById({ recipeId }) {
     return prisma.recipe.findFirst({
         where: {
             recipeId
@@ -121,22 +121,22 @@ async function createRecipeReview({ recipeId, subscriberId, rating, comment }) {
 }
 
 async function toggleRecipeFavorite({ recipeId, subscriberId }) {
-  const existingFavorite = await favoriteExists({ recipeId, subscriberId });
+    const existingFavorite = await favoriteExists({ recipeId, subscriberId });
 
-  if (existingFavorite) {
-    await prisma.recipeFavorite.delete({
-      where: { id: existingFavorite.id },
+    if (existingFavorite) {
+        await prisma.recipeFavorite.delete({
+            where: { id: existingFavorite.id },
+        });
+        return { favorited: false };
+    }
+
+    await prisma.recipeFavorite.create({
+        data: {
+            subscriberId,
+            recipeId,
+        },
     });
-    return { favorited: false };
-  }
-
-  await prisma.recipeFavorite.create({
-    data: {
-      subscriberId,
-      recipeId,
-    },
-  });
-  return { favorited: true };
+    return { favorited: true };
 }
 
 async function favoriteExists({ recipeId, subscriberId }) {
@@ -152,22 +152,22 @@ async function favoriteExists({ recipeId, subscriberId }) {
 }
 
 async function toggleRecipeUsage({ recipeId, subscriberId }) {
-  const existingUsage = await usageExists({ recipeId, subscriberId });
+    const existingUsage = await usageExists({ recipeId, subscriberId });
 
-  if (existingUsage) {
-    await prisma.recipeUsage.delete({
-      where: { id: existingUsage.id },
+    if (existingUsage) {
+        await prisma.recipeUsage.delete({
+            where: { id: existingUsage.id },
+        });
+        return { used: false };
+    }
+
+    await prisma.recipeUsage.create({
+        data: {
+            subscriberId,
+            recipeId,
+        },
     });
-    return { used: false };
-  }
-
-  await prisma.recipeUsage.create({
-    data: {
-      subscriberId,
-      recipeId,
-    },
-  });
-  return { used: true };
+    return { used: true };
 }
 
 async function usageExists({ recipeId, subscriberId }) {
@@ -181,7 +181,5 @@ async function usageExists({ recipeId, subscriberId }) {
     });
 
 }
-
-
 
 export {listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite, toggleRecipeUsage}

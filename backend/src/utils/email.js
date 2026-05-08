@@ -13,13 +13,13 @@ import { google } from "googleapis";
  * @throws {Error} If environment variable is not set
  */
 function getRequiredEnv(name) {
-  const value = process.env[name];
+    const value = process.env[name];
 
-  if (!value) {
-    throw new Error(`${name} is not configured`);
-  }
+    if (!value) {
+        throw new Error(`${name} is not configured`);
+    }
 
-  return value;
+    return value;
 }
 
 /**
@@ -27,11 +27,11 @@ function getRequiredEnv(name) {
  * @returns {string} The sender email address
  */
 function getSenderEmail() {
-  if (process.env.EMAIL_FROM) {
-    return process.env.EMAIL_FROM;
-  }
+    if (process.env.EMAIL_FROM) {
+        return process.env.EMAIL_FROM;
+    }
 
-  return getRequiredEnv("GMAIL_USER");
+    return getRequiredEnv("GMAIL_USER");
 }
 
 /**
@@ -40,20 +40,20 @@ function getSenderEmail() {
  * @throws {Error} If required credentials are missing
  */
 function createGmailClient() {
-  const clientId = getRequiredEnv("GOOGLE_CLIENT_ID");
-  const clientSecret = getRequiredEnv("GOOGLE_CLIENT_SECRET");
-  const refreshToken = getRequiredEnv("GOOGLE_REFRESH_TOKEN");
+    const clientId = getRequiredEnv("GOOGLE_CLIENT_ID");
+    const clientSecret = getRequiredEnv("GOOGLE_CLIENT_SECRET");
+    const refreshToken = getRequiredEnv("GOOGLE_REFRESH_TOKEN");
 
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
 
-  oauth2Client.setCredentials({
-    refresh_token: refreshToken,
-  });
+    oauth2Client.setCredentials({
+        refresh_token: refreshToken,
+    });
 
-  return google.gmail({
-    version: "v1",
-    auth: oauth2Client,
-  });
+    return google.gmail({
+        version: "v1",
+        auth: oauth2Client,
+    });
 }
 
 /**
@@ -62,11 +62,11 @@ function createGmailClient() {
  * @returns {string} Base64url encoded message
  */
 function encodeEmail(message) {
-  return Buffer.from(message)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+    return Buffer.from(message)
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
 }
 
 /**
@@ -78,24 +78,24 @@ function encodeEmail(message) {
  * @returns {string} Encoded email message
  */
 function createVerificationEmail({ from, to, code }) {
-  const subject = "Your verification code for GoodFood";
+    const subject = "Your verification code for GoodFood";
 
-  const html = `
+    const html = `
     <p>Your verification code is <strong>${code}</strong>.</p>
     <p>It expires in 10 minutes.</p>
   `;
 
-  const message = [
-    `From: ${from}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    "MIME-Version: 1.0",
-    "Content-Type: text/html; charset=utf-8",
-    "",
-    html,
-  ].join("\n");
+    const message = [
+        `From: ${from}`,
+        `To: ${to}`,
+        `Subject: ${subject}`,
+        "MIME-Version: 1.0",
+        "Content-Type: text/html; charset=utf-8",
+        "",
+        html,
+    ].join("\n");
 
-  return encodeEmail(message);
+    return encodeEmail(message);
 }
 
 /**
@@ -107,23 +107,23 @@ function createVerificationEmail({ from, to, code }) {
  * @throws {Error} If email sending fails
  */
 export async function sendVerificationEmail({ to, code }) {
-  const from = getSenderEmail();
-  const gmail = createGmailClient();
+    const from = getSenderEmail();
+    const gmail = createGmailClient();
 
-  const raw = createVerificationEmail({
-    from,
-    to,
-    code,
-  });
-
-  try {
-    await gmail.users.messages.send({
-      userId: "me",
-      requestBody: {
-        raw,
-      },
+    const raw = createVerificationEmail({
+        from,
+        to,
+        code,
     });
-  } catch (error) {
-    throw new Error("Gmail email failed");
-  }
+
+    try {
+        await gmail.users.messages.send({
+            userId: "me",
+            requestBody: {
+                raw,
+            },
+        });
+    } catch (error) {
+        throw new Error("Gmail email failed");
+    }
 }

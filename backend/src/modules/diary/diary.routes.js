@@ -66,7 +66,6 @@ diaryRouter.post("/entries/recipe/:recipeId", createEntryWithRecipe);
 /**
  * POST /entries/:id/recipe/:recipeId - Add a recipe to an existing diary entry
  */
-diaryRouter.post("/entries/:id/recipe/:recipeId", createRecipeAsDiaryEntryItem); 
-
+diaryRouter.post("/entries/:id/recipe/:recipeId", createRecipeAsDiaryEntryItem);
 
 export default diaryRouter;

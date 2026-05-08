@@ -13,7 +13,7 @@ import { acceptInvitation, rejectInvitation, listProfessionals, removeProfession
  */
 const clientRouter = Router();
 
-// needs to do: instead of doing accept/decline by professionalId, we can do it by invitationId, 
+// needs to do: instead of doing accept/decline by professionalId, we can do it by invitationId,
 // but then we would also need to add GET endpoint for the invitations
 
 /**
