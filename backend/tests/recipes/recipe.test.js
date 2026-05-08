@@ -1,6 +1,6 @@
 import request from "supertest";
-import app from "../src/app.js";
-import { prisma } from "../src/db/prisma.js";
+import app from "../../src/app.js";
+import { prisma } from "../../src/db/prisma.js";
 import jwt from "jsonwebtoken";
 
 const { sign } = jwt;
@@ -146,6 +146,14 @@ describe("Recipe API", () => {
       });
 
       await prisma.recipeFavorite.deleteMany({
+        where: {
+          recipeId: {
+            in: createdRecipeIds,
+          },
+        },
+      });
+
+      await prisma.recipeUsage.deleteMany({
         where: {
           recipeId: {
             in: createdRecipeIds,
@@ -311,6 +319,161 @@ describe("Recipe API", () => {
           ingredients.some((ingredient) => ingredient.includes("garlic"))
         ).toBe(true);
       });
+    });
+  });
+
+  describe("Get Recipe By Id", () => {
+    test("GET /api/recipes/:id returns recipe details when id is valid", async () => {
+      const targetRecipeId = createdRecipeIds[0];
+
+      const res = await request(app)
+        .get(`/api/recipes/${targetRecipeId}`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("recipe");
+      expect(res.body.recipe).toHaveProperty("recipeId", targetRecipeId);
+      expect(Array.isArray(res.body.recipe.ingredients)).toBe(true);
+    });
+
+    test("GET /api/recipes/:id returns 400 when id is invalid", async () => {
+      const res = await request(app)
+        .get("/api/recipes/not-a-number")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({ error: "Value must be a positive integer" });
+    });
+  });
+
+  describe("Recipe Reviews", () => {
+    test("POST /api/recipes/:id/reviews creates a review with valid input", async () => {
+      const targetRecipeId = createdRecipeIds[0];
+      const reviewComment = `Great recipe ${TEST_ID}`;
+
+      const res = await request(app)
+        .post(`/api/recipes/${targetRecipeId}/reviews`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          rating: 5,
+          comment: reviewComment,
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty("review");
+      expect(res.body.review).toMatchObject({
+        recipeId: targetRecipeId,
+        subscriberId: testUserId,
+        rating: 5,
+        comment: reviewComment,
+      });
+    });
+
+    test("POST /api/recipes/:id/reviews returns 400 for invalid rating", async () => {
+      const targetRecipeId = createdRecipeIds[1];
+
+      const res = await request(app)
+        .post(`/api/recipes/${targetRecipeId}/reviews`)
+        .set("Authorization", `Bearer ${validAccessToken}`)
+        .send({
+          rating: 0,
+          comment: "bad payload",
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toEqual({
+        error: "Rating must be an integer between 1 and 5",
+      });
+    });
+  });
+
+  describe("Favorite Recipes", () => {
+    test("POST /api/recipes/:id/favorite toggles favorite on and off", async () => {
+      const recipeId = createdRecipeIds[0];
+
+      const firstToggle = await request(app)
+        .post(`/api/recipes/${recipeId}/favorite`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(firstToggle.statusCode).toBe(200);
+      expect(firstToggle.body).toEqual({ favorite: { favorited: true } });
+
+      const secondToggle = await request(app)
+        .post(`/api/recipes/${recipeId}/favorite`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(secondToggle.statusCode).toBe(200);
+      expect(secondToggle.body).toEqual({ favorite: { favorited: false } });
+    });
+
+    test("GET /api/recipes/favorites returns favorited recipes for subscriber", async () => {
+      const targetRecipeId = createdRecipeIds[1];
+
+      await request(app)
+        .post(`/api/recipes/${targetRecipeId}/favorite`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      const res = await request(app)
+        .get("/api/recipes/favorites")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(Array.isArray(res.body.recipes)).toBe(true);
+      expect(
+        res.body.recipes.some((recipe) => recipe.recipeId === targetRecipeId)
+      ).toBe(true);
+      expect(
+        res.body.recipes.every((recipe) => recipe.isFavorited === true)
+      ).toBe(true);
+
+      await request(app)
+        .post(`/api/recipes/${targetRecipeId}/favorite`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+    });
+  });
+
+  describe("Used Recipes", () => {
+    test("POST /api/recipes/:id/usage toggles usage on and off", async () => {
+      const recipeId = createdRecipeIds[0];
+
+      const firstToggle = await request(app)
+        .post(`/api/recipes/${recipeId}/usage`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(firstToggle.statusCode).toBe(200);
+      expect(firstToggle.body).toEqual({ usage: { used: true } });
+
+      const secondToggle = await request(app)
+        .post(`/api/recipes/${recipeId}/usage`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(secondToggle.statusCode).toBe(200);
+      expect(secondToggle.body).toEqual({ usage: { used: false } });
+    });
+
+    test("GET /api/recipes/used returns used recipes for subscriber", async () => {
+      const targetRecipeId = createdRecipeIds[2];
+
+      await request(app)
+        .post(`/api/recipes/${targetRecipeId}/usage`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      const res = await request(app)
+        .get("/api/recipes/used")
+        .set("Authorization", `Bearer ${validAccessToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(Array.isArray(res.body.recipes)).toBe(true);
+      expect(
+        res.body.recipes.some((recipe) => recipe.recipeId === targetRecipeId)
+      ).toBe(true);
+      expect(res.body.recipes.every((recipe) => recipe.isUsed === true)).toBe(
+        true
+      );
+
+      await request(app)
+        .post(`/api/recipes/${targetRecipeId}/usage`)
+        .set("Authorization", `Bearer ${validAccessToken}`);
     });
   });
 });
