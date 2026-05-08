@@ -692,8 +692,8 @@ function loadMoreRecommendations() {
 
 // Computed macro references from goals
 const MACRO_REFS = computed(() => {
-  const macros = ['protein', 'carbohydrates', 'fat']
-  const labels = { protein: 'Protein', carbohydrates: 'Carbs', fat: 'Fat' }
+  const macros = ['protein', 'carbohydrates', 'fat', 'fibre']
+  const labels = { protein: 'Protein', carbohydrates: 'Carbs', fat: 'Fat', fibre: 'Fibre' }
   const result = {}
   
   macros.forEach(code => {
@@ -701,7 +701,7 @@ const MACRO_REFS = computed(() => {
     const targetValue = goal?.targetMax ?? goal?.targetMin
     result[code] = {
       label: labels[code],
-      ref: targetValue ?? (code === 'protein' ? 50 : code === 'carbohydrates' ? 260 : 70), // fallback values
+      ref: targetValue ?? (code === 'protein' ? 50 : code === 'carbohydrates' ? 260 : code === 'fibre' ? 30 : 70), // fallback values
       unit: 'g'
     }
   })
