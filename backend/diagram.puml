@@ -18,6 +18,9 @@ class AuthService <<service>> {
   +resendRegistrationCode()
   +generateRefreshToken()
   +refreshAccessToken()
+  +revokeRefreshToken()
+  +normalizeEmail()
+  +normalizeUsername()
 }
 class AuthRoutes <<routes>> {
   +POST /login -> login()
@@ -182,6 +185,7 @@ class MealPlansController <<controller>> {
   +getMealPlanById()
   +addPlanItem()
   +deleteMealPlan()
+  +removePlanItem()
 }
 class MealPlansService <<service>> {
   +createMealPlanService()
@@ -189,6 +193,7 @@ class MealPlansService <<service>> {
   +getMealPlanByIdService()
   +addPlanItemService()
   +deleteMealPlanService()
+  +removePlanItemService()
 }
 class MealPlansRepository <<repository>> {
   +createMealPlan()
@@ -196,6 +201,7 @@ class MealPlansRepository <<repository>> {
   +getMealPlanById()
   +deleteMealPlan()
   +addPlanItem()
+  +removePlanItem()
 }
 class MealPlansValidator <<validator>> {
   +getMealErrorStatusCode()
@@ -205,6 +211,7 @@ class MealPlansValidator <<validator>> {
   +normalizePositiveInteger()
   +validateDate()
   +validatePlanItem()
+  +validateRemovePlanItemInput()
 }
 class MealPlansRoutes <<routes>> {
   +POST / -> createMealPlan()
@@ -212,6 +219,7 @@ class MealPlansRoutes <<routes>> {
   +GET /:planId -> getMealPlanById()
   +DELETE /:planId -> deleteMealPlan()
   +POST /:planId/addItem -> addPlanItem()
+  +DELETE /:planId/items/:itemId -> removePlanItem()
 }
 }
 
