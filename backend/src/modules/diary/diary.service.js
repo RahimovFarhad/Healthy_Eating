@@ -595,11 +595,11 @@ async function getRecommendedRecipes({ subscriberId, date }) {
     let score = 0;
     
     score += scoreNutrient(r.protein || 0, expectedProtein, 4.0);
-    score += scoreNutrient(r.carbohydrates || 0, expectedCarbs, 2.5);
+    score += scoreNutrient(r.carbs || 0, expectedCarbs, 2.5);
     score += scoreNutrient(r.fat || 0, expectedFat, 2.0);
     score += scoreNutrient(r.fibre || 0, expectedFibre, 1.5);
     
-    if (sugarRemaining != null && (r.sugar || 0) > sugarRemaining) score -= 3;
+    if (sugarRemaining != null && (r.sugars || 0) > sugarRemaining) score -= 3;
     if (saltRemaining != null && (r.salt || 0) > saltRemaining) score -= 3;
     
     if (favoriteCuisines.includes(r.cuisine)) score += 1.5;

@@ -15,18 +15,20 @@ let redisConnectPromise;
 /**
  * Ensures Redis connection is established
  * Uses a promise to prevent concurrent connection attempts
- * @returns {Promise<void>}
- * @throws {Error} If Redis connection fails
+ * Silently handles connection failures
+ * @returns {Promise<boolean>} True if connected, false if connection failed
  */
 async function ensureRedisConnected() {
-    if (redis.isOpen) return;
+    if (redis.isOpen) return true;
     if (!redisConnectPromise) {
         redisConnectPromise = redis.connect().catch((error) => {
             redisConnectPromise = undefined;
-            throw error;
+            // fail silently if Redis fails
+            return false;
         });
     }
-    await redisConnectPromise;
+    const result = await redisConnectPromise;
+    return result !== false;
 }
 
 /**
@@ -37,11 +39,18 @@ async function ensureRedisConnected() {
  * @throws {Error} If API request fails
  */
 async function searchFood(query) {
-    await ensureRedisConnected();
+    const redisConnected = await ensureRedisConnected();
 
-    const cacheKey = `search:${query}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    if (redisConnected) {
+        try {
+            const cacheKey = `search:${query}`;
+            const cached = await redis.get(cacheKey);
+            if (cached) return JSON.parse(cached);
+        } catch (error) {
+            // fal silently if Redis fails
+        }
+    }
+
     const token = await getToken();
     const response = await axios.get("https://platform.fatsecret.com/rest/foods/search/v1", {
         headers: {
@@ -54,7 +63,15 @@ async function searchFood(query) {
         }
     });
 
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(response.data)); // 7 days TTL
+    if (redisConnected) {
+        try {
+            const cacheKey = `search:${query}`;
+            await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(response.data)); // 7 days TTL
+        } catch (error) {
+            // fal silently if Redis fails
+        }
+    }
+
     return response.data;
 }
 
@@ -66,11 +83,17 @@ async function searchFood(query) {
  * @throws {Error} If API request or parsing fails
  */
 async function searchFoodById(id) {
-    await ensureRedisConnected();
+    const redisConnected = await ensureRedisConnected();
 
-    const cacheKey = `food:${id}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    if (redisConnected) {
+        try {
+            const cacheKey = `food:${id}`;
+            const cached = await redis.get(cacheKey);
+            if (cached) return JSON.parse(cached);
+        } catch (error) {
+            // fail silently if Redis fails
+        }
+    }
 
     const token = await getToken();
     const response = await axios.get("https://platform.fatsecret.com/rest/food/v5", {
@@ -84,7 +107,16 @@ async function searchFoodById(id) {
     });
 
     const parsed = parseFoodResponse(response.data);
-    await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(parsed)); // 7 days TTL
+
+    if (redisConnected) {
+        try {
+            const cacheKey = `food:${id}`;
+            await redis.setEx(cacheKey, 60 * 60 * 24 * 7, JSON.stringify(parsed)); // 7 days TTL
+        } catch (error) {
+            // fail silently if Redis fails
+        }
+    }
+
     return parsed;
 }
 
