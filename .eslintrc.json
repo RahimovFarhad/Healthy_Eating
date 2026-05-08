@@ -1,0 +1,42 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2022
+  },
+  "extends": "eslint:recommended",
+  // custom linting rules within the code
+  // NOTE (to automatically correct the highlighted fixable linted issues in the terminal & make sure ESLINT is installed): npm run lint:fix 
+  "rules": {
+    "no-unused-vars": "warn", // warning for unused variables in the code
+    "no-console": "warn", // warning if any console methods used for debugging
+    "no-undef": "warn", // warning for any function names unclear
+    "quotes": ["warn","double",{"avoidEscape": true}], // warning for inconsistent use of double quotations
+    "no-case-declarations": "off", // turned off, as it doesn't affect code logic
+    "indent": ["warn", 4], // warning for inconsistent indentation
+    "no-trailing-spaces": "warn", // warning for having whitespace after the code
+    "eol-last": ["warn","always"], // warning for not adding at max one empty line at the end of the file
+    "no-multiple-empty-lines": ["warn",{"max":1}], // warning for having more than one blank line between the code
+    "space-infix-ops": "warn", // warning for not having spaces around operators
+    "keyword-spacing": ["warn",{"before": true,"after":true}], // warning for not having a space before and after keyword
+    "space-before-blocks": "warn" // warning for not having a space before opening a brace/bracket
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js", "tests/**/*.js"],
+      "env": {
+        "jest": true
+      }
+    },
+    {
+    "files": ["backend/src/server.js", "backend/src/app.js"],
+    "rules": {
+      "no-console": "off"
+    }
+    }
+  ]
+  
+}

@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 
 # Compiled class file
 *.class
@@ -20,8 +20,23 @@ node_modules/
 *.zip
 *.tar.gz
 *.rar
+node_modules/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
 
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+.env.*
+# dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Playwright
+test-results/
+playwright-report/
