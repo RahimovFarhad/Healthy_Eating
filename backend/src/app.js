@@ -2,12 +2,16 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { prisma } from "./db/prisma.js";
 import authRouter from "./modules/auth/auth.routes.js";
-// import diaryRouter from "./modules/diary/diary.routes.js";
-// import goalRouter from "./modules/goals/goals.routes.js";
-// import professionalRouter from "./modules/professional/professional.routes.js";
-// import clientRouter from "./modules/client/client.routes.js";
-// import { requireAuth } from "./middleware/requireAuth.js";
-// import {searchFood, searchFoodById} from "./utils/searchFood.js"
+import diaryRouter from "./modules/diary/diary.routes.js";
+import goalRouter from "./modules/goals/goals.routes.js";
+import professionalRouter from "./modules/professional/professional.routes.js";
+import clientRouter from "./modules/client/client.routes.js";
+import recipesRouter from "./modules/recipes/recipes.routes.js";
+import { requireAuth } from "./middleware/requireAuth.js";
+import {searchFood, searchFoodById} from "./utils/searchFood.js"
+import { rateLimit } from "express-rate-limit";
+
+import mealPlansRouter from "./modules/mealPlans/mealPlans.routes.js";
 
 const app = express();
 
