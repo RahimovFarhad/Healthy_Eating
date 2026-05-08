@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: client/client.controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: client/client.controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Client controller module
+ * Handles HTTP requests for client endpoints
+ * @module client/controller
+ */
+
+import {
+    acceptInvitationService,
+    listMessagesService,
+    listProfessionalsService,
+    rejectInvitationService,
+    removeProfessionalService,
+    sendMessageToProfessional,
+    listSharedRecipesService
+} from "./client.service.js";
+import { ClientError, getClientErrorStatus } from "./client.validator.js";
+
+/**
+ * Handles client accepting a professional invitation
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with success message or error
+ */
+async function acceptInvitation(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const accept = await acceptInvitationService({ professionalId, clientId });
+
+        if (accept) {
+            return res.status(200).json({ message: "Invitation accepted successfully" });
+        } else {
+            throw new ClientError("Failed to accept invitation");
+        }
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles client rejecting a professional invitation
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with success message or error
+ */
+async function rejectInvitation(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const reject = await rejectInvitationService({ professionalId, clientId });
+
+        if (reject) {
+            return res.status(200).json({ message: "Invitation rejected successfully" });
+        } else {
+            throw new ClientError("Failed to reject invitation");
+        }
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles listing all professionals associated with a client
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with array of professionals or error
+ */
+async function listProfessionals(req, res, next) {
+    try {
+        const clientId = req.user?.userId ?? null;
+        const professionals = await listProfessionalsService({ clientId });
+
+        return res.status(200).json({ professionals });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles removing a professional from a client's list
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with success message or error
+ */
+async function removeProfessional(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const remove = await removeProfessionalService({ professionalId, clientId });
+
+        if (remove) {
+            return res.status(200).json({ message: "Professional removed successfully" });
+        } else {
+            throw new ClientError("Failed to remove professional");
+        }
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles sending a message from client to professional
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.message - The message content
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with sent message or error
+ */
+async function sendMessage(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const { message } = req.body;
+        const sentMessage = await sendMessageToProfessional({ professionalId, clientId, message });
+
+        return res.status(200).json({ message: "Message sent successfully", sentMessage });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles listing all messages between client and professional
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with array of messages or error
+ */
+async function listMessages(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const messages = await listMessagesService({ professionalId, clientId });
+
+        return res.status(200).json({ messages });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles listing all pending invitations for a client
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with array of invitations or error
+ */
+async function listInvitations(req, res, next) {
+    try {
+        const clientId = req.user?.userId ?? null;
+        const invitations = await listProfessionalsService({ clientId, status: "invited" });
+
+        return res.status(200).json({ invitations });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+/**
+ * Handles listing all recipes shared by a professional with a client
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.professionalId - The professional's user ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The client's user ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise&lt;Object>} JSON response with array of shared recipes or error
+ */
+async function listSharedRecipes(req, res, next) {
+    try {
+        const { professionalId } = req.params;
+        const clientId = req.user?.userId ?? null;
+        const sharedRecipes = await listSharedRecipesService({ professionalId, clientId });
+
+        return res.status(200).json({ sharedRecipes });
+    } catch (error) {
+        if (error instanceof ClientError) {
+            return res.status(getClientErrorStatus(error.message)).json({ error: error.message });
+        }
+
+        return next(error);
+    }
+}
+
+
+export { acceptInvitation, rejectInvitation, listProfessionals, removeProfessional, sendMessage, listMessages, listInvitations, listSharedRecipes };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-auth_controller.html">auth/controller</a></li><li><a href="module-auth_routes.html">auth/routes</a></li><li><a href="module-auth_service.html">auth/service</a></li><li><a href="module-client_controller.html">client/controller</a></li><li><a href="module-client_repository.html">client/repository</a></li><li><a href="module-client_routes.html">client/routes</a></li><li><a href="module-client_service.html">client/service</a></li></ul><h3>Classes</h3><ul><li><a href="module-auth_service.AuthError.html">AuthError</a></li><li><a href="module-auth_service.UserNotFoundError.html">UserNotFoundError</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri May 08 2026 03:54:23 GMT+0100 (British Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
