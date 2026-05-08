@@ -2,10 +2,7 @@ name: CI/CD Pipeline
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
