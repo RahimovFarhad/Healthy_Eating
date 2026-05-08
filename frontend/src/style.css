@@ -281,17 +281,20 @@ body {
   border-radius: 50%;
 }
 
-/* Star-rating widget (radio inputs styled as stars) */
+/* Star-rating widget */
 .star-rating {
   display: inline-flex;
   gap: 0.125rem;
 }
-.star-rating label {
+.star-btn {
+  background: none;
+  border: none;
+  padding: 0 2px;
   cursor: pointer;
   font-size: 1.25rem;
   line-height: 1;
 }
-.star-rating label:has(input:focus-visible) span {
+.star-btn:focus-visible {
   outline: 3px solid var(--gf-green);
   outline-offset: 2px;
   border-radius: 2px;

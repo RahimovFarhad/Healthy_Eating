@@ -304,18 +304,19 @@
             <div class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;">
               <fieldset class="mb-2" style="border:none;padding:0;margin:0;">
                 <legend class="fw-semibold mb-1" style="font-size:0.875rem;color:#1b4d1b;">Rate this recipe:</legend>
-                <div class="star-rating">
-                  <label v-for="star in 5" :key="star" :for="`star-${selectedRecipe?.recipeId}-${star}`">
-                    <input type="radio"
-                           :id="`star-${selectedRecipe?.recipeId}-${star}`"
-                           name="recipe-rating"
-                           :value="star"
-                           v-model.number="reviewDraft.rating"
-                           class="visually-hidden" />
+                <div class="star-rating" role="group" aria-label="Rate this recipe">
+                  <button v-for="star in 5" :key="star"
+                          type="button"
+                          :aria-label="`${star} star${star > 1 ? 's' : ''}`"
+                          :aria-pressed="reviewDraft.rating === star"
+                          class="star-btn"
+                          :ref="el => { if (el) starBtnRefs[star - 1] = el }"
+                          @click="reviewDraft.rating = star"
+                          @keydown.left.prevent="navigateStar(star - 1)"
+                          @keydown.right.prevent="navigateStar(star + 1)">
                     <span aria-hidden="true"
                           :style="star <= reviewDraft.rating ? 'color:#b45309;' : 'color:#6b7280;'">★</span>
-                    <span class="visually-hidden">{{ star }} star{{ star > 1 ? 's' : '' }}</span>
-                  </label>
+                  </button>
                 </div>
               </fieldset>
               <label for="review-comment" class="visually-hidden">Comment (optional)</label>
@@ -418,6 +419,13 @@ const { handleKeydown: diaryModalKeydown } = useFocusTrap(
 const reviewDraft = ref({ rating: 0, comment: '' })
 const reviewSubmitting = ref(false)
 const reviewError = ref('')
+const starBtnRefs = []
+
+function navigateStar(target) {
+  const idx = Math.max(0, Math.min(4, target - 1))
+  reviewDraft.value.rating = idx + 1
+  starBtnRefs[idx]?.focus()
+}
 
 const tabs = [
   { id: 'all', label: 'All Recipes' },

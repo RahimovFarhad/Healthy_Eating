@@ -164,7 +164,9 @@
                        @mouseenter="showTooltip($event, row)"
                        @mouseleave="hideTooltip"
                        @focus="showTooltip($event, row)"
-                       @blur="hideTooltip">
+                       @blur="hideTooltip"
+                       @keydown.enter.prevent="showTooltip($event, row)"
+                       @keydown.space.prevent="showTooltip($event, row)">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                       <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/>
                       <text x="8" y="11" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">i</text>

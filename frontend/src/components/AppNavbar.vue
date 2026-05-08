@@ -1,5 +1,6 @@
 <template>
-  <nav aria-label="Main" class="navbar navbar-expand-lg navbar-gf px-4">
+  <nav aria-label="Main" class="navbar navbar-expand-lg navbar-gf px-4"
+       @keydown.space.prevent="$event.target.tagName === 'A' && $event.target.click()">
 
     <RouterLink class="navbar-brand d-flex align-items-center gap-2" to="/">
       <div aria-hidden="true" style="font-size:1.4rem;">🌿</div>
