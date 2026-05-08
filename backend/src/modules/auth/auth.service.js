@@ -7,14 +7,27 @@ import { sendVerificationEmail } from "../../utils/email.js";
 
 const { sign, verify } = jwt;
 
+/**
+ * Normalizes an email address by trimming whitespace and converting to lowercase
+ * @param {string} email - The email address to normalize
+ * @returns {string} The normalized email address
+ */
 function normalizeEmail(email) {
     return email?.trim().toLowerCase();
 }
 
+/**
+ * Normalizes a username by trimming whitespace and converting to lowercase
+ * @param {string} username - The username to normalize
+ * @returns {string} The normalized username
+ */
 function normalizeUsername(username) {
     return username?.trim().toLowerCase();
 }
 
+/**
+ * Custom error class for authentication-related errors
+ */
 export class AuthError extends Error {
     constructor(message) {
         super(message);
@@ -22,6 +35,9 @@ export class AuthError extends Error {
     }
 }
 
+/**
+ * Custom error class for user not found errors
+ */
 export class UserNotFoundError extends AuthError {
     constructor() {
         super("User not found");
@@ -29,6 +45,14 @@ export class UserNotFoundError extends AuthError {
     }
 }
 
+/**
+ * Authenticates a user with email and password, and returns a JWT access token
+ * @param {string} email - The user's email address
+ * @param {string} password - The user's password
+ * @returns {Promise<string>} JWT access token valid for 1 hour
+ * @throws {UserNotFoundError} If no user exists with the provided email
+ * @throws {AuthError} If the password is invalid
+ */
 async function authenticateUser(email, password) {
     const normalizedEmail = normalizeEmail(email);
 
@@ -56,6 +80,15 @@ async function authenticateUser(email, password) {
     return token;
 }
 
+/**
+ * Registers a new user with email verification
+ * Creates a pending registration and sends a 6-digit verification code via email
+ * @param {string} email - The user's email address
+ * @param {string} username - The user's desired username
+ * @param {string} password - The user's password (must be 8-30 chars with uppercase, lowercase, number, and special char)
+ * @returns {Promise<{email: string}>} Object containing the normalized email
+ * @throws {AuthError} If email format is invalid, password doesn't meet requirements, or email/username already exists
+ */
 async function registerUser(email, username, password) {
     const normalizedEmail = normalizeEmail(email);
     const normalizedUsername = username?.trim();
@@ -150,6 +183,14 @@ async function registerUser(email, username, password) {
     return { email: normalizedEmail };
 }
 
+/**
+ * Verifies a registration code and completes user registration
+ * Creates the user account and sets up default goals upon successful verification
+ * @param {string} email - The user's email address
+ * @param {string} code - The 6-digit verification code
+ * @returns {Promise<Object>} The newly created user object
+ * @throws {AuthError} If code is invalid, expired, too many attempts, or email/username already taken
+ */
 async function verifyRegistrationCode(email, code) {
     const normalizedEmail = normalizeEmail(email);
 
@@ -227,6 +268,13 @@ async function verifyRegistrationCode(email, code) {
     return newUser;
 }
 
+/**
+ * Resends a verification code to a pending registration email
+ * Generates a new 6-digit code and enforces a 10-second cooldown between requests
+ * @param {string} email - The user's email address
+ * @returns {Promise<{email: string}>} Object containing the normalized email
+ * @throws {AuthError} If no pending registration exists or cooldown period hasn't elapsed
+ */
 async function resendRegistrationCode(email) {
     const normalizedEmail = normalizeEmail(email);
 
@@ -265,6 +313,12 @@ async function resendRegistrationCode(email) {
     return { email: normalizedEmail };
 }
 
+/**
+ * Generates a refresh token for a user and stores it in the database
+ * @param {string} email - The user's email address
+ * @returns {Promise<string>} JWT refresh token valid for 7 days
+ * @throws {UserNotFoundError} If no user exists with the provided email
+ */
 async function generateRefreshToken(email) {
     const normalizedEmail = normalizeEmail(email);
 
@@ -298,6 +352,12 @@ async function generateRefreshToken(email) {
     return refreshToken;
 }
 
+/**
+ * Generates a new access token from a valid refresh token
+ * @param {string} refreshToken - The JWT refresh token
+ * @returns {Promise<{token: string, email: string}>} Object containing new access token and user email
+ * @throws {AuthError} If refresh token is invalid, expired, or not found in database
+ */
 async function refreshAccessToken(refreshToken) {
     try {
         const decoded = verify(refreshToken, process.env.JWT_SECRET);
@@ -338,6 +398,12 @@ async function refreshAccessToken(refreshToken) {
     }
 }
 
+/**
+ * Revokes a refresh token by removing it from the database
+ * In failure, does not throw an error
+ * @param {string} refreshToken - The JWT refresh token to revoke
+ * @returns {Promise<void>}
+ */
 async function revokeRefreshToken(refreshToken) {
     try {
         const decoded = verify(refreshToken, process.env.JWT_SECRET);

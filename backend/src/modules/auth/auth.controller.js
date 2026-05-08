@@ -1,5 +1,15 @@
 import { authenticateUser, AuthError, UserNotFoundError, registerUser, verifyRegistrationCode, resendRegistrationCode, generateRefreshToken, refreshAccessToken, revokeRefreshToken } from "./auth.service.js";
 
+/**
+ * Handles user login requests
+ * Authenticates user credentials and returns access token with refresh token cookie
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with access token or error message
+ */
 async function login(req, res) {
     const { email, password } = req.body;
 
@@ -30,6 +40,17 @@ async function login(req, res) {
     }
 }
 
+/**
+ * Handles user registration requests
+ * Creates a pending registration and sends verification code via email
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.username - User's desired username
+ * @param {string} req.body.password - User's password
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with success message or error
+ */
 async function register(req, res) {
     const { email, username, password } = req.body;
 
@@ -51,6 +72,16 @@ async function register(req, res) {
     }
 }
 
+/**
+ * Handles verification of registration code
+ * Completes user registration upon successful code verification
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.code - 6-digit verification code
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with user ID or error message
+ */
 async function verifyRegistration(req, res) {
     const { email, code } = req.body;
 
@@ -72,6 +103,15 @@ async function verifyRegistration(req, res) {
     }
 }
 
+/**
+ * Handles resending of verification code
+ * Generates and sends a new verification code to the user's email
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with success message or error
+ */
 async function resendVerificationCode(req, res) {
     const { email } = req.body;
 
@@ -90,6 +130,15 @@ async function resendVerificationCode(req, res) {
     }
 }
 
+/**
+ * Handles refresh token requests
+ * Validates refresh token and issues new access and refresh tokens (token rotation)
+ * @param {Object} req - Express request object
+ * @param {Object} req.cookies - Request cookies
+ * @param {string} req.cookies.refreshToken - JWT refresh token from cookie
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with new access token or error message
+ */
 async function refreshToken(req, res) {
     try {
         const refreshToken = req.cookies?.refreshToken;
@@ -120,6 +169,15 @@ async function refreshToken(req, res) {
 
 }
 
+/**
+ * Handles user logout requests
+ * Revokes refresh token and clears the refresh token cookie
+ * @param {Object} req - Express request object
+ * @param {Object} req.cookies - Request cookies
+ * @param {string} req.cookies.refreshToken - JWT refresh token from cookie
+ * @param {Object} res - Express response object
+ * @returns {Promise<Object>} JSON response with success message
+ */
 async function logoutController(req, res) {
     const refreshToken = req.cookies?.refreshToken;
     
