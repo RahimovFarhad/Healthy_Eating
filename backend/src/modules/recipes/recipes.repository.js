@@ -1,3 +1,9 @@
+/**
+ * Recipes repository module
+ * Handles database operations for recipes, favorites, and reviews
+ * @module recipes/repository
+ */
+
 import { prisma } from "../../db/prisma.js";
 
 const RECIPE_SELECT = {

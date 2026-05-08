@@ -1,3 +1,9 @@
+/**
+ * Recipes routes module
+ * Defines Express routes for recipe management endpoints
+ * @module recipes/routes
+ */
+
 import { Router } from "express";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import {

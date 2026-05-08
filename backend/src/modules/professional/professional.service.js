@@ -1,3 +1,9 @@
+/**
+ * Professional service module
+ * Handles business logic for professional-client relationships and management
+ * @module professional/service
+ */
+
 import { prisma } from "../../db/prisma.js";
 import { getDashboardDataForSubscriber, getNutritionSummary } from "../diary/diary.service.js";
 import { createGoalForSubscriber, getGoalsService } from "../goals/goals.service.js";

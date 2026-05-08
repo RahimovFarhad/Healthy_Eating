@@ -1,6 +1,26 @@
+/**
+ * Diary controller module
+ * Handles HTTP requests for food diary and nutrition tracking endpoints
+ * @module diary/controller
+ */
+
 import { createDiaryEntry, getNutritionSummary, listDiaryEntries as listDiaryEntriesService, getDiaryEntryById as getDiaryEntryByIdService, createDiaryEntryItem as createDiaryEntryItemService, updateDiaryEntryItem as updateDiaryEntryItemService, deleteExistingDiaryEntry, deleteExistingDiaryEntryItem, getDashboardDataForSubscriber, createRecipeAsDiaryEntryItemService } from "./diary.service.js";
 import { DiaryEntryError, getDiaryErrorStatus } from "./diary.validator.js";
 
+/**
+ * Handles creating a new diary entry with optional food items
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.body - Request body
+ * @param {Date|string} req.body.consumedAt - When the meal was consumed
+ * @param {string} req.body.mealType - Type of meal
+ * @param {string} [req.body.notes] - Optional notes
+ * @param {Array<Object>} [req.body.items] - Array of food items
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with created entry or error
+ */
 async function createEntry(req, res, next) {
     // console.log("Creating diary entry with body:", req.body);
     try {
@@ -24,6 +44,18 @@ async function createEntry(req, res, next) {
 
 }
 
+/**
+ * Handles getting nutrition summary for a user
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.period - Period type (daily, weekly, monthly)
+ * @param {string} req.query.endDate - End date of the period
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with nutrition summary or error
+ */
 async function getSummary(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
@@ -43,6 +75,20 @@ async function getSummary(req, res, next) {
     }
 }
 
+/**
+ * Handles listing diary entries with optional filters
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} [req.query.start] - Start date filter
+ * @param {string} [req.query.end] - End date filter
+ * @param {string} [req.query.mealType] - Meal type filter
+ * @param {string} [req.query.notes] - Notes filter
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with diary entries or error
+ */
 async function listDiaryEntries(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
@@ -65,6 +111,17 @@ async function listDiaryEntries(req, res, next) {
     }
 }
 
+/**
+ * Handles getting a specific diary entry by ID
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.id - The diary entry ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with diary entry or error
+ */
 async function getDiaryEntryById(req, res, next) {
     try {
         const entry = await getDiaryEntryByIdService({
@@ -83,6 +140,22 @@ async function getDiaryEntryById(req, res, next) {
     }
 }
 
+/**
+ * Handles creating a new diary entry item (adding food to a meal)
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.id - The diary entry ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.body - Request body
+ * @param {number} req.body.quantity - Quantity consumed
+ * @param {number} [req.body.portionId] - Food portion ID
+ * @param {Object} [req.body.customFood] - Custom food data
+ * @param {Object} [req.body.fatSecret] - FatSecret API food data
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with created item or error
+ */
 async function createDiaryEntryItem(req, res, next) {
     try {
         const userId = req.user?.userId ?? null;
@@ -106,6 +179,20 @@ async function createDiaryEntryItem(req, res, next) {
     }
 }
 
+/**
+ * Handles updating an existing diary entry item
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.itemId - The diary entry item ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.body - Request body
+ * @param {number} [req.body.portionId] - New portion ID
+ * @param {number} [req.body.quantity] - New quantity
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with updated item or error
+ */
 async function updateDiaryEntryItem(req, res, next) {
     try {
         const userId = req.user?.userId ?? null;
@@ -127,6 +214,17 @@ async function updateDiaryEntryItem(req, res, next) {
     }
 }
 
+/**
+ * Handles deleting a diary entry
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.id - The diary entry ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with deleted entry or error
+ */
 async function deleteEntry(req, res, next) {
     try {
         const userId = req.user?.userId ?? null;
@@ -146,6 +244,17 @@ async function deleteEntry(req, res, next) {
     }
 }
 
+/**
+ * Handles deleting a diary entry item
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.itemId - The diary entry item ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with deleted item or error
+ */
 async function deleteEntryItem(req, res, next) {
     try {
         const userId = req.user?.userId ?? null;
@@ -165,6 +274,17 @@ async function deleteEntryItem(req, res, next) {
     }
 }
 
+/**
+ * Handles getting comprehensive dashboard data for a user
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.query - Query parameters
+ * @param {string} [req.query.date] - Optional date for dashboard
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with dashboard data or error
+ */
 async function getDashboard(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
@@ -184,6 +304,22 @@ async function getDashboard(req, res, next) {
     }
 }
 
+/**
+ * Handles creating a new diary entry with a recipe
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.recipeId - The recipe ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.body - Request body
+ * @param {Date|string} req.body.consumedAt - When the meal was consumed
+ * @param {string} req.body.mealType - Type of meal
+ * @param {string} [req.body.notes] - Optional notes
+ * @param {number} req.body.servings - Number of servings
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with created entry or error
+ */
 async function createEntryWithRecipe(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;
@@ -212,6 +348,20 @@ async function createEntryWithRecipe(req, res, next) {
     }
 }
 
+/**
+ * Handles adding a recipe as a diary entry item to an existing entry
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Request parameters
+ * @param {string} req.params.id - The diary entry ID
+ * @param {string} req.params.recipeId - The recipe ID
+ * @param {Object} req.user - Authenticated user object
+ * @param {number} req.user.userId - The user's ID
+ * @param {Object} req.body - Request body
+ * @param {number} req.body.servings - Number of servings
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<Object>} JSON response with created item or error
+ */
 async function createRecipeAsDiaryEntryItem(req, res, next) {
     try {
         const subscriberId = req.user?.userId ?? null;

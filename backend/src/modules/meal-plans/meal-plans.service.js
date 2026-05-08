@@ -1,3 +1,9 @@
+/**
+ * Meal plans service module
+ * Handles business logic for meal planning and plan items
+ * @module meal-plans/service
+ */
+
 import { MealPlanError, validateCreateMealPlanInput, validateListMealPlansInput, validateGetMealPlanByIdInput, validatePlanItem, validateRemovePlanItemInput } from "./meal-plans.validator.js";
 import { createMealPlan, listMealPlans, getMealPlanById, deleteMealPlan, addPlanItem, removePlanItem } from "./meal-plans.repository.js";
 

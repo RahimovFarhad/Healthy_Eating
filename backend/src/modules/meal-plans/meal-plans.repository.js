@@ -1,3 +1,9 @@
+/**
+ * Meal plans repository module
+ * Handles database operations for meal plans and plan items
+ * @module meal-plans/repository
+ */
+
 import { prisma } from "../../db/prisma.js";
 
 const PLAN_SELECT = {

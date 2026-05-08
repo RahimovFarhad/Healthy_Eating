@@ -1,3 +1,9 @@
+/**
+ * Meal plans controller module
+ * Handles HTTP requests for meal planning endpoints
+ * @module meal-plans/controller
+ */
+
 import { createMealPlanService, listMealPlansService, getMealPlanByIdService, addPlanItemService, deleteMealPlanService, removePlanItemService } from "./meal-plans.service.js";
 import { MealPlanError, getMealErrorStatusCode } from "./meal-plans.validator.js";
 

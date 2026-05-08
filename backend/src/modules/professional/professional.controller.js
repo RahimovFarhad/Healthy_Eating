@@ -1,3 +1,9 @@
+/**
+ * Professional controller module
+ * Handles HTTP requests for professional management endpoints
+ * @module professional/controller
+ */
+
 import { getClientDashboardForProfessional, getClientGoalsForProfessional, getClientSummaryForProfessional, getMessagesWithClient, getProfessionalClients, inviteClientToProfessional, removeProfessionalClient, sendMessageToClient, setGoalForClient, setUserAsProfessional, shareRecipeWithClient, getSharedRecipes } from "./professional.service.js";
 import { ProfessionalError, getProfessionalErrorStatus } from "./professional.validator.js";
 

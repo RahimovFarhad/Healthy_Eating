@@ -1,3 +1,9 @@
+/**
+ * Goals repository module
+ * Handles database operations for nutrition goals and check-ins
+ * @module goals/repository
+ */
+
 import { prisma } from "../../db/prisma.js";
 
 const GOAL_SELECT = {
@@ -24,10 +30,23 @@ const GOAL_SELECT = {
   },
 };
 
+/**
+ * Converts a date to date-only format (removes time component)
+ * @param {Date} [date=new Date()] - The date to convert
+ * @returns {Date} Date with time set to midnight
+ */
 function toDateOnly(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+/**
+ * Fetches nutrition goals for a subscriber with optional filters
+ * @param {Object} params - Query parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {boolean} params.effective - Filter for currently effective goals
+ * @param {string} [params.include="none"] - Include check-ins (none, today, all)
+ * @returns {Promise<Array>} Array of nutrition goals with optional check-ins
+ */
 async function fetchGoals({ subscriberId, effective, include = "none" }) {
   const today = new Date();
   const where = {
@@ -61,6 +80,12 @@ async function fetchGoals({ subscriberId, effective, include = "none" }) {
   });
 }
 
+/**
+ * Finds a nutrient by its ID
+ * @param {Object} params - Query parameters
+ * @param {number} params.nutrientId - The nutrient ID
+ * @returns {Promise<Object|null>} The nutrient or null if not found
+ */
 async function findNutrientById({ nutrientId }) {
   return prisma.nutrient.findUnique({
     where: { nutrientId },
@@ -68,6 +93,12 @@ async function findNutrientById({ nutrientId }) {
   });
 }
 
+/**
+ * Finds a nutrient by its code
+ * @param {Object} params - Query parameters
+ * @param {string} params.nutrientCode - The nutrient code (e.g., "protein", "calories")
+ * @returns {Promise<Object|null>} The nutrient or null if not found
+ */
 async function findNutrientByCode({ nutrientCode }) {
   return prisma.nutrient.findUnique({
     where: { code: nutrientCode },
@@ -75,6 +106,10 @@ async function findNutrientByCode({ nutrientCode }) {
   });
 }
 
+/**
+ * Lists all available nutrients
+ * @returns {Promise<Array>} Array of all nutrients ordered by type and ID
+ */
 async function listNutrients() {
   return prisma.nutrient.findMany({
     orderBy: [{ type: "asc" }, { nutrientId: "asc" }],

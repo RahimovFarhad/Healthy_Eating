@@ -1,3 +1,9 @@
+/**
+ * Meal plans routes module
+ * Defines Express routes for meal planning endpoints
+ * @module meal-plans/routes
+ */
+
 import { Router } from "express";
 import {
   createMealPlan,

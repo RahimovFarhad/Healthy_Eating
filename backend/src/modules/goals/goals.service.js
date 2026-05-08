@@ -1,6 +1,20 @@
+/**
+ * Goals service module
+ * Handles business logic for nutrition goals, check-ins, and goal evaluation
+ * @module goals/service
+ */
+
 import { fetchGoals, findGoalByIdForSubscriber, archiveGoal, archiveGoalsForNutrient, updateGoal, insertGoal, findGuidelinesByDemographic, createManyGoals, findGoalCheckInByDate, createGoalCheckIn, updateGoalCheckIn, upsertGoalCheckIn, listNutrients } from "./goals.repository.js";
 import { normalizeSubscriberId, normalizeGoalId, normalizeBooleanQuery, normalizeGoalIncludeQuery, validateUpdateGoalInput, validateCreateGoalInput, GoalError } from "./goals.validator.js";
 
+/**
+ * Gets nutrition goals for a subscriber with optional filters
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {boolean} params.effective - Filter for currently effective goals
+ * @param {string} params.include - Include check-ins (none, today, all)
+ * @returns {Promise<Array>} Array of nutrition goals
+ */
 async function getGoalsService({ subscriberId, effective, include }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const normalizedEffective = normalizeBooleanQuery(effective, true);
@@ -12,6 +26,14 @@ async function getGoalsService({ subscriberId, effective, include }) {
   });
 }
 
+/**
+ * Updates a nutrition goal for a user
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Object} params.goal - Goal data to update
+ * @returns {Promise<Object>} The updated goal
+ * @throws {GoalError} If goal not found, archived, or unauthorized
+ */
 async function updateUserGoal({ subscriberId, goal }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const validatedUpdate = validateUpdateGoalInput(goal);
@@ -37,6 +59,14 @@ async function updateUserGoal({ subscriberId, goal }) {
   });
 }
 
+/**
+ * Archives (soft deletes) a nutrition goal for a user
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {number} params.goalId - The goal ID to archive
+ * @returns {Promise<Object>} The archived goal
+ * @throws {GoalError} If goal not found, already archived, or unauthorized
+ */
 async function archiveUserGoal({ subscriberId, goalId }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const normalizedGoalId = normalizeGoalId(goalId);
@@ -59,6 +89,14 @@ async function archiveUserGoal({ subscriberId, goalId }) {
   return archiveGoal({ goalId: normalizedGoalId, archivedAt: new Date() });
 }
 
+/**
+ * Creates a new user-defined nutrition goal
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Object} params.goal - Goal data to create
+ * @returns {Promise<Object>} The created goal
+ * @throws {GoalError} If validation fails
+ */
 async function createUserGoal({ subscriberId, goal }) {
   return createGoalForSubscriber({
     subscriberId,
@@ -71,6 +109,16 @@ async function createUserGoal({ subscriberId, goal }) {
   });
 }
 
+/**
+ * Creates a goal for a subscriber with custom options
+ * Internal helper function used by createUserGoal and system goal creation
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Object} params.goal - Goal data to create
+ * @param {Object} [params.options={}] - Creation options (source, status, professional ID)
+ * @returns {Promise<Object>} The created goal
+ * @throws {GoalError} If validation fails
+ */
 async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const validatedGoal = validateCreateGoalInput(goal, options);
@@ -97,6 +145,14 @@ async function createGoalForSubscriber({ subscriberId, goal, options = {} }) {
   });
 }
 
+/**
+ * Ensures default nutrition goals are created for a new user based on demographic guidelines
+ * @param {Object} params - Service parameters
+ * @param {number} params.userId - The user's ID
+ * @param {string} [params.demographic="adult"] - User demographic (adult, child, etc.)
+ * @param {Object} [params.tx] - Optional Prisma transaction object
+ * @returns {Promise<Array>} Array of created default goals
+ */
 async function ensureDefaultGoalsForUser({ userId, demographic = "adult", tx }) {
   const guidelines = await findGuidelinesByDemographic(demographic, tx);
   if (!guidelines.length) return;
@@ -115,10 +171,24 @@ async function ensureDefaultGoalsForUser({ userId, demographic = "adult", tx }) 
   return createManyGoals(rows, tx);
 }
 
+/**
+ * Converts a date to date-only format (removes time component)
+ * @param {Date} [date=new Date()] - The date to convert
+ * @returns {Date} Date with time set to midnight
+ */
 function toDateOnly(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+/**
+ * Toggles goal completion status for today
+ * Creates or updates a check-in record for the current date
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {number} params.goalId - The goal ID to toggle
+ * @returns {Promise<Object>} The created or updated check-in record
+ * @throws {GoalError} If goal not found, archived, not started, or ended
+ */
 async function toggleGoalDoneForToday({ subscriberId, goalId }) {
   const normalizedSubscriberId = normalizeSubscriberId(subscriberId);
   const normalizedGoalId = normalizeGoalId(goalId);
@@ -163,11 +233,22 @@ async function toggleGoalDoneForToday({ subscriberId, goalId }) {
   });
 }
 
+/**
+ * Lists all available nutrients
+ * @returns {Promise<Array>} Array of all nutrients
+ */
 async function listNutrientsService() {
   return listNutrients();
 }
 
-// will automatically evaluate whether each active nutrient goal is met for today based on the nutrition summary passed in
+/**
+ * Automatically evaluates whether each active nutrient goal is met for today
+ * Creates or updates check-in records based on nutrition summary data
+ * @param {Object} params - Service parameters
+ * @param {number} params.subscriberId - The user's ID
+ * @param {Array<Object>} params.nutritionSummary - Array of nutrient totals for today
+ * @returns {Promise<void>}
+ */
 async function evaluateGoalsForToday({ subscriberId, nutritionSummary }) {
   const today = toDateOnly();
   const goals = await fetchGoals({ subscriberId, effective: true });

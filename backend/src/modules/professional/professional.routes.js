@@ -1,3 +1,9 @@
+/**
+ * Professional routes module
+ * Defines Express routes for professional management endpoints
+ * @module professional/routes
+ */
+
 import { Router } from "express";
 import { getClientDashboard, getClientSummary, inviteClient, listClients, listGoals, listMessages, removeClient, sendMessage, setAsProfessional, setGoal, listInvitations, shareRecipe, listSharedRecipes } from "./professional.controller.js";
 import { requireProfessional } from "../../middleware/requireAuth.js";

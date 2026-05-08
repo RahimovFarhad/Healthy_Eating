@@ -1,3 +1,9 @@
+/**
+ * Professional repository module
+ * Handles database operations for professional-client relationships
+ * @module professional/repository
+ */
+
 import { prisma } from "../../db/prisma.js";
 
 async function updateRoleToProfessional({ professionalId }) {

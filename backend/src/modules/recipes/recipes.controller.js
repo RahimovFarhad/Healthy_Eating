@@ -1,3 +1,9 @@
+/**
+ * Recipes controller module
+ * Handles HTTP requests for recipe management endpoints
+ * @module recipes/controller
+ */
+
 import {
   listRecipesService,
   getRecipeByIdService,

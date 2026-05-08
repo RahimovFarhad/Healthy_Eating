@@ -1,3 +1,9 @@
+/**
+ * Recipes service module
+ * Handles business logic for recipes, favorites, and reviews
+ * @module recipes/service
+ */
+
 import { validateListRecipesInput, validatePositiveInteger, validateReviewInput } from "./recipes.validator.js";
 import { listRecipes, findRecipeById, createRecipeReview, toggleRecipeFavorite, toggleRecipeUsage } from "./recipes.repository.js";
 
