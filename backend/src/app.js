@@ -13,7 +13,7 @@ import { requireAuth } from "./middleware/requireAuth.js";
 import {searchFood, searchFoodById} from "./utils/searchFood.js"
 import { rateLimit } from "express-rate-limit";
 
-import mealPlansRouter from "./modules/meal-plans/meal-plans.routes.js";
+import mealPlansRouter from "./modules/mealPlans/mealPlans.routes.js";
 
 const app = express();
 app.set('trust proxy', 1);
