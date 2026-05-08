@@ -3,7 +3,7 @@
   <div class="container py-4" style="max-width:720px;">
 
     <div class="mb-4">
-      <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Profile</h2>
+      <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Profile</h1>
       <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Your account details</p>
     </div>
 
@@ -22,8 +22,8 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Display Name</label>
-        <input type="text" class="form-control" :value="displayName" disabled
+        <label for="profile-display-name" class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Display Name</label>
+        <input id="profile-display-name" type="text" class="form-control" :value="displayName" disabled
                style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#6b7280;">
         <small class="text-muted" style="font-size:0.75rem;">
           Derived from your email address.
@@ -31,20 +31,20 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Email Address</label>
-        <input type="email" class="form-control" :value="email" disabled
+        <label for="profile-email" class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Email Address</label>
+        <input id="profile-email" type="email" class="form-control" :value="email" disabled
                style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#6b7280;">
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Account Type</label>
-        <input type="text" class="form-control" :value="roleLabel" disabled
+        <label for="profile-account-type" class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Account Type</label>
+        <input id="profile-account-type" type="text" class="form-control" :value="roleLabel" disabled
                style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#6b7280;">
       </div>
 
-      <!-- Professional Info -->
+      <!-- shows the user's assigned nutritionist — only visible to subscriber accounts -->
       <div v-if="!isProfessional" class="mb-3">
-        <label class="form-label fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">Assigned Nutritionist</label>
+        <p class="form-label fw-semibold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Assigned Nutritionist</p>
         
         <div v-if="loadingProfessional" class="p-3 rounded" style="background:#f9fafb;border:1px solid #e5e7eb;color:#6b7280;">
           Loading...
@@ -99,6 +99,7 @@ const roleLabel = computed(() => {
 const isSubscriber = computed(() => currentUser.value.role === 'subscriber')
 const isProfessional = computed(() => currentUser.value.role === 'professional')
 
+// up to two initials — shown in the avatar circle since we don't store profile photos
 const initials = computed(() => {
   const name = currentUser.value.name || currentUser.value.fullName || ''
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -109,18 +110,15 @@ const initials = computed(() => {
 const professional = ref(null)
 const loadingProfessional = ref(false)
 
+// only loads the assigned professional on subscriber accounts — professionals don't have this relationship
 async function loadProfessional() {
-  console.log('loadProfessional called, role:', currentUser.value.role)
-  
   loadingProfessional.value = true
   try {
     const res = await apiFetch('/api/client/professionals')
     const data = await res.json().catch(() => ({}))
-    console.log('Professional data:', data)
     if (res.ok) {
       const professionals = data.professionals ?? []
       professional.value = professionals.find(p => p.status === 'active') || null
-      console.log('Found professional:', professional.value)
     }
   } catch (err) {
     console.error('Load professional error:', err)

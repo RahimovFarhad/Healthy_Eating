@@ -18,7 +18,7 @@
           <span style="background:#e8f4e6;color:#2e7d32;font-size:0.75rem;font-weight:600;padding:0.3rem 0.75rem;border-radius:20px;letter-spacing:0.05em;display:inline-block;margin-bottom:1rem;">
             PROFESSIONAL ACCOUNT
           </span>
-          <h5 style="color:#1b4d1b;font-weight:700;margin-bottom:0.5rem;">Verify Your Email</h5>
+          <h1 style="color:#1b4d1b;font-weight:700;margin-bottom:0.5rem;font-size:1.25rem;">Verify Your Email</h1>
           <p style="color:#6a8f6a;font-size:0.9rem;margin:0;">
             We sent a 6-digit code to<br>
             <strong style="color:#2e7d32;">{{ email }}</strong>
@@ -138,12 +138,14 @@ async function handleVerify() {
       return
     }
 
+    // auto-login immediately after verification so the user doesn't have to log in manually
     const loggedIn = await login(email.value, password.value)
     if (!loggedIn) {
       error.value = 'Verification successful but login failed. Please try logging in.'
       return
     }
 
+    // PATCH upgrades the role from subscriber to professional — requires the user to be logged in first
     const upgradeRes = await apiFetch('/api/professional/setAsProfessional', { method: 'PATCH' })
     if (!upgradeRes.ok) {
       error.value = 'Account created but failed to upgrade to professional.'

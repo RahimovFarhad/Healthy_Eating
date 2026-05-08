@@ -4,17 +4,20 @@
 
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h2 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Goals &amp; Progress</h2>
+        <h1 class="mb-1" style="color:#1b4d1b;font-weight:600;font-size:1.75rem;">Goals &amp; Progress</h1>
         <p class="mb-0" style="color:#6b7280;font-size:0.9375rem;">Set personal goals, track your progress and celebrate achievements</p>
       </div>
       <button class="btn fw-semibold" @click="toggleAddForm"
+              :aria-expanded="showAddForm"
+              aria-controls="add-goal-section"
               style="background:#1b4d1b;color:#ffffff;border:none;padding:0.625rem 1.5rem;border-radius:8px;font-size:0.9375rem;">
         {{ showAddForm ? 'Close' : '+ Add New Goal' }}
       </button>
     </div>
 
-    <div v-if="loadError" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
+    <div v-if="loadError" role="alert" class="alert alert-danger mb-4" style="border-radius:8px;">{{ loadError }}</div>
 
+    <!-- quick stats row — at a glance summary of where the user is today -->
     <div class="row g-3 mb-4">
       <div class="col-md-4 col-6">
         <div class="p-3 rounded h-100" style="background:#f9fafb;">
@@ -36,18 +39,28 @@
       </div>
     </div>
 
-    <div class="d-flex gap-2 mb-4 pb-3 flex-wrap" style="border-bottom:1px solid #f3f4f6;">
-      <button v-for="tab in tabs" :key="tab.id"
+    <div role="tablist" aria-label="Goal filter"
+         class="d-flex gap-2 mb-4 pb-3 flex-wrap" style="border-bottom:1px solid #f3f4f6;"
+         @keydown="handleGoalTabKeydown">
+      <button v-for="(tab, i) in tabs" :key="tab.id"
+              role="tab"
+              :id="`goal-tab-${tab.id}`"
+              :aria-selected="activeTab === tab.id ? 'true' : 'false'"
+              :aria-controls="`goal-panel-${tab.id}`"
+              :tabindex="activeTab === tab.id ? 0 : -1"
               class="btn"
-              :style="(activeTab === tab.id) ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#6b7280;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
+              :style="(activeTab === tab.id) ? 'background:#1b4d1b;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;' : 'background:#f3f4f6;color:#4b5563;border:none;padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500;'"
               @click="activeTab = tab.id">
         {{ tab.label }}
       </button>
     </div>
 
-    <div v-if="loading" class="text-center text-muted py-5"><small>Loading goals…</small></div>
+    <div v-if="loading" role="status" aria-live="polite" class="text-center text-muted py-5"><small>Loading goals…</small></div>
 
-    <template v-else>
+    <div v-else
+         role="tabpanel"
+         :id="`goal-panel-${activeTab}`"
+         :aria-labelledby="`goal-tab-${activeTab}`">
       <div v-if="visibleGoals.length === 0"
            class="text-center py-5 rounded mb-4"
            style="background:#f9fafb;border:2px dashed #e5e7eb;">
@@ -65,7 +78,7 @@
               <div class="d-flex align-items-center gap-2">
                 <span class="fw-semibold" style="color:#1b4d1b;font-size:0.875rem;">{{ goalTitle(goal) }}</span>
                 <span class="badge rounded-pill"
-                      :style="`background:${goal.source === 'professional_defined' ? '#2e7d32' : '#f3f4f6'};color:${goal.source === 'professional_defined' ? '#fff' : '#6b7280'};font-weight:500;font-size:0.7rem;padding:0.25rem 0.625rem;`">
+                      :style="`background:${goal.source === 'professional_defined' ? '#2e7d32' : '#e5e7eb'};color:${goal.source === 'professional_defined' ? '#fff' : '#374151'};font-weight:500;font-size:0.7rem;padding:0.25rem 0.625rem;`">
                   {{ sourceLabel(goal.source) }}
                 </span>
               </div>
@@ -73,13 +86,17 @@
                 <button v-if="goal.status === 'active'"
                         class="btn btn-sm"
                         style="background:#f3f4f6;color:#1b4d1b;border:none;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.75rem;"
+                        :aria-label="`Edit goal: ${goalTitle(goal)}`"
                         @click="startEdit(goal)">Edit</button>
               </div>
             </div>
             <div class="p-3">
               <div class="d-flex align-items-center gap-3 mb-3">
 
-                <svg viewBox="0 0 100 100" width="80" height="80" style="flex-shrink:0;">
+                <!-- SVG ring — stroke-dasharray does the progress arc math -->
+                <svg viewBox="0 0 100 100" width="80" height="80" style="flex-shrink:0;"
+                     role="img"
+                     :aria-label="`${goalTitle(goal)}: ${goalProgress(goal)}% progress (${goalProgressLabel(goal)})`">
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" stroke-width="10"/>
                   <circle cx="50" cy="50" r="40" fill="none" :stroke="goalProgressColor(goal)" stroke-width="10"
                           :stroke-dasharray="`${Math.min(goalProgress(goal), 100) * 2.51} ${(100 - Math.min(goalProgress(goal), 100)) * 2.51}`"
@@ -91,6 +108,7 @@
                   </text>
                   <text x="50" y="60" text-anchor="middle" font-size="9" fill="#6b7280">{{ goalProgressLabel(goal) }}</text>
                 </svg>
+                <span class="visually-hidden">Target: {{ goalRange(goal) || 'Personal goal' }}. {{ formatRange(goal) }}</span>
 
                 <div class="flex-grow-1">
                   <div class="fw-semibold mb-1" style="color:#1b4d1b;font-size:0.875rem;">{{ goalRange(goal) || 'Personal goal' }}</div>
@@ -99,11 +117,14 @@
                 </div>
               </div>
 
+              <!-- 7-day sparkline — taller bar means done, short bar means missed that day -->
               <div v-if="goal.status === 'active'" class="mb-3">
                 <small style="color:#6b7280;font-size:0.75rem;">Last 7 days:</small>
-                <div class="d-flex align-items-end gap-1 mt-1" style="height:32px;">
+                <div class="d-flex align-items-end gap-1 mt-1" style="height:32px;"
+                     role="img"
+                     :aria-label="`Last 7 days: ${trendFor(goal).map(d => d.label + ': ' + (d.done ? 'done' : 'missed')).join(', ')}`">
                   <div v-for="(day, i) in trendFor(goal)" :key="i"
-                       :title="`${day.label}: ${day.done ? 'done' : 'missed'}`"
+                       aria-hidden="true"
                        :style="`height:${day.done ? 28 : 8}px;flex:1;background:${day.done ? '#2e7d32' : '#f3f4f6'};border-radius:2px 2px 0 0;border:1px solid ${day.done ? '#1b4d1b' : '#e5e7eb'};`">
                   </div>
                 </div>
@@ -119,41 +140,59 @@
                 </button>
                 <span v-if="goal.status === 'active' && goal.nutrientId"
                       class="badge rounded-pill align-self-center"
-                      :style="`background:${isDoneToday(goal) ? '#2e7d32' : '#9ca3af'};color:#fff;font-size:0.7rem;padding:0.25rem 0.625rem;`">
+                      :style="`background:${isDoneToday(goal) ? '#2e7d32' : '#6b7280'};color:#fff;font-size:0.7rem;padding:0.25rem 0.625rem;`">
                   {{ isDoneToday(goal) ? '✓ Met today' : 'Not met yet' }}
                 </span>
-                <button v-if="goal.status === 'active'"
-                        class="btn btn-sm"
-                        style="background:#fde8e8;border:1px solid #d99;color:#c44;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
-                        :disabled="goal._archiving"
-                        @click="archiveGoal(goal)">
-                  {{ goal._archiving ? '…' : 'Delete' }}
-                </button>
+                <template v-if="goal.status === 'active'">
+                  <template v-if="confirmingGoalId === goal.goalId">
+                    <span style="font-size:0.75rem;color:#991b1b;align-self:center;">Archive goal?</span>
+                    <button class="btn btn-sm fw-semibold"
+                            style="background:#991b1b;color:#fff;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
+                            :aria-label="`Confirm archive: ${goalTitle(goal)}`"
+                            @click="archiveGoal(goal)">
+                      Yes, archive
+                    </button>
+                    <button class="btn btn-sm"
+                            style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
+                            :aria-label="`Cancel archive of ${goalTitle(goal)}`"
+                            @click="confirmingGoalId = null">
+                      Cancel
+                    </button>
+                  </template>
+                  <button v-else
+                          class="btn btn-sm"
+                          style="background:#fde8e8;border:1px solid #d99;color:#991b1b;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;"
+                          :aria-label="`Delete goal: ${goalTitle(goal)}`"
+                          :disabled="goal._archiving"
+                          @click="archiveGoal(goal)">
+                    {{ goal._archiving ? '…' : 'Delete' }}
+                  </button>
+                </template>
               </div>
 
               <div v-if="editingId === goal.goalId" class="mt-3 pt-3" style="border-top:1px solid #f3f4f6;">
                 <div class="row g-2 mb-2">
                   <div class="col-md-6">
-                    <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Notes</label>
-                    <input type="text" class="form-control form-control-sm" v-model="editDraft.notes">
+                    <label for="edit-goal-notes" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Notes</label>
+                    <input id="edit-goal-notes" type="text" class="form-control form-control-sm" v-model="editDraft.notes">
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Start</label>
-                    <input type="date" class="form-control form-control-sm" v-model="editDraft.startDate">
+                    <label for="edit-goal-start" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Start</label>
+                    <input id="edit-goal-start" type="date" class="form-control form-control-sm" v-model="editDraft.startDate">
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">End</label>
-                    <input type="date" class="form-control form-control-sm" v-model="editDraft.endDate">
+                    <label for="edit-goal-end" class="form-label" style="font-size:0.8125rem;color:#6b7280;">End</label>
+                    <input id="edit-goal-end" type="date" class="form-control form-control-sm" v-model="editDraft.endDate">
                   </div>
                 </div>
                 <div class="row g-2 mb-2">
                   <div class="col-md-6">
-                    <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Target Min</label>
-                    <input type="number" class="form-control form-control-sm" v-model.number="editDraft.targetMin" step="any">
+                    <label for="edit-goal-min" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Target Min</label>
+                    <input id="edit-goal-min" type="number" class="form-control form-control-sm" v-model.number="editDraft.targetMin" step="any">
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Target Max</label>
-                    <input type="number" class="form-control form-control-sm" v-model.number="editDraft.targetMax" step="any">
+                    <label for="edit-goal-max" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Target Max</label>
+                    <input id="edit-goal-max" type="number" class="form-control form-control-sm" v-model.number="editDraft.targetMax" step="any">
                   </div>
                 </div>
                 <div v-if="editError" class="alert alert-danger py-2 mb-2" style="font-size:0.8125rem;border-radius:6px;">{{ editError }}</div>
@@ -163,34 +202,35 @@
                     {{ editSaving ? '…' : 'Save Changes' }}
                   </button>
                   <button class="btn btn-sm" @click="cancelEdit"
-                          style="background:#f3f4f6;color:#6b7280;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
+                          style="background:#f3f4f6;color:#4b5563;border:none;padding:0.375rem 0.75rem;border-radius:6px;font-size:0.75rem;">Cancel</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </template>
+    </div>
 
-    <div v-if="showAddForm" ref="addFormSection">
-      <h5 class="fw-bold mb-3" style="color:#1b4d1b;">Add New Goal</h5>
+    <div v-if="showAddForm" id="add-goal-section" ref="addFormSection">
+      <h2 class="fw-bold mb-3" style="color:#1b4d1b;font-size:1.25rem;">Add New Goal</h2>
       <div class="row g-3 mb-4">
 
         <div class="col-md-6">
           <div class="p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-            <h6 class="fw-bold mb-3" style="color:#1b4d1b;font-size:0.875rem;">Create Custom Goal</h6>
+            <h3 class="fw-bold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Create Custom Goal</h3>
+            <p style="font-size:0.75rem;color:#6b7280;margin-bottom:0.75rem;">Fields marked <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden">with an asterisk</span> are required.</p>
 
             <div class="mb-3">
-              <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Goal Title / Notes <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" v-model="customGoal.notes"
+              <label for="custom-goal-notes" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Goal Title / Notes <span aria-hidden="true" style="color:#c62828;">*</span><span class="visually-hidden"> (required)</span></label>
+              <input id="custom-goal-notes" type="text" class="form-control" v-model="customGoal.notes"
                      placeholder="e.g. Reduce sugar intake to 30g/day"
                      style="border-radius:8px;">
             </div>
 
             <div class="row g-2 mb-3">
               <div class="col">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Tracked Nutrient</label>
-                <select class="form-select" v-model="customGoal.nutrientCode" style="border-radius:8px;">
+                <label for="custom-goal-nutrient" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Tracked Nutrient</label>
+                <select id="custom-goal-nutrient" class="form-select" v-model="customGoal.nutrientCode" style="border-radius:8px;">
                   <option value="">No specific nutrient</option>
                   <option v-for="n in nutrients" :key="n.nutrientId" :value="n.code">
                     {{ n.name }} ({{ n.unit }})
@@ -198,8 +238,8 @@
                 </select>
               </div>
               <div class="col">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Direction</label>
-                <select class="form-select" v-model="customGoal.direction"
+                <label for="custom-goal-direction" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Direction</label>
+                <select id="custom-goal-direction" class="form-select" v-model="customGoal.direction"
                         :disabled="!customGoal.nutrientCode" style="border-radius:8px;">
                   <option value="below">Stay Below</option>
                   <option value="above">Reach At Least</option>
@@ -210,25 +250,25 @@
 
             <div class="row g-2 mb-3" v-if="customGoal.nutrientCode">
               <div class="col" v-if="customGoal.direction !== 'below'">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Min ({{ selectedNutrientUnit }})</label>
-                <input type="number" class="form-control"
+                <label for="custom-goal-min" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Min ({{ selectedNutrientUnit }})</label>
+                <input id="custom-goal-min" type="number" class="form-control"
                        v-model.number="customGoal.targetMin" step="any" min="0" style="border-radius:8px;">
               </div>
               <div class="col" v-if="customGoal.direction !== 'above'">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Max ({{ selectedNutrientUnit }})</label>
-                <input type="number" class="form-control"
+                <label for="custom-goal-max" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Max ({{ selectedNutrientUnit }})</label>
+                <input id="custom-goal-max" type="number" class="form-control"
                        v-model.number="customGoal.targetMax" step="any" min="0" style="border-radius:8px;">
               </div>
             </div>
 
             <div class="row g-2 mb-3">
               <div class="col">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">Start Date</label>
-                <input type="date" class="form-control" v-model="customGoal.startDate" style="border-radius:8px;">
+                <label for="custom-goal-start" class="form-label" style="font-size:0.8125rem;color:#6b7280;">Start Date</label>
+                <input id="custom-goal-start" type="date" class="form-control" v-model="customGoal.startDate" style="border-radius:8px;">
               </div>
               <div class="col">
-                <label class="form-label" style="font-size:0.8125rem;color:#6b7280;">End Date (optional)</label>
-                <input type="date" class="form-control" v-model="customGoal.endDate" style="border-radius:8px;">
+                <label for="custom-goal-end" class="form-label" style="font-size:0.8125rem;color:#6b7280;">End Date (optional)</label>
+                <input id="custom-goal-end" type="date" class="form-control" v-model="customGoal.endDate" style="border-radius:8px;">
               </div>
             </div>
 
@@ -247,7 +287,8 @@
 
         <div class="col-md-6">
           <div class="p-3 rounded" style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-radius:12px;border:0.75px solid #1b4d1b;">
-            <h6 class="fw-bold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Choose a Preset Goal</h6>
+            <!-- preset goals based on NHS reference intakes — quick way to get started without filling the full form -->
+            <h3 class="fw-bold mb-2" style="color:#1b4d1b;font-size:0.875rem;">Choose a Preset Goal</h3>
             <p class="mb-3" style="color:#6b7280;font-size:0.8125rem;">Curated goals based on NHS reference intakes</p>
 
             <div v-for="preset in presets" :key="preset.title"
@@ -275,6 +316,9 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { apiFetch } from '../auth.js'
+import { useToast } from '../composables/useToast.js'
+
+const { addToast } = useToast()
 
 const goals = ref([])
 const nutrients = ref([])
@@ -295,6 +339,8 @@ const editDraft = ref({})
 const editSaving = ref(false)
 const editError = ref('')
 
+const confirmingGoalId = ref(null)
+
 const todayIso = () => new Date().toISOString().slice(0, 10)
 const addDays = (date, days) => {
   const d = new Date(date)
@@ -312,6 +358,25 @@ const customGoal = ref({
   endDate: '',
 })
 
+function handleGoalTabKeydown(event) {
+  const tabIds = tabs.value.map(t => t.id)
+  const currentIndex = tabIds.indexOf(activeTab.value)
+  let newIndex = currentIndex
+  if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    newIndex = (currentIndex + 1) % tabIds.length
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    newIndex = (currentIndex - 1 + tabIds.length) % tabIds.length
+  } else {
+    return
+  }
+  activeTab.value = tabIds[newIndex]
+  nextTick(() => {
+    document.getElementById(`goal-tab-${tabIds[newIndex]}`)?.focus()
+  })
+}
+
 async function toggleAddForm() {
   showAddForm.value = !showAddForm.value
   if (showAddForm.value) {
@@ -327,6 +392,7 @@ const selectedNutrientUnit = computed(() => {
 
 const activeGoals = computed(() => goals.value.filter(g => g.status === 'active'))
 
+// warns the user if they're about to create a second goal for the same nutrient — only one active per nutrient
 const replacesGoalWarning = computed(() => {
   if (!customGoal.value.nutrientCode) return null
   const existing = activeGoals.value.find(
@@ -394,6 +460,7 @@ async function loadNutrients() {
   }
 }
 
+// fetches today's nutrient totals so nutrient-based goals can show live progress
 async function loadTodayNutrition() {
   try {
     const today = new Date()
@@ -458,6 +525,7 @@ async function saveCustomGoal() {
       targetMin: null, targetMax: null,
       startDate: todayIso(), endDate: '',
     }
+    addToast('Goal created')
     showAddForm.value = false
     await loadGoals()
   } catch {
@@ -492,6 +560,7 @@ async function applyPreset(preset) {
       createError.value = data.error || 'Failed to add preset'
       return
     }
+    addToast('Goal added')
     showAddForm.value = false
     await loadGoals()
   } catch {
@@ -540,30 +609,35 @@ async function toggleDone(goal) {
     const res = await apiFetch(`/api/goals/${goal.goalId}/toggle-done`, { method: 'PATCH' })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      alert(data.error || 'Failed to toggle goal')
+      addToast(data.error || 'Failed to toggle goal', { type: 'error' })
       return
     }
     await Promise.all([loadGoals(), loadTodayNutrition()])
   } catch {
-    alert('Network error')
+    addToast('Network error', { type: 'error' })
   } finally {
     goal._toggling = false
   }
 }
 
 async function archiveGoal(goal) {
-  if (!confirm(`Archive "${goalTitle(goal)}"? You can still see it in the Archived tab.`)) return
+  if (confirmingGoalId.value !== goal.goalId) {
+    confirmingGoalId.value = goal.goalId
+    return
+  }
+  confirmingGoalId.value = null
   goal._archiving = true
   try {
     const res = await apiFetch(`/api/goals/${goal.goalId}`, { method: 'DELETE' })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      alert(data.error || 'Failed to archive goal')
+      addToast(data.error || 'Failed to archive goal', { type: 'error' })
       return
     }
+    addToast('Goal archived')
     await loadGoals()
   } catch {
-    alert('Network error')
+    addToast('Network error', { type: 'error' })
   } finally {
     goal._archiving = false
   }
@@ -606,6 +680,7 @@ async function saveEdit(goal) {
       editError.value = data.error || 'Failed to update goal'
       return
     }
+    addToast('Goal updated')
     cancelEdit()
     await loadGoals()
   } catch {
@@ -631,6 +706,7 @@ function goalRange(goal) {
   return ''
 }
 
+// goalProgress handles two very different goal types: nutrient goals (checked against diary totals) and manual check-in goals
 function goalProgress(goal) {
   // For nutrient-based goals: show current intake as percentage of target
   if (goal.nutrientId) {
@@ -743,6 +819,7 @@ function goalProgressLabel(goal) {
   return progress >= 100 ? 'done' : 'of target'
 }
 
+// builds the last 7 days as pass/fail entries for the sparkline — nutrient goals use isDoneToday logic implicitly
 function trendFor(goal) {
   const checkIns = goal.checkIns ?? []
   const result = []

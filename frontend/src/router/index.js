@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { h } from 'vue'
+import { h, nextTick } from 'vue'
 import { isAuthenticated, currentUser, tryRefresh } from '../auth.js'
 
 import HomeView from '../views/HomeView.vue'
@@ -27,26 +27,27 @@ const DashboardSwitch = {
 }
 
 const routes = [
-  { path: '/', component: HomeView },
-  { path: '/register/professional', component: ProfessionalRegisterView },
-  { path: '/verify-email', component: VerifyEmailView },
-  { path: '/verify-email/professional', component: VerifyEmailProfessionalView },
-  { path: '/dashboard', component: DashboardSwitch, meta: { requiresAuth: true } },
-  { path: '/diary', component: FoodDiaryView, meta: { requiresAuth: true, subscriberOnly: true } },
-  { path: '/nutrition', component: NutritionView, meta: { requiresAuth: true, subscriberOnly: true } },
-  { path: '/recipes/:id?', component: RecipesView, meta: { requiresAuth: true } },
-  { path: '/goals', component: GoalsView, meta: { requiresAuth: true, subscriberOnly: true } },
-  { path: '/meal-plans', component: MealPlanView, meta: { requiresAuth: true, subscriberOnly: true } },
-  { path: '/messages', component: MessagesView, meta: { requiresAuth: true } },
-  { path: '/profile', component: ProfileView, meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', component: NotFoundView },
+  { path: '/', component: HomeView, meta: { title: 'Home' } },
+  { path: '/register/professional', component: ProfessionalRegisterView, meta: { title: 'Professional Registration' } },
+  { path: '/verify-email', component: VerifyEmailView, meta: { title: 'Verify Email' } },
+  { path: '/verify-email/professional', component: VerifyEmailProfessionalView, meta: { title: 'Verify Email' } },
+  { path: '/dashboard', component: DashboardSwitch, meta: { requiresAuth: true, title: 'Dashboard' } },
+  { path: '/diary', component: FoodDiaryView, meta: { requiresAuth: true, subscriberOnly: true, title: 'Food Diary' } },
+  { path: '/nutrition', component: NutritionView, meta: { requiresAuth: true, subscriberOnly: true, title: 'Nutrition' } },
+  { path: '/recipes/:id?', component: RecipesView, meta: { requiresAuth: true, title: 'Recipes' } },
+  { path: '/goals', component: GoalsView, meta: { requiresAuth: true, subscriberOnly: true, title: 'Goals' } },
+  { path: '/meal-plans', component: MealPlanView, meta: { requiresAuth: true, subscriberOnly: true, title: 'Meal Plans' } },
+  { path: '/messages', component: MessagesView, meta: { requiresAuth: true, title: 'Messages' } },
+  { path: '/profile', component: ProfileView, meta: { requiresAuth: true, title: 'Profile' } },
+  { path: '/:pathMatch(.*)*', component: NotFoundView, meta: { title: 'Page Not Found' } },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to) {
-    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (to.hash) return { el: to.hash, behavior: reducedMotion ? 'auto' : 'smooth' }
     return { top: 0 }
   },
 })
@@ -72,6 +73,15 @@ router.beforeEach(async (to) => {
   if (to.meta.subscriberOnly && currentUser.value.role === 'professional') {
     return { path: '/dashboard' }
   }
+})
+
+// Update document title and move focus to main content on every navigation
+router.afterEach((to) => {
+  document.title = to.meta.title ? `${to.meta.title} — GoodFood` : 'GoodFood'
+  nextTick(() => {
+    const main = document.getElementById('main-content')
+    if (main) main.focus()
+  })
 })
 
 export default router

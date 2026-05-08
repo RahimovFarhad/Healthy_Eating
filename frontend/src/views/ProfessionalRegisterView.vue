@@ -3,9 +3,9 @@
   <div style="min-height:100vh;background:#f8fdf8;display:flex;flex-direction:column;">
 
     <div style="background:#fff;border-bottom:1px solid #d4e7d4;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;">
-      <RouterLink to="/" style="color:#2e7d32;font-weight:700;font-size:1.1rem;text-decoration:none;">
+      <span style="color:#2e7d32;font-weight:700;font-size:1.1rem;">
         Healthy Eating
-      </RouterLink>
+      </span>
       <RouterLink to="/" class="btn btn-sm"
                   style="background:transparent;border:1px solid #333;color:#333;border-radius:6px;padding:0.35rem 1rem;font-weight:600;">
         Back to Home
@@ -36,7 +36,7 @@
               </div>
               <div>
                 <div style="font-weight:600;color:#1b4d1b;font-size:0.95rem;">Manage your client roster</div>
-                <div style="color:#6a8f6a;font-size:0.85rem;">Invite clients, view their diary and nutrition summaries, and track their progress over time.</div>
+                <div style="color:#4b5563;font-size:0.85rem;">Invite clients, view their diary and nutrition summaries, and track their progress over time.</div>
               </div>
             </div>
             <div class="d-flex align-items-start gap-3">
@@ -45,7 +45,7 @@
               </div>
               <div>
                 <div style="font-weight:600;color:#1b4d1b;font-size:0.95rem;">Set personalised goals</div>
-                <div style="color:#6a8f6a;font-size:0.85rem;">Define nutrient targets for each client based on their individual needs and health objectives.</div>
+                <div style="color:#4b5563;font-size:0.85rem;">Define nutrient targets for each client based on their individual needs and health objectives.</div>
               </div>
             </div>
             <div class="d-flex align-items-start gap-3">
@@ -54,43 +54,44 @@
               </div>
               <div>
                 <div style="font-weight:600;color:#1b4d1b;font-size:0.95rem;">Share recipes and insights</div>
-                <div style="color:#6a8f6a;font-size:0.85rem;">Recommend recipes and message clients directly through the platform.</div>
+                <div style="color:#4b5563;font-size:0.85rem;">Recommend recipes and message clients directly through the platform.</div>
               </div>
             </div>
           </div>
 
-          <div class="mt-4" style="color:#6a8f6a;font-size:0.85rem;">
+          <div class="mt-4" style="color:#4b5563;font-size:0.85rem;">
             Already have an account?
-            <RouterLink to="/" style="color:#2e7d32;font-weight:600;text-decoration:none;">Log in here</RouterLink>
+            <RouterLink to="/#login-panel" style="color:#2e7d32;font-weight:600;text-decoration:none;">Log in here</RouterLink>
           </div>
         </div>
 
+        <!-- registration form — on success redirects to pro email verification with credentials in query so it can auto-login -->
         <div class="col-md-6">
           <div style="background:#fff;border:1px solid #d4e7d4;border-radius:12px;padding:2rem;box-shadow:0 2px 12px rgba(27,77,27,0.06);">
-            <h5 style="color:#1b4d1b;font-weight:700;margin-bottom:1.5rem;">Create your professional account</h5>
+            <h2 style="color:#1b4d1b;font-weight:700;margin-bottom:1.5rem;font-size:1.25rem;">Create your professional account</h2>
 
             <div v-if="success" class="alert alert-success small">
-              Account created! You can now <RouterLink to="/">log in</RouterLink>.
+              Account created! You can now <RouterLink to="/#login-panel">log in</RouterLink>.
             </div>
 
             <form v-else @submit.prevent="handleSubmit">
               <div class="mb-3">
-                <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Full Name</label>
-                <input type="text" class="form-control form-control-sm"
+                <label for="prof-name" class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Full Name</label>
+                <input id="prof-name" type="text" class="form-control form-control-sm"
                        placeholder="e.g. Dr. Jane Smith"
                        v-model="form.name" required>
               </div>
 
               <div class="mb-3">
-                <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Email Address</label>
-                <input type="email" class="form-control form-control-sm"
+                <label for="prof-email" class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Email Address</label>
+                <input id="prof-email" type="email" class="form-control form-control-sm"
                        placeholder="you@example.com"
                        v-model="form.email" required>
               </div>
 
               <div class="mb-3">
-                <label class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Password</label>
-                <input type="password" class="form-control form-control-sm"
+                <label for="prof-password" class="form-label form-label-sm" style="color:#1b4d1b;font-weight:500;">Password</label>
+                <input id="prof-password" type="password" class="form-control form-control-sm"
                        placeholder="Min. 8 characters"
                        v-model="form.password"
                        maxlength="30"
@@ -98,24 +99,24 @@
                 
                 <div v-if="form.password" class="mt-2" style="font-size:0.75rem;">
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#6a8f6a'}`">8-30 characters</span>
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.length ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.length ? '#2e7d32' : '#4b5563'}`">8-30 characters</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#6a8f6a'}`">One uppercase letter</span>
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.uppercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.uppercase ? '#2e7d32' : '#4b5563'}`">One uppercase letter</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#6a8f6a'}`">One lowercase letter</span>
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.lowercase ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.lowercase ? '#2e7d32' : '#4b5563'}`">One lowercase letter</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#6a8f6a'}`">One number</span>
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.number ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.number ? '#2e7d32' : '#4b5563'}`">One number</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
-                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#6a8f6a'}`">One special character (!@#$%^&*...)</span>
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#4b5563'}`">{{ passwordValidation.special ? '✓' : '○' }}</span>
+                    <span :style="`color:${passwordValidation.special ? '#2e7d32' : '#4b5563'}`">One special character (!@#$%^&*...)</span>
                   </div>
                 </div>
               </div>
@@ -126,7 +127,7 @@
                 {{ loading ? 'Creating account…' : 'Create Professional Account' }}
               </button>
 
-              <div class="mt-3 text-center" style="font-size:0.78rem;color:#6a8f6a;">
+              <div class="mt-3 text-center" style="font-size:0.78rem;color:#4b5563;">
                 By registering you confirm you are a qualified nutrition professional.
               </div>
             </form>
@@ -171,6 +172,7 @@ function isValidEmail(email) {
   return atIndex > 0 && email.endsWith('.com') && atIndex < email.length - 1
 }
 
+// after successful registration, passes credentials in URL so VerifyEmailProfessional can auto-login once verified
 async function handleSubmit() {
   error.value = ''
   if (!isValidEmail(form.value.email)) {

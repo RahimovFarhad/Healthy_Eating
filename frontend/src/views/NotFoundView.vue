@@ -11,7 +11,7 @@
     <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 1.5rem;">
       <div style="text-align:center;max-width:480px;">
 
-        <div style="font-size:6rem;font-weight:700;color:#d4e7d4;line-height:1;margin-bottom:1rem;font-family:Georgia,'Times New Roman',serif;">
+        <div aria-hidden="true" style="font-size:6rem;font-weight:700;color:#5a8a5a;line-height:1;margin-bottom:1rem;font-family:Georgia,'Times New Roman',serif;">
           404
         </div>
 
@@ -19,10 +19,11 @@
           Page Not Found
         </h1>
 
-        <p style="color:#6a8f6a;font-size:0.95rem;line-height:1.7;margin-bottom:2rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <p style="color:#2d5a2d;font-size:0.95rem;line-height:1.7;margin-bottom:2rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
           The page you're looking for doesn't exist or has been moved.
         </p>
 
+        <!-- sends logged-in users to dashboard, guests to home -->
         <RouterLink
           :to="isAuthenticated ? '/dashboard' : '/'"
           style="display:inline-block;background:#2e7d32;color:#fff;padding:0.65rem 1.75rem;border-radius:8px;font-size:0.95rem;font-weight:500;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;transition:background 0.2s;"
